@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/auth-context';
-import { dashboardApi, projectsApi } from '@/lib/api-client';
+import { dashboardApi, projectsApi, routinesApi } from '@/lib/api-client';
 import { formatTime, getGreeting, PRIORITY_CONFIG } from '@/lib/utils';
 import { MikaCard, MikaCardContent, MikaCardHeader, MikaCardTitle } from '@/components/ui/mika-card';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -32,6 +32,12 @@ export default function DashboardPage() {
   const { data: projects } = useQuery({
     queryKey: ['projects'],
     queryFn: projectsApi.list,
+  });
+
+  const { data: dailySummary } = useQuery({
+    queryKey: ['routines', 'latest', 'DAILY_SUMMARY'],
+    queryFn: () => routinesApi.getLatest('DAILY_SUMMARY'),
+    refetchInterval: 300000,
   });
 
   const today = new Date().toLocaleDateString('pt-BR', {
@@ -79,6 +85,22 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold text-text-primary">{getGreeting(user?.name)}</h1>
         <p className="mt-1 capitalize text-text-tertiary">{today}</p>
       </div>
+
+      <MikaCard>
+        <MikaCardHeader>
+          <MikaCardTitle className="flex items-center gap-2">
+            <Lightbulb className="h-4 w-4 text-insight" />
+            Resumo de hoje
+          </MikaCardTitle>
+        </MikaCardHeader>
+        <MikaCardContent>
+          {dailySummary?.content ? (
+            <p className="whitespace-pre-wrap text-sm text-text-secondary">{dailySummary.content}</p>
+          ) : (
+            <p className="text-sm text-text-tertiary">Resumo será gerado às 07:00</p>
+          )}
+        </MikaCardContent>
+      </MikaCard>
 
       <MikaCard>
         <MikaCardHeader>

@@ -19,6 +19,22 @@ export const dashboardApi = {
   getToday: () => api.get<DashboardData>('/dashboard/today').then(r => r.data),
 };
 
+export interface RoutineRunItem {
+  id: string;
+  type: string;
+  content: string;
+  createdAt: string;
+  deliveredAt?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
+export const routinesApi = {
+  getLatest: (type = 'DAILY_SUMMARY') =>
+    api
+      .get<RoutineRunItem | null>('/routines/latest', { params: { type } })
+      .then((r) => r.data),
+};
+
 export const tasksApi = {
   list: (params?: Record<string, string>) =>
     api.get<Task[]>('/tasks', { params }).then(r => r.data),
