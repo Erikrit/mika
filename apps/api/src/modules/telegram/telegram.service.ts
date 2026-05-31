@@ -9,6 +9,21 @@ import { ReflectionsService } from '../reflections/reflections.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 const TELEGRAM_MAX_LENGTH = 4096;
+const TELEGRAM_INIT_TIMEOUT_MS = 8_000;
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 type PendingRoutineKind = 'morning' | 'midday' | 'evening';
 
@@ -41,6 +56,13 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     const token = process.env.TELEGRAM_BOT_TOKEN;
+    const enabled = process.env.TELEGRAM_ENABLED !== 'false';
+
+    if (!enabled) {
+      this.logger.warn('TELEGRAM_ENABLED=false, skipping bot initialization');
+      return;
+    }
+
     if (!token || token === 'your-bot-token-from-botfather') {
       this.logger.warn('TELEGRAM_BOT_TOKEN not configured, skipping bot initialization');
       return;
@@ -52,13 +74,25 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       this.logger.error({ err }, 'telegram bot error');
     });
 
-    if (process.env.NODE_ENV === 'production') {
-      this.logger.info('Telegram bot configured for webhook mode');
-    } else {
-      await this.bot.api.deleteWebhook({ drop_pending_updates: true });
-      void this.bot.start({
-        onStart: () => this.logger.info('Telegram bot started in polling mode'),
-      });
+    try {
+      if (process.env.NODE_ENV === 'production') {
+        this.logger.info('Telegram bot configured for webhook mode');
+      } else {
+        await withTimeout(
+          this.bot.api.deleteWebhook({ drop_pending_updates: true }),
+          TELEGRAM_INIT_TIMEOUT_MS,
+          'deleteWebhook',
+        );
+        void this.bot.start({
+          onStart: () => this.logger.info('Telegram bot started in polling mode'),
+        });
+      }
+    } catch (err) {
+      this.logger.warn(
+        { err },
+        'Telegram bot unavailable (network or API error) — API will run without bot. Set TELEGRAM_ENABLED=false to silence this.',
+      );
+      this.bot = null;
     }
   }
 
