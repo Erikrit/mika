@@ -40,6 +40,8 @@ services:
       - N8N_BASIC_AUTH_USER=admin
       - N8N_BASIC_AUTH_PASSWORD=changeme
       - WEBHOOK_URL=http://localhost:5678
+      - ROUTINE_API_KEY=${ROUTINE_API_KEY:-dev-routine-key-change-in-production}
+      - GENERIC_TIMEZONE=America/Sao_Paulo
     volumes:
       - n8ndata:/home/node/.n8n
     depends_on:
