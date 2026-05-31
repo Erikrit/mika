@@ -65,8 +65,8 @@ Sem revisão periódica, Erik perde visão do que foi conquistado, o que atrasou
 
 | Requirement ID | Story | Phase | Status |
 |----------------|-------|-------|--------|
-| WEEK-01 | P1: Revisão Automática | - | Pending |
-| WEEK-02 | P2: Perda Prioridade | - | Pending |
+| WEEK-01 | P1: Revisão Automática | M3 | Done |
+| WEEK-02 | P2: Perda Prioridade | M3 | Done |
 
 ---
 

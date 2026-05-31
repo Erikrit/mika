@@ -10,7 +10,7 @@ Copiloto pessoal baseado em IA para organizar, priorizar, recordar e apoiar deci
 
 
 
-**Fase atual:** Fase 2 — Memória (M2 concluído localmente)  
+**Fase atual:** Fase 3 — Rotinas (M3 concluído localmente)  
 
 **Modelo de desenvolvimento:** [TLC Spec-Driven](https://github.com/tech-leads-club/agent-skills/tree/main/packages/skills-catalog/skills/(development)/tlc-spec-driven)
 
@@ -143,6 +143,28 @@ pnpm --filter @mika/database db:backfill-memory
 ```
 
 Requer Redis, PostgreSQL com pgvector e `OPENAI_API_KEY` configurados.
+
+### Rotinas automáticas (F03/F04)
+
+Quatro rotinas proativas disparadas pelo n8n (ou manualmente via curl/Swagger):
+
+| Horário | Endpoint | Descrição |
+|---------|----------|-----------|
+| 07:00 | `POST /routines/daily-summary` | Resumo matinal + pergunta de prioridade |
+| 12:30 | `POST /routines/midday-check` | Check-in meio-dia |
+| 21:00 | `POST /routines/evening-reflection` | Reflexão noturna |
+| Dom 20:00 | `POST /routines/weekly-review` | Revisão semanal |
+
+Configure `ROUTINE_API_KEY` no `.env` e importe os workflows em [docker/n8n/workflows/](docker/n8n/workflows/).
+
+```bash
+curl -X POST http://localhost:3001/routines/daily-summary \
+  -H "X-Routine-Key: $ROUTINE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{}"
+```
+
+Respostas às perguntas interativas no Telegram são salvas como `Reflection` (morning/midday/evening). O dashboard web exibe o resumo do dia via `GET /routines/latest?type=DAILY_SUMMARY`.
 
 
 

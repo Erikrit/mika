@@ -80,9 +80,9 @@ Erik inicia cada dia sem clareza sobre prioridades, compromissos e pendências. 
 
 | Requirement ID | Story | Phase | Status |
 |----------------|-------|-------|--------|
-| DAILY-01 | P1: Resumo Automático | - | Pending |
-| DAILY-02 | P1: Pergunta Prioridade | - | Pending |
-| DAILY-03 | P2: Resumo Web | - | Pending |
+| DAILY-01 | P1: Resumo Automático | M3 | Done |
+| DAILY-02 | P1: Pergunta Prioridade | M3 | Done |
+| DAILY-03 | P2: Resumo Web | M3 | Done |
 
 ---
 

@@ -1,7 +1,7 @@
 # State — Mika
 
 **Last Updated:** 2026-05-31  
-**Current Work:** M2 concluído localmente ✅ — Memória de longo prazo (F02) com RAG híbrido
+**Current Work:** M3 concluído localmente ✅ — Rotinas automáticas (F03 + F04 + meio-dia/noite)
 
 ---
 

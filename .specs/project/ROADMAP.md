@@ -1,6 +1,6 @@
 # Roadmap — Mika
 
-**Current Milestone:** M2 — Memória  
+**Current Milestone:** M3 — Rotinas  
 **Status:** Done (local)
 
 ---
@@ -66,17 +66,18 @@
 
 ### Features
 
-**F03 — Resumo Diário** — PLANNED
+**F03 — Resumo Diário** — DONE (local)
 
 - Rotina manhã 07:00 via n8n
 - Prioridades, compromissos, pendências, alertas
+- Captura de prioridade matinal via Telegram
 
-**F04 — Revisão Semanal** — PLANNED
+**F04 — Revisão Semanal** — DONE (local)
 
 - Rotina domingo 20:00
 - Concluídos, atrasados, perda de prioridade, riscos
 
-**Rotinas Meio-dia e Noite** — PLANNED
+**Rotinas Meio-dia e Noite** — DONE (local)
 
 - Check-in meio-dia 12:30
 - Reflexão noturna 21:00
