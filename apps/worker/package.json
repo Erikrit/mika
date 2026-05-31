@@ -14,7 +14,8 @@
     "@prisma/client": "^6.9.0",
     "pino": "^9.6.0",
     "@mika/database": "workspace:*",
-    "@mika/shared": "workspace:*"
+    "@mika/shared": "workspace:*",
+    "@mika/ai": "workspace:*"
   },
   "devDependencies": {
     "dotenv-cli": "^8.0.0",

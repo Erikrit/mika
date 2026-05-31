@@ -135,3 +135,5 @@ export interface DashboardToday {
   events: Event[];
   overdueTasks: number;
 }
+
+export * from './memory';

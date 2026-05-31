@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MemoryQueueService } from '../memory/memory-queue.service';
 import type { CreateGoalDto, UpdateGoalDto } from '@mika/shared';
 
 @Injectable()
 export class GoalsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly memoryQueue: MemoryQueueService,
+  ) {}
 
   async create(userId: string, dto: CreateGoalDto) {
-    return this.prisma.goal.create({
+    const goal = await this.prisma.goal.create({
       data: {
         userId,
         lifeAreaId: dto.lifeAreaId,
@@ -20,6 +24,8 @@ export class GoalsService {
       },
       include: { lifeArea: true },
     });
+    await this.memoryQueue.enqueueUpsert(userId, 'GOAL', goal.id);
+    return goal;
   }
 
   async findAll(userId: string, horizon?: string) {
@@ -51,7 +57,7 @@ export class GoalsService {
 
   async update(userId: string, id: string, dto: UpdateGoalDto) {
     await this.findOne(userId, id);
-    return this.prisma.goal.update({
+    const goal = await this.prisma.goal.update({
       where: { id },
       data: {
         ...dto,
@@ -60,10 +66,13 @@ export class GoalsService {
       },
       include: { lifeArea: true },
     });
+    await this.memoryQueue.enqueueUpsert(userId, 'GOAL', id);
+    return goal;
   }
 
   async remove(userId: string, id: string) {
     await this.findOne(userId, id);
     await this.prisma.goal.delete({ where: { id } });
+    await this.memoryQueue.enqueueDelete(userId, 'GOAL', id);
   }
 }

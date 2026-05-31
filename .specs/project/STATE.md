@@ -1,7 +1,7 @@
 # State — Mika
 
 **Last Updated:** 2026-05-31  
-**Current Work:** M1 concluído localmente ✅ — OpenAI + Telegram linking + Swagger + AI Hub chat
+**Current Work:** M2 concluído localmente ✅ — Memória de longo prazo (F02) com RAG híbrido
 
 ---
 
@@ -92,6 +92,7 @@ _Nenhuma lição registrada ainda — projeto em fase inicial._
 - [x] AI Hub web chat habilitado ✅
 - [x] Swagger/OpenAPI em /docs ✅
 - [x] README runbook operacional atualizado ✅
+- [x] M2 F02 memória longo prazo (pgvector, worker, RAG, UI /memories) ✅
 - [ ] T018 E2E smoke test (fora do escopo M1)
 - [ ] Configurar VPS e docker-compose.prod.yml
 

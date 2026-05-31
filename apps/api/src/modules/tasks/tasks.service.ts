@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MemoryQueueService } from '../memory/memory-queue.service';
 import type { CreateTaskDto, UpdateTaskDto, TaskFilters } from '@mika/shared';
 
 @Injectable()
 export class TasksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly memoryQueue: MemoryQueueService,
+  ) {}
 
   async create(userId: string, dto: CreateTaskDto) {
-    return this.prisma.task.create({
+    const task = await this.prisma.task.create({
       data: {
         userId,
         title: dto.title,
@@ -22,6 +26,8 @@ export class TasksService {
       },
       include: { lifeArea: true, project: { select: { id: true, title: true } } },
     });
+    await this.memoryQueue.enqueueUpsert(userId, 'TASK', task.id);
+    return task;
   }
 
   async findAll(userId: string, filters: TaskFilters) {
@@ -57,7 +63,7 @@ export class TasksService {
 
   async update(userId: string, id: string, dto: UpdateTaskDto) {
     await this.findOne(userId, id);
-    return this.prisma.task.update({
+    const task = await this.prisma.task.update({
       where: { id },
       data: {
         ...dto,
@@ -66,19 +72,24 @@ export class TasksService {
       },
       include: { lifeArea: true },
     });
+    await this.memoryQueue.enqueueUpsert(userId, 'TASK', id);
+    return task;
   }
 
   async complete(userId: string, id: string) {
     await this.findOne(userId, id);
-    return this.prisma.task.update({
+    const task = await this.prisma.task.update({
       where: { id },
       data: { status: 'DONE', completedAt: new Date() },
     });
+    await this.memoryQueue.enqueueUpsert(userId, 'TASK', id);
+    return task;
   }
 
   async remove(userId: string, id: string) {
     await this.findOne(userId, id);
     await this.prisma.task.delete({ where: { id } });
+    await this.memoryQueue.enqueueDelete(userId, 'TASK', id);
   }
 
   async getTodayTasks(userId: string, timezone: string = 'America/Sao_Paulo') {

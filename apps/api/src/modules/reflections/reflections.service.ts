@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../../common/encryption.service';
+import { MemoryQueueService } from '../memory/memory-queue.service';
 import type { CreateReflectionDto } from '@mika/shared';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class ReflectionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly encryption: EncryptionService,
+    private readonly memoryQueue: MemoryQueueService,
   ) {}
 
   async create(userId: string, dto: CreateReflectionDto) {
@@ -21,6 +23,7 @@ export class ReflectionsService {
         routineType: dto.routineType?.toUpperCase() as never,
       },
     });
+    await this.memoryQueue.enqueueUpsert(userId, 'REFLECTION', reflection.id);
     return { ...reflection, content: dto.content };
   }
 
@@ -46,5 +49,6 @@ export class ReflectionsService {
   async remove(userId: string, id: string) {
     await this.findOne(userId, id);
     await this.prisma.reflection.delete({ where: { id } });
+    await this.memoryQueue.enqueueDelete(userId, 'REFLECTION', id);
   }
 }

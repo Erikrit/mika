@@ -1,6 +1,6 @@
 # Roadmap — Mika
 
-**Current Milestone:** M1 — Fundação  
+**Current Milestone:** M2 — Memória  
 **Status:** Done (local)
 
 ---
@@ -49,12 +49,13 @@
 
 ### Features
 
-**F02 — Memória de Longo Prazo** — PLANNED
+**F02 — Memória de Longo Prazo** — DONE (local)
 
-- Vetorização com pgvector
-- Categorias: Profissional, Financeiro, Familiar, Saúde, Viagens
-- RAG híbrido (embeddings + full-text)
-- Ingestão de Markdown e notas
+- MemoryChunk + pgvector + full-text (tsvector)
+- Worker BullMQ `memory-index` com retry 3x
+- RAG híbrido no ChatModule
+- API `/memory/chunks`, `/memory/search`, `/memory/import`
+- UI web `/memories` com upload Markdown
 
 ---
 

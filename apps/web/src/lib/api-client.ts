@@ -56,3 +56,37 @@ export const chatApi = {
       })
       .then((r) => r.data),
 };
+
+export interface MemoryChunkItem {
+  id: string;
+  content: string;
+  sourceType: string;
+  sourceId: string | null;
+  lifeAreaId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lifeArea?: { label: string; slug: string; color: string | null };
+}
+
+export const memoryApi = {
+  listChunks: (lifeAreaId?: string) =>
+    api
+      .get<MemoryChunkItem[]>('/memory/chunks', {
+        params: lifeAreaId ? { lifeAreaId } : {},
+      })
+      .then((r) => r.data),
+  search: (query: string, lifeAreaId?: string) =>
+    api
+      .post('/memory/search', { query, lifeAreaId })
+      .then((r) => r.data),
+  importMarkdown: (file: File, lifeAreaId?: string) => {
+    const form = new FormData();
+    form.append('file', file);
+    if (lifeAreaId) form.append('lifeAreaId', lifeAreaId);
+    return api
+      .post('/memory/import', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data);
+  },
+};

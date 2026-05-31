@@ -1,6 +1,7 @@
 import pino from 'pino';
 import { Worker } from 'bullmq';
 import { PrismaClient } from '@mika/database';
+import { createMemoryIndexWorker } from './processors/memory-index.processor';
 
 const logger = pino({
   level: process.env.LOG_LEVEL ?? 'info',
@@ -36,6 +37,8 @@ const neglectedWorker = new Worker(
   { connection: redisConnection },
 );
 
+const memoryIndexWorker = createMemoryIndexWorker(prisma, redisConnection);
+
 neglectedWorker.on('completed', (job) => {
   logger.info({ jobId: job.id }, 'Job completed');
 });
@@ -44,11 +47,12 @@ neglectedWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'Job failed');
 });
 
-logger.info('🔄 Worker started');
+logger.info('🔄 Worker started (neglected-tasks + memory-index)');
 
 process.on('SIGTERM', async () => {
   logger.info('Shutting down worker...');
   await neglectedWorker.close();
+  await memoryIndexWorker.close();
   await prisma.$disconnect();
   process.exit(0);
 });

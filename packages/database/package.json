@@ -12,6 +12,7 @@
     "prisma:studio": "dotenv -e ../../.env -- prisma studio",
     "prisma:validate": "dotenv -e ../../.env -- prisma validate",
     "db:seed": "dotenv -e ../../.env -- ts-node --project tsconfig.seed.json prisma/seed.ts",
+    "db:backfill-memory": "dotenv -e ../../.env -- ts-node --project tsconfig.seed.json scripts/backfill-memory.ts",
     "clean": "rm -rf dist"
   },
   "prisma": {
@@ -27,6 +28,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",
-    "bcrypt": "^5.1.1"
+    "@mika/shared": "workspace:*",
+    "bcrypt": "^5.1.1",
+    "bullmq": "^5.53.1"
   }
 }

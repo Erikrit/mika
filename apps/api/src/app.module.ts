@@ -18,6 +18,7 @@ import { FinanceGoalsModule } from './modules/finance-goals/finance-goals.module
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { TelegramModule } from './modules/telegram/telegram.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { MemoryModule } from './modules/memory/memory.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ChatModule } from './modules/chat/chat.module';
     FinanceGoalsModule,
     DashboardModule,
     ChatModule,
+    MemoryModule,
     TelegramModule,
   ],
   providers: [

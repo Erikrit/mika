@@ -6,10 +6,10 @@ Sem memória persistente e busca contextual, Mika esquece contextos entre sessõ
 
 ## Goals
 
-- [ ] Vetorizar conteúdo de tarefas, projetos, objetivos, reflexões e notas
-- [ ] Busca híbrida: embeddings (pgvector) + full-text (PostgreSQL)
-- [ ] Categorização por LifeArea na retrieval
-- [ ] Respostas contextuais sobre projetos, objetivos e eventos futuros
+- [x] Vetorizar conteúdo de tarefas, projetos, objetivos, reflexões e notas
+- [x] Busca híbrida: embeddings (pgvector) + full-text (PostgreSQL)
+- [x] Categorização por LifeArea na retrieval
+- [x] Respostas contextuais sobre projetos, objetivos e eventos futuros
 
 ## Out of Scope
 
@@ -94,10 +94,10 @@ Sem memória persistente e busca contextual, Mika esquece contextos entre sessõ
 
 | Requirement ID | Story | Phase | Status |
 |----------------|-------|-------|--------|
-| MEM-01 | P1: Vetorizar | Design | Pending |
-| MEM-02 | P1: Busca Contextual | Design | Pending |
-| MEM-03 | P2: Markdown Ingest | - | Pending |
-| MEM-04 | P2: Categorias | Design | Pending |
+| MEM-01 | P1: Vetorizar | Execute | Done |
+| MEM-02 | P1: Busca Contextual | Execute | Done |
+| MEM-03 | P2: Markdown Ingest | Execute | Done |
+| MEM-04 | P2: Categorias | Execute | Done |
 
 ---
 

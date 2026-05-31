@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MemoryQueueService } from '../memory/memory-queue.service';
 import type { CreateProjectDto, UpdateProjectDto } from '@mika/shared';
 
 @Injectable()
 export class ProjectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly memoryQueue: MemoryQueueService,
+  ) {}
 
   async create(userId: string, dto: CreateProjectDto) {
-    return this.prisma.project.create({
+    const project = await this.prisma.project.create({
       data: {
         userId,
         lifeAreaId: dto.lifeAreaId,
@@ -21,6 +25,8 @@ export class ProjectsService {
       },
       include: { lifeArea: true },
     });
+    await this.memoryQueue.enqueueUpsert(userId, 'PROJECT', project.id);
+    return project;
   }
 
   async findAll(userId: string) {
@@ -53,7 +59,7 @@ export class ProjectsService {
 
   async update(userId: string, id: string, dto: UpdateProjectDto) {
     await this.findOne(userId, id);
-    return this.prisma.project.update({
+    const project = await this.prisma.project.update({
       where: { id },
       data: {
         ...dto,
@@ -61,10 +67,13 @@ export class ProjectsService {
       },
       include: { lifeArea: true },
     });
+    await this.memoryQueue.enqueueUpsert(userId, 'PROJECT', id);
+    return project;
   }
 
   async remove(userId: string, id: string) {
     await this.findOne(userId, id);
     await this.prisma.project.delete({ where: { id } });
+    await this.memoryQueue.enqueueDelete(userId, 'PROJECT', id);
   }
 }

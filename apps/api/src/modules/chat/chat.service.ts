@@ -4,6 +4,7 @@ import { generateReply } from '@mika/ai';
 import { PrismaService } from '../prisma/prisma.service';
 import { DashboardService } from '../dashboard/dashboard.service';
 import { TasksService } from '../tasks/tasks.service';
+import { MemoryService } from '../memory/memory.service';
 import type { ChatChannel } from '@prisma/client';
 
 @Injectable()
@@ -13,6 +14,7 @@ export class ChatService {
     private readonly prisma: PrismaService,
     private readonly dashboard: DashboardService,
     private readonly tasks: TasksService,
+    private readonly memory: MemoryService,
   ) {}
 
   async sendMessage(
@@ -29,7 +31,7 @@ export class ChatService {
       take: 5,
     });
 
-    const context = await this.buildContext(userId);
+    const context = await this.buildContext(userId, message);
 
     const result = await generateReply({
       userId,
@@ -85,10 +87,11 @@ export class ChatService {
     });
   }
 
-  private async buildContext(userId: string): Promise<string> {
-    const [today, pendingTasks] = await Promise.all([
+  private async buildContext(userId: string, query: string): Promise<string> {
+    const [today, pendingTasks, memoryContext] = await Promise.all([
       this.dashboard.getToday(userId),
       this.tasks.findAll(userId, { status: 'todo' }),
+      this.memory.retrieveContext(userId, query),
     ]);
 
     const topTasks = pendingTasks.slice(0, 10);
@@ -124,6 +127,11 @@ export class ChatService {
           : '';
         lines.push(`- [P${t.priority}] ${t.title}${due}`);
       }
+    }
+
+    if (memoryContext) {
+      lines.push('\n--- Memória ---');
+      lines.push(memoryContext);
     }
 
     return lines.join('\n');
