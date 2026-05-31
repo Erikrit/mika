@@ -150,7 +150,7 @@
 | 5 | UI web mínima (PWA) | Visualização desktop/tablet |
 
 
-# M5 - Android Companion
+# M7 - Android Companion
 
 Status: Planejado
 
@@ -179,3 +179,14 @@ ou
 Critério de sucesso:
 
 Usuário conseguir utilizar Mika integralmente sem acessar versão web.
+
+
+ideia final 
+M4 - Proatividade
+M5 - Copiloto
+M6 — Assistente Completo
+M7 - Android Companion
+M8 - Expansão da Memória Pessoal
+M9 - Voz Conversacional
+M10 - Alexa / Google Home
+M11 - Casa Inteligente
