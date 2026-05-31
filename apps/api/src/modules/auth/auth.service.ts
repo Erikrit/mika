@@ -63,7 +63,12 @@ export class AuthService {
     return { code, expiresAt };
   }
 
-  async linkTelegramByCode(code: string, telegramChatId: string) {
+  async linkTelegramByCode(rawCode: string, telegramChatId: string) {
+    const code = rawCode.replace(/\D/g, '').slice(0, 6);
+    if (code.length !== 6) {
+      throw new BadRequestException('Código inválido ou expirado');
+    }
+
     const users = await this.prisma.user.findMany({
       where: { telegramChatId: null },
     });

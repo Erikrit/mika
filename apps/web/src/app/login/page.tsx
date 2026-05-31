@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { MikaAvatar } from '@/components/ui/mika-avatar';
@@ -18,8 +18,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    if (user) {
+      router.push('/');
+    }
+  }, [user, router]);
+
   if (user) {
-    router.push('/');
     return null;
   }
 
@@ -29,7 +34,6 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      router.push('/');
     } catch (err: unknown) {
       const axiosErr = err as { response?: { status?: number }; code?: string };
       if (!axiosErr.response && (axiosErr.code === 'ERR_NETWORK' || axiosErr.code === 'ECONNREFUSED')) {
