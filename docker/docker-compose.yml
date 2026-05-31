@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: mika-postgres
+    environment:
+      POSTGRES_USER: mika
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: mika
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mika -d mika"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: mika-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --save 60 1 --loglevel warning
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: mika-n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=changeme
+      - WEBHOOK_URL=http://localhost:5678
+    volumes:
+      - n8ndata:/home/node/.n8n
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
+  redisdata:
+  n8ndata:

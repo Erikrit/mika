@@ -1,0 +1,32 @@
+{
+  "name": "@mika/database",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prisma:generate": "dotenv -e ../../.env -- prisma generate",
+    "prisma:migrate": "dotenv -e ../../.env -- prisma migrate dev",
+    "prisma:migrate:deploy": "dotenv -e ../../.env -- prisma migrate deploy",
+    "prisma:studio": "dotenv -e ../../.env -- prisma studio",
+    "prisma:validate": "dotenv -e ../../.env -- prisma validate",
+    "db:seed": "dotenv -e ../../.env -- ts-node --project tsconfig.seed.json prisma/seed.ts",
+    "clean": "rm -rf dist"
+  },
+  "prisma": {
+    "seed": "dotenv -e ../../.env -- ts-node --project tsconfig.seed.json prisma/seed.ts"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/node": "^22.15.21",
+    "dotenv-cli": "^8.0.0",
+    "typescript": "^5.8.3",
+    "ts-node": "^10.9.2",
+    "prisma": "^6.9.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.9.0",
+    "bcrypt": "^5.1.1"
+  }
+}
