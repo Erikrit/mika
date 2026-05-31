@@ -9,7 +9,7 @@ Inclua seções:
 4. Eventos importantes da próxima semana (se houver)
 5. Sugestão de foco para a próxima semana
 
-Tom: honesto, construtivo, sem culpa. Máximo 500 palavras.`;
+Tom: honesto, construtivo, sem culpa. Máximo 500 palavras. Respeite o perfil fixo quando fornecido.`;
 
 export function formatWeeklyReviewUserPrompt(data: WeeklyReviewData): string {
   return JSON.stringify(

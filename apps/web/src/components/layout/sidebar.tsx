@@ -21,7 +21,7 @@ import { MikaAvatar } from '@/components/ui/mika-avatar';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Início', icon: Home },
-  { href: '/memories', label: 'Memórias', icon: Brain },
+  { href: '/context', label: 'Contexto', icon: Brain },
   { href: '/goals', label: 'Objetivos', icon: Target },
   { href: '/studies', label: 'Estudos', icon: BookOpen },
   { href: '/finance', label: 'Finanças', icon: TrendingUp },

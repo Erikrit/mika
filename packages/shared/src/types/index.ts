@@ -136,4 +136,5 @@ export interface DashboardToday {
   overdueTasks: number;
 }
 
+export * from './context';
 export * from './memory';

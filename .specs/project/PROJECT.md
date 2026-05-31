@@ -44,6 +44,8 @@ packages/shared → Types, schemas Zod, constants
 packages/ai   → Prompts, RAG utilities
 ```
 
+**Convenções de desenvolvimento:** [.specs/project/CONVENTIONS.md](./CONVENTIONS.md) — pt-BR em UI/docs; testes unitários fora do escopo de entrega.
+
 ## Scope
 
 **v1 includes (MVP — F01 a F06):**

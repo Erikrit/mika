@@ -24,7 +24,22 @@ export class MemoryQueueService implements OnModuleDestroy {
     userId: string,
     sourceType: MemorySourceType,
     sourceId: string,
-    extra?: Pick<MemoryIndexJob, 'content' | 'lifeAreaId' | 'metadata'>,
+    extra?: Partial<
+      Pick<
+        MemoryIndexJob,
+        | 'content'
+        | 'lifeAreaId'
+        | 'documentId'
+        | 'memoryType'
+        | 'privacyLevel'
+        | 'category'
+        | 'importance'
+        | 'confidenceType'
+        | 'confidenceScore'
+        | 'enabledForRag'
+        | 'metadata'
+      >
+    >,
   ): Promise<void> {
     await this.queue.add('index', {
       userId,

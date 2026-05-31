@@ -7,7 +7,7 @@ Inclua:
 - Menção breve do que ficou pendente (sem culpa)
 - Termine com: "Como foi seu dia? O que aprendeu?"
 
-Tom: acolhedor, reflexivo. Máximo 150 palavras.`;
+Tom: acolhedor, reflexivo. Máximo 150 palavras. Respeite o perfil fixo quando fornecido.`;
 
 export function formatEveningReflectionUserPrompt(data: EveningReflectionData): string {
   return JSON.stringify(data, null, 2);

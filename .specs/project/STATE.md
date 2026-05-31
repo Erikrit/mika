@@ -1,7 +1,7 @@
 # State — Mika
 
 **Last Updated:** 2026-05-31  
-**Current Work:** MAINT-M1 estabilização concluída ✅ — bugs desktop, RAG prioridades, import área, UI tarefas
+**Current Work:** M5 Proatividade — planejamento
 
 ---
 
@@ -59,6 +59,18 @@
 **Reason:** Rastreabilidade de requisitos, tasks atômicas, memória persistente entre sessões  
 **Trade-off:** Overhead de documentação inicial  
 **Impact:** Toda feature em `.specs/features/` com spec.md; design/tasks para features Large
+
+### AD-009: Testes unitários fora do escopo de entrega (2026-05-31)
+
+**Decision:** Não criar nem exigir testes unitários como gate em tasks/milestones  
+**Reason:** Erik prefere validação por build + UAT manual; evita bloqueio e ruído em entregas  
+**Impact:** Ondas F sem task jest; gates = build, migrate, checklist manual. Ver [CONVENTIONS.md](./CONVENTIONS.md)
+
+### AD-010: Conteúdo e documentação em pt-BR (2026-05-31)
+
+**Decision:** UI, labels, mensagens de API ao usuário, specs e docs de produto em português brasileiro  
+**Reason:** Produto e operador são lusófonos; reduz inconsistência (ex.: labels "RAG on" vs "RAG ligado")  
+**Impact:** Revisar strings em novas telas/APIs; identificadores técnicos de código podem permanecer em inglês
 
 ---
 
@@ -123,4 +135,7 @@ _Nenhum blocker ativo — MAINT-001 (desktop congelado), MAINT-002 (RAG priorida
 
 ## Preferences
 
-**Model Guidance Shown:** never
+**Model Guidance Shown:** never  
+**Unit tests:** ignorar — não criar nem usar como gate (AD-009)  
+**Idioma dev/docs/UI:** pt-BR para textos visíveis e documentação (AD-010)  
+**Convenções:** [.specs/project/CONVENTIONS.md](./CONVENTIONS.md)

@@ -1,7 +1,7 @@
 # Roadmap — Mika
 
-**Current Milestone:** M3 — Rotinas
-**Status:** Done (local)
+**Current Milestone:** M5 — Proatividade
+**Status:** M4 Done · M5 Planned
 
 ---
 
@@ -88,6 +88,7 @@
 
 **Goal:** Permitir que Mika compreenda o contexto de vida do usuário, usando arquivos pessoais importados, memórias categorizadas e busca semântica sob demanda para gerar interações mais humanas, úteis e alinhadas aos objetivos reais.
 **Target:** +2–3 semanas após M3
+**Status:** Done (UAT 2026-05-31)
 
 ### Princípio Técnico
 
@@ -95,14 +96,17 @@ A Mika não deve colocar todo o conteúdo pessoal diretamente no prompt fixo. O 
 
 ### Features
 
-**F05 — Importação de Documentos Pessoais** — PLANNED
+**F05 — Importação de Documentos Pessoais** — DONE (local)
 
-* Criar local dedicado para importar arquivos como `Objetivos de Vida.md`, `Como Trabalhar Com Erik.md`, planejamentos, reflexões e mapas mentais
-* Suportar upload/importação de Markdown, texto e documentos convertidos para texto
-* Categorizar documentos por área: vida, trabalho, finanças, rotina, projetos e relacionamentos
-* Gerar chunks semânticos com metadados de origem, data, categoria, nível de privacidade e prioridade
+**F06 — Classificação de Memória em 3 Camadas** — DONE (local)
 
-**F06 — Classificação de Memória em 3 Camadas** — PLANNED
+**F07 — Recuperação Contextual Segura** — DONE (local)
+
+**F08 — Interações Humanizadas e Companheiras** — DONE (local)
+
+**F09 — Gestão de Consentimento e Privacidade** — DONE (local)
+
+Hub `/context`: templates guiados, editor `/context/[id]`, aba Avançado (trechos, saúde, auditoria). `/memories` → redirect.
 
 #### Memória Fixa
 
@@ -129,39 +133,14 @@ A Mika não deve colocar todo o conteúdo pessoal diretamente no prompt fixo. O 
 * Reflexões pessoais privadas
 * Conteúdos que precisam de consentimento e controle de acesso
 
-**F07 — Recuperação Contextual Segura** — PLANNED
-
-* Buscar apenas o contexto necessário para a conversa atual
-* Priorizar memórias fixas para personalização básica
-* Usar memórias evolutivas para acompanhamento de progresso
-* Usar memórias sensíveis somente quando forem relevantes e permitidas
-* Evitar expor informações privadas sem necessidade
-* Registrar quando uma memória sensível foi usada em uma resposta ou sugestão
-
-**F08 — Interações Humanizadas e Companheiras** — PLANNED
-
-* Fazer sugestões com base na história, objetivos, desafios e vitórias do usuário
-* Ajudar o usuário a não esquecer objetivos importantes
-* Alertar quando houver desalinhamento entre rotina atual e planejamento de vida
-* Relembrar conquistas e progresso quando fizer sentido
-* Adaptar tom, intensidade e estilo de cobrança conforme o perfil do usuário
-* Diferenciar apoio, lembrete, alerta e sugestão estratégica
-
-**F09 — Gestão de Consentimento e Privacidade** — PLANNED
-
-* Permitir marcar memórias como públicas, privadas ou sensíveis
-* Permitir desativar uso de determinada memória em respostas
-* Permitir apagar, editar ou arquivar memórias importadas
-* Criar camada de proteção para memórias financeiras e pessoais
-* Evitar usar memórias sensíveis em integrações externas sem autorização explícita
-
 ### Critério de Done
 
-* Usuário consegue importar documentos pessoais em uma área dedicada
-* Mika indexa e classifica documentos em memória fixa, evolutiva e sensível
-* Chat consegue recuperar contexto relevante sem carregar tudo no prompt fixo
-* Mika consegue responder e sugerir ações considerando objetivos de vida e histórico pessoal
-* Memórias sensíveis possuem controle explícito de uso, edição e exclusão
+* [x] Usuário consegue importar documentos pessoais em uma área dedicada
+* [x] Mika indexa e classifica documentos em memória fixa, evolutiva e sensível
+* [x] Chat consegue recuperar contexto relevante sem carregar tudo no prompt fixo
+* [x] Mika consegue responder e sugerir ações considerando objetivos de vida e histórico pessoal
+* [x] Memórias sensíveis possuem controle explícito de uso, edição e exclusão
+* [x] UAT manual Erik (2026-05-31)
 
 ### Resultado Esperado
 

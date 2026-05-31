@@ -118,6 +118,51 @@ enum MemorySourceType {
   IMPORT
 }
 
+enum MemoryType {
+  FIXED
+  EVOLUTIVE
+  SENSITIVE
+}
+
+enum PrivacyLevel {
+  PUBLIC
+  PRIVATE
+  SENSITIVE
+}
+
+enum ContextCategory {
+  LIFE
+  WORK
+  FINANCE
+  PROJECT
+  ROUTINE
+  LEARNING
+  RELATIONSHIP
+  HEALTH
+  EMOTIONAL
+  MEMORY
+  CUSTOM
+}
+
+enum ConfidenceType {
+  FACT
+  INFERRED
+  HYPOTHESIS
+}
+
+enum RetentionType {
+  PERMANENT
+  LONG_TERM
+  SHORT_TERM
+  ARCHIVED
+}
+
+enum MemoryAuditChannel {
+  CHAT
+  TELEGRAM
+  ROUTINE
+}
+
 // ─── Models ──────────────────────────────────────────────────────────────────
 
 model User {
@@ -142,6 +187,8 @@ model User {
   reminders    Reminder[]
   routineRuns  RoutineRun[]
   memoryChunks MemoryChunk[]
+  contextDocuments ContextDocument[]
+  memoryUsageAudits MemoryUsageAudit[]
 
   @@map("users")
 }
@@ -371,22 +418,89 @@ model RoutineRun {
 }
 
 model MemoryChunk {
-  id          String           @id @default(uuid())
-  userId      String
-  lifeAreaId  String?
-  sourceType  MemorySourceType
-  sourceId    String?
-  content     String
-  contentHash String
-  embedding   Unsupported("vector(1536)")?
-  metadata    Json             @default("{}")
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id              String           @id @default(uuid())
+  userId          String
+  lifeAreaId      String?
+  documentId      String?
+  sourceType      MemorySourceType
+  sourceId        String?
+  content         String
+  contentHash     String
+  embedding       Unsupported("vector(1536)")?
+  metadata        Json             @default("{}")
+  memoryType      MemoryType       @default(EVOLUTIVE)
+  privacyLevel    PrivacyLevel     @default(PRIVATE)
+  importance      Int              @default(3)
+  confidenceType  ConfidenceType   @default(FACT)
+  confidenceScore Float            @default(1.0)
+  enabledForRag   Boolean          @default(true)
+  retentionType   RetentionType    @default(LONG_TERM)
+  archivedAt      DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lifeArea LifeArea? @relation(fields: [lifeAreaId], references: [id], onDelete: SetNull)
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lifeArea LifeArea?         @relation(fields: [lifeAreaId], references: [id], onDelete: SetNull)
+  document ContextDocument?  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  audits   MemoryUsageAudit[]
 
   @@unique([userId, contentHash])
   @@index([userId, sourceType, sourceId])
+  @@index([userId, memoryType, enabledForRag])
+  @@index([documentId])
   @@map("memory_chunks")
+}
+
+model ContextDocument {
+  id               String           @id @default(uuid())
+  userId           String
+  title            String
+  category         ContextCategory  @default(CUSTOM)
+  memoryType       MemoryType       @default(EVOLUTIVE)
+  privacyLevel     PrivacyLevel     @default(PRIVATE)
+  source           String           @default("import")
+  enabledForRag    Boolean          @default(true)
+  retentionType    RetentionType    @default(LONG_TERM)
+  currentVersionId String?          @unique
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  archivedAt       DateTime?
+
+  user           User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentVersion ContextDocumentVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  versions       ContextDocumentVersion[] @relation("DocumentVersions")
+  chunks         MemoryChunk[]
+
+  @@index([userId, category])
+  @@index([userId, archivedAt])
+  @@map("context_documents")
+}
+
+model ContextDocumentVersion {
+  id            String   @id @default(uuid())
+  documentId    String
+  versionNumber Int
+  content       String
+  contentHash   String
+  createdAt     DateTime @default(now())
+
+  document      ContextDocument  @relation("DocumentVersions", fields: [documentId], references: [id], onDelete: Cascade)
+  currentForDoc ContextDocument? @relation("CurrentVersion")
+
+  @@unique([documentId, versionNumber])
+  @@map("context_document_versions")
+}
+
+model MemoryUsageAudit {
+  id        String             @id @default(uuid())
+  userId    String
+  chunkId   String
+  channel   MemoryAuditChannel
+  createdAt DateTime           @default(now())
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunk MemoryChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("memory_usage_audits")
 }

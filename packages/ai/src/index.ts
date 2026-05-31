@@ -32,7 +32,20 @@ export { AI_CONFIG, FALLBACK_MESSAGE } from './config';
 export {
   isPriorityIntent,
   isUuid,
+  detectIntent,
+  buildRetrievalFilters,
   PRIORITY_EXPANDED_QUERY,
   FALLBACK_SIMILARITY_THRESHOLD,
+  SENSITIVE_SIMILARITY_THRESHOLD,
+  LIFE_INTENT_RE,
+  FINANCE_INTENT_RE,
 } from './intent';
+export {
+  classifyDocument,
+  classifyDocumentHeuristic,
+  classifyCrudSource,
+  classifyImportSource,
+} from './classify';
+export type { ClassificationResult } from './classify';
+export { buildFixedProfileContext } from './fixed-profile';
 export { SYSTEM_PROMPT } from './prompts/system';

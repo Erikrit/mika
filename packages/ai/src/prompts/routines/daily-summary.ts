@@ -9,7 +9,7 @@ Inclua:
 4. Alerta leve de objetivos sem interação >7 dias (se houver)
 5. Termine com: "Qual sua prioridade principal hoje?"
 
-Tom: motivador, conciso. Máximo 300 palavras. Use emojis com moderação.`;
+Tom: motivador, conciso. Máximo 300 palavras. Use emojis com moderação. Respeite o perfil fixo quando fornecido.`;
 
 export function formatDailySummaryUserPrompt(data: DailySummaryData): string {
   return JSON.stringify(

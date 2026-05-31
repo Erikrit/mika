@@ -98,6 +98,46 @@ export const ChatMessageSchema = z.object({
   sessionId: z.string().uuid().optional(),
 });
 
+const memoryTypeEnum = z.enum(['FIXED', 'EVOLUTIVE', 'SENSITIVE']);
+const privacyLevelEnum = z.enum(['PUBLIC', 'PRIVATE', 'SENSITIVE']);
+const contextCategoryEnum = z.enum([
+  'LIFE', 'WORK', 'FINANCE', 'PROJECT', 'ROUTINE', 'LEARNING',
+  'RELATIONSHIP', 'HEALTH', 'EMOTIONAL', 'MEMORY', 'CUSTOM',
+]);
+const retentionTypeEnum = z.enum(['PERMANENT', 'LONG_TERM', 'SHORT_TERM', 'ARCHIVED']);
+
+export const CreateContextDocumentSchema = z.object({
+  title: z.string().min(1).max(500),
+  content: z.string().min(1),
+  category: contextCategoryEnum.optional(),
+  memoryType: memoryTypeEnum.optional(),
+  privacyLevel: privacyLevelEnum.optional(),
+  enabledForRag: z.boolean().optional(),
+  retentionType: retentionTypeEnum.optional(),
+  source: z.enum(['import', 'manual']).optional(),
+});
+
+export const UpdateContextDocumentSchema = z.object({
+  title: z.string().min(1).max(500).optional(),
+  category: contextCategoryEnum.optional(),
+  memoryType: memoryTypeEnum.optional(),
+  privacyLevel: privacyLevelEnum.optional(),
+  enabledForRag: z.boolean().optional(),
+  retentionType: retentionTypeEnum.optional(),
+  archived: z.boolean().optional(),
+});
+
+export const UpdateMemoryChunkSchema = z.object({
+  memoryType: memoryTypeEnum.optional(),
+  privacyLevel: privacyLevelEnum.optional(),
+  enabledForRag: z.boolean().optional(),
+  importance: z.number().int().min(1).max(5).optional(),
+});
+
+export type CreateContextDocumentDto = z.infer<typeof CreateContextDocumentSchema>;
+export type UpdateContextDocumentDto = z.infer<typeof UpdateContextDocumentSchema>;
+export type UpdateMemoryChunkDto = z.infer<typeof UpdateMemoryChunkSchema>;
+
 export type CreateTaskDto = z.infer<typeof CreateTaskSchema>;
 export type UpdateTaskDto = z.infer<typeof UpdateTaskSchema>;
 export type TaskFilters = z.infer<typeof TaskFiltersSchema>;

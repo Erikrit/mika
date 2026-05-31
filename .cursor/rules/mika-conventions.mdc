@@ -1,0 +1,26 @@
+---
+description: Convenções Mika — sem testes unit como gate; pt-BR em UI e docs
+alwaysApply: true
+---
+
+# Convenções Mika
+
+Leia `.specs/project/CONVENTIONS.md` ao planejar ou implementar features.
+
+## Testes unitários
+
+- **Não criar** arquivos `*.spec.ts` / `*.test.ts` em novas features.
+- **Não usar** `jest` / `pnpm test` como gate de task ou critério de done.
+- Validar com: **build**, migrate, smoke/UAT manual.
+
+## Idioma (pt-BR)
+
+- UI: títulos, labels, botões, placeholders, feedback — **português brasileiro**.
+- API: mensagens ao usuário e `@ApiOperation` summaries — **pt-BR**.
+- Documentação em `.specs/` e README operacional — **pt-BR**.
+- Código técnico (variáveis, enums, rotas REST) pode permanecer em inglês.
+
+## Exemplos
+
+- Preferir `Importar`, `Saúde`, `RAG ligado` em vez de `Upload`, `Health`, `RAG on`.
+- Gate de task: `build OK` ou `listagem funcional`, nunca `jest pass`.

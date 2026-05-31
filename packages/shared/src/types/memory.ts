@@ -1,3 +1,11 @@
+import type {
+  ConfidenceType,
+  ContextCategory,
+  MemoryType,
+  PrivacyLevel,
+  RetentionType,
+} from './context';
+
 export type MemorySourceType =
   | 'TASK'
   | 'PROJECT'
@@ -15,6 +23,14 @@ export type MemoryIndexJob = {
   action: MemoryIndexAction;
   content?: string;
   lifeAreaId?: string | null;
+  documentId?: string | null;
+  memoryType?: MemoryType;
+  privacyLevel?: PrivacyLevel;
+  category?: ContextCategory;
+  importance?: number;
+  confidenceType?: ConfidenceType;
+  confidenceScore?: number;
+  enabledForRag?: boolean;
   metadata?: Record<string, unknown>;
 };
 
@@ -25,6 +41,15 @@ export type RetrievedChunk = {
   sourceId: string | null;
   lifeAreaId: string | null;
   lifeAreaLabel?: string;
+  documentId?: string | null;
+  memoryType?: MemoryType;
+  privacyLevel?: PrivacyLevel;
+  category?: ContextCategory;
+  importance?: number;
+  confidenceType?: ConfidenceType;
+  confidenceScore?: number;
+  enabledForRag?: boolean;
+  retentionType?: RetentionType;
   metadata: Record<string, unknown>;
   createdAt: Date;
   vectorScore?: number;

@@ -8,7 +8,7 @@ Inclua:
 - Progresso (tarefas concluídas hoje)
 - Termine com: "Como está o progresso até agora?"
 
-Tom: encorajador, direto. Máximo 150 palavras.`;
+Tom: encorajador, direto. Máximo 150 palavras. Respeite o perfil fixo quando fornecido.`;
 
 export function formatMiddayCheckUserPrompt(data: MiddayCheckData): string {
   return JSON.stringify(data, null, 2);

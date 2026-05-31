@@ -4,6 +4,10 @@ import { generateRoutine, type RoutineType } from '@mika/ai';
 import { PrismaService } from '../prisma/prisma.service';
 import { TelegramService } from '../telegram/telegram.service';
 import { RoutineDataService } from './routine-data.service';
+import { MemoryService } from '../memory/memory.service';
+
+const ROUTINE_INCLUDE_FIXED_PROFILE =
+  process.env.ROUTINE_INCLUDE_FIXED_PROFILE !== 'false';
 
 type PendingRoutineKind = 'morning' | 'midday' | 'evening';
 
@@ -21,7 +25,14 @@ export class RoutinesService {
     private readonly prisma: PrismaService,
     private readonly data: RoutineDataService,
     private readonly telegram: TelegramService,
+    private readonly memory: MemoryService,
   ) {}
+
+  private async resolveFixedProfile(userId: string): Promise<string | undefined> {
+    if (!ROUTINE_INCLUDE_FIXED_PROFILE) return undefined;
+    const profile = await this.memory.getFixedProfileContext(userId);
+    return profile || undefined;
+  }
 
   async resolveUserId(userId?: string): Promise<{ userId: string; timezone: string }> {
     if (userId) {
@@ -44,7 +55,8 @@ export class RoutinesService {
   async runDailySummary(userId?: string) {
     const { userId: uid, timezone } = await this.resolveUserId(userId);
     const summaryData = await this.data.getDailySummaryData(uid, timezone);
-    const result = await generateRoutine('DAILY_SUMMARY', summaryData);
+    const fixedProfile = await this.resolveFixedProfile(uid);
+    const result = await generateRoutine('DAILY_SUMMARY', summaryData, { fixedProfile });
 
     let content = result.content;
     if (!content.includes('Qual sua prioridade principal hoje')) {
@@ -64,7 +76,8 @@ export class RoutinesService {
     await this.data.markNeglectedTasks(uid);
 
     const reviewData = await this.data.getWeeklyReviewData(uid, timezone);
-    const result = await generateRoutine('WEEKLY_REVIEW', reviewData);
+    const fixedProfile = await this.resolveFixedProfile(uid);
+    const result = await generateRoutine('WEEKLY_REVIEW', reviewData, { fixedProfile });
 
     return this.deliverRoutine(uid, 'WEEKLY_REVIEW', result.content, result.status, {
       completedCount: reviewData.completedCount,
@@ -77,7 +90,8 @@ export class RoutinesService {
   async runMiddayCheck(userId?: string) {
     const { userId: uid, timezone } = await this.resolveUserId(userId);
     const middayData = await this.data.getMiddayCheckData(uid, timezone);
-    const result = await generateRoutine('MIDDAY_CHECK', middayData);
+    const fixedProfile = await this.resolveFixedProfile(uid);
+    const result = await generateRoutine('MIDDAY_CHECK', middayData, { fixedProfile });
 
     let content = result.content;
     if (!content.includes('Como está o progresso até agora')) {
@@ -94,7 +108,8 @@ export class RoutinesService {
   async runEveningReflection(userId?: string) {
     const { userId: uid, timezone } = await this.resolveUserId(userId);
     const eveningData = await this.data.getEveningReflectionData(uid, timezone);
-    const result = await generateRoutine('EVENING_REFLECTION', eveningData);
+    const fixedProfile = await this.resolveFixedProfile(uid);
+    const result = await generateRoutine('EVENING_REFLECTION', eveningData, { fixedProfile });
 
     let content = result.content;
     if (!content.includes('Como foi seu dia')) {

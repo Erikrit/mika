@@ -2,6 +2,7 @@ import type { RetrievedChunk } from '@mika/shared';
 
 const RECENCY_DECAY_DAYS = 30;
 const LIFE_AREA_BOOST = 0.15;
+const IMPORTANCE_BOOST = 0.05;
 
 export type HybridRetrieveInput = {
   vectorResults: RetrievedChunk[];
@@ -22,7 +23,10 @@ function scoreChunk(chunk: RetrievedChunk, lifeAreaId?: string): number {
   const recency = recencyBoost(chunk.createdAt);
   const area =
     lifeAreaId && chunk.lifeAreaId === lifeAreaId ? LIFE_AREA_BOOST : 0;
-  return base + recency + area;
+  const importance =
+    chunk.importance != null ? (chunk.importance / 5) * IMPORTANCE_BOOST : 0;
+  const fixedBoost = chunk.memoryType === 'FIXED' ? 0.05 : 0;
+  return base + recency + area + importance + fixedBoost;
 }
 
 export function hybridRetrieve(input: HybridRetrieveInput): RetrievedChunk[] {

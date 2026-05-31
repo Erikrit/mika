@@ -86,10 +86,16 @@ function formatUserPrompt(
 export async function generateRoutine(
   type: RoutineType,
   data: DailySummaryData | WeeklyReviewData | MiddayCheckData | EveningReflectionData,
+  options?: { fixedProfile?: string },
 ): Promise<GenerateRoutineResult> {
   const config = ROUTINE_CONFIG[type];
   const start = Date.now();
   const attempts = 2;
+  let userContent = formatUserPrompt(type, data);
+
+  if (options?.fixedProfile?.trim()) {
+    userContent += `\n\n--- Perfil do usuário (adapte tom e estilo) ---\n${options.fixedProfile.trim()}`;
+  }
 
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
@@ -103,7 +109,7 @@ export async function generateRoutine(
           },
           messages: [
             { role: 'system', content: config.system },
-            { role: 'user', content: formatUserPrompt(type, data) },
+            { role: 'user', content: userContent },
           ],
         }),
         AI_CONFIG.timeoutMs,

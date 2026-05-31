@@ -31,7 +31,7 @@ export class ChatService {
       take: 5,
     });
 
-    const context = await this.buildContext(userId, message);
+    const context = await this.buildContext(userId, message, channel);
 
     const result = await generateReply({
       userId,
@@ -87,12 +87,27 @@ export class ChatService {
     });
   }
 
-  private async buildContext(userId: string, query: string): Promise<string> {
-    const [today, pendingTasks, memoryContext] = await Promise.all([
+  private async buildContext(
+    userId: string,
+    query: string,
+    channel: ChatChannel,
+  ): Promise<string> {
+    const [today, pendingTasks, memoryResult] = await Promise.all([
       this.dashboard.getToday(userId),
       this.tasks.findAll(userId, { status: 'todo' }),
       this.memory.retrieveContext(userId, query),
     ]);
+
+    const auditChannel = channel === 'TELEGRAM' ? 'TELEGRAM' : 'CHAT';
+    if (memoryResult.sensitiveChunkIds.length > 0) {
+      await this.memory.auditRetrievedChunks(
+        userId,
+        memoryResult.sensitiveChunkIds,
+        auditChannel,
+      );
+    }
+
+    const memoryContext = memoryResult.context;
 
     const priorityTasks = pendingTasks.filter((t) => t.priority <= 2);
     const topTasks = pendingTasks.slice(0, 10);
@@ -141,6 +156,11 @@ export class ChatService {
           : '';
         lines.push(`- [P${t.priority}] ${t.title}${due}`);
       }
+    }
+
+    if (memoryResult.fixedProfile) {
+      lines.push('\n--- Perfil fixo ---');
+      lines.push(memoryResult.fixedProfile);
     }
 
     if (memoryContext) {

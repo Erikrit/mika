@@ -13,6 +13,7 @@
     "prisma:validate": "dotenv -e ../../.env -- prisma validate",
     "db:seed": "dotenv -e ../../.env -- ts-node --project tsconfig.seed.json prisma/seed.ts",
     "db:backfill-memory": "dotenv -e ../../.env -- ts-node --project tsconfig.seed.json scripts/backfill-memory.ts",
+    "db:backfill-m4-context": "dotenv -e ../../.env -- ts-node --project tsconfig.seed.json scripts/backfill-m4-context.ts",
     "clean": "rm -rf dist"
   },
   "prisma": {
