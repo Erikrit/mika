@@ -19,6 +19,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { TelegramModule } from './modules/telegram/telegram.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { MemoryModule } from './modules/memory/memory.module';
+import { RoutinesModule } from './modules/routines/routines.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { MemoryModule } from './modules/memory/memory.module';
     DashboardModule,
     ChatModule,
     MemoryModule,
+    RoutinesModule,
     TelegramModule,
   ],
   providers: [
