@@ -29,4 +29,10 @@ export {
 } from './chunk';
 export { hybridRetrieve, formatMemoryContext, NO_MEMORY_HINT } from './retrieve';
 export { AI_CONFIG, FALLBACK_MESSAGE } from './config';
+export {
+  isPriorityIntent,
+  isUuid,
+  PRIORITY_EXPANDED_QUERY,
+  FALLBACK_SIMILARITY_THRESHOLD,
+} from './intent';
 export { SYSTEM_PROMPT } from './prompts/system';

@@ -5,7 +5,7 @@ export const AI_CONFIG = {
   maxTokens: 1000,
   timeoutMs: 30_000,
   embeddingTimeoutMs: 15_000,
-  similarityThreshold: 0.7,
+  similarityThreshold: 0.65,
   maxMemoryTokens: 2000,
 } as const;
 

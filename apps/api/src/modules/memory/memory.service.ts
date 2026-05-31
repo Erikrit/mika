@@ -1,6 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { formatMemoryContext } from '@mika/ai';
-import { chunkMarkdown, parseMarkdownFrontmatter, shouldIndexContent } from '@mika/ai';
+import {
+  FALLBACK_SIMILARITY_THRESHOLD,
+  PRIORITY_EXPANDED_QUERY,
+  formatMemoryContext,
+  chunkMarkdown,
+  parseMarkdownFrontmatter,
+  shouldIndexContent,
+  isPriorityIntent,
+  isUuid,
+} from '@mika/ai';
 import type { MemorySourceType } from '@mika/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { MemoryRepository } from './memory.repository';
@@ -19,7 +27,27 @@ export class MemoryService {
     query: string,
     lifeAreaId?: string,
   ): Promise<string> {
-    const chunks = await this.repository.hybridSearch(userId, query, lifeAreaId, 5);
+    let chunks = await this.repository.hybridSearch(userId, query, lifeAreaId, 5);
+
+    if (chunks.length === 0 && isPriorityIntent(query)) {
+      chunks = await this.repository.hybridSearch(
+        userId,
+        PRIORITY_EXPANDED_QUERY,
+        lifeAreaId,
+        5,
+      );
+    }
+
+    if (chunks.length === 0) {
+      chunks = await this.repository.hybridSearch(
+        userId,
+        isPriorityIntent(query) ? PRIORITY_EXPANDED_QUERY : query,
+        lifeAreaId,
+        5,
+        FALLBACK_SIMILARITY_THRESHOLD,
+      );
+    }
+
     return formatMemoryContext(chunks);
   }
 
@@ -31,20 +59,32 @@ export class MemoryService {
     return this.repository.listChunks(userId, lifeAreaId);
   }
 
+  private async resolveLifeArea(userId: string, lifeAreaRef?: string) {
+    if (!lifeAreaRef) return null;
+
+    if (isUuid(lifeAreaRef)) {
+      return this.prisma.lifeArea.findFirst({
+        where: { id: lifeAreaRef, userId },
+      });
+    }
+
+    return this.prisma.lifeArea.findFirst({
+      where: { slug: lifeAreaRef, userId },
+    });
+  }
+
   async importMarkdown(
     userId: string,
     filename: string,
     content: string,
-    lifeAreaSlug?: string,
+    lifeAreaRef?: string,
   ) {
     const { frontmatter, body } = parseMarkdownFrontmatter(content);
-    const areaSlug = lifeAreaSlug ?? frontmatter.area;
+    const areaRef = lifeAreaRef ?? frontmatter.area;
     let lifeAreaId: string | null = null;
 
-    if (areaSlug) {
-      const area = await this.prisma.lifeArea.findFirst({
-        where: { userId, slug: areaSlug },
-      });
+    if (areaRef) {
+      const area = await this.resolveLifeArea(userId, areaRef);
       lifeAreaId = area?.id ?? null;
     }
 

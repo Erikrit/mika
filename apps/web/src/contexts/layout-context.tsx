@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { DESKTOP_MEDIA_QUERY } from '@/hooks/use-media-query';
 
 type LayoutContextValue = {
   sidebarOpen: boolean;
@@ -12,14 +13,18 @@ type LayoutContextValue = {
 
 const LayoutContext = createContext<LayoutContextValue | null>(null);
 
+function getInitialAiHubOpen(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia(DESKTOP_MEDIA_QUERY).matches;
+}
+
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [aiHubOpen, setAiHubOpen] = useState(true);
+  const [aiHubOpen, setAiHubOpen] = useState(getInitialAiHubOpen);
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1280px)');
+    const mq = window.matchMedia(DESKTOP_MEDIA_QUERY);
     const update = () => setAiHubOpen(mq.matches);
-    update();
     mq.addEventListener('change', update);
     return () => mq.removeEventListener('change', update);
   }, []);

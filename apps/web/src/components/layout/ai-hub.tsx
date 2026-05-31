@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useIsDesktop } from '@/hooks/use-media-query';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
 import { useLayout } from '@/contexts/layout-context';
@@ -24,18 +25,6 @@ type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
 };
-
-function useIsXl() {
-  const [isXl, setIsXl] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1280px)');
-    const update = () => setIsXl(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
-  return isXl;
-}
 
 function AiHubContent() {
   const { user } = useAuth();
@@ -203,9 +192,9 @@ function AiHubContent() {
 
 export function AiHub() {
   const { aiHubOpen, setAiHubOpen } = useLayout();
-  const isXl = useIsXl();
-  const showPanel = isXl || aiHubOpen;
-  const showSheet = !isXl && aiHubOpen;
+  const isDesktop = useIsDesktop();
+  const showPanel = isDesktop || aiHubOpen;
+  const showSheet = !isDesktop && aiHubOpen;
 
   return (
     <>
@@ -215,23 +204,25 @@ export function AiHub() {
         </aside>
       )}
 
-      <Sheet open={showSheet} onOpenChange={setAiHubOpen}>
-        <SheetContent side="right" className="w-full max-w-sm border-border bg-bg-secondary p-0 xl:hidden">
-          <SheetHeader className="sr-only">
-            <SheetTitle>Assistente Mika</SheetTitle>
-          </SheetHeader>
-          <AiHubContent />
-        </SheetContent>
-      </Sheet>
+      {!isDesktop && (
+        <Sheet open={showSheet} onOpenChange={setAiHubOpen}>
+          <SheetContent side="right" className="w-full max-w-sm border-border bg-bg-secondary p-0 xl:hidden">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Assistente Mika</SheetTitle>
+            </SheetHeader>
+            <AiHubContent />
+          </SheetContent>
+        </Sheet>
+      )}
     </>
   );
 }
 
 export function AiHubToggleFab() {
   const { toggleAiHub, aiHubOpen } = useLayout();
-  const isXl = useIsXl();
+  const isDesktop = useIsDesktop();
 
-  if (isXl || aiHubOpen) return null;
+  if (isDesktop || aiHubOpen) return null;
 
   return (
     <Button

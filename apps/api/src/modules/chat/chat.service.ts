@@ -94,11 +94,15 @@ export class ChatService {
       this.memory.retrieveContext(userId, query),
     ]);
 
+    const priorityTasks = pendingTasks.filter((t) => t.priority <= 2);
     const topTasks = pendingTasks.slice(0, 10);
     const lines: string[] = [];
 
     lines.push(`Data: ${new Date().toLocaleDateString('pt-BR')}`);
     lines.push(`Tarefas atrasadas: ${today.overdueTasks}`);
+    lines.push(
+      'Prioridades podem vir de tarefas cadastradas (P1/P2) ou de notas importadas na memória.',
+    );
 
     if (today.events.length > 0) {
       lines.push('\nCompromissos de hoje:');
@@ -116,6 +120,16 @@ export class ChatService {
       lines.push('\nTarefas de hoje:');
       for (const t of today.tasks) {
         lines.push(`- [P${t.priority}] ${t.title}`);
+      }
+    }
+
+    if (priorityTasks.length > 0) {
+      lines.push('\nTarefas de alta prioridade (P1/P2):');
+      for (const t of priorityTasks.slice(0, 5)) {
+        const due = t.dueAt
+          ? ` (vence ${t.dueAt.toLocaleDateString('pt-BR')})`
+          : '';
+        lines.push(`- [P${t.priority}] ${t.title}${due}`);
       }
     }
 

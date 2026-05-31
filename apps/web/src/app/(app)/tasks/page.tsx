@@ -10,13 +10,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, CheckCircle2, Loader2 } from 'lucide-react';
+import { Plus, CheckCircle2, Loader2, Pencil, Trash2 } from 'lucide-react';
+import type { Task } from '@mika/shared';
 
 type TaskStatus = 'todo' | 'in_progress' | 'done' | 'cancelled';
 
 export default function TasksPage() {
   const [statusFilter, setStatusFilter] = useState<TaskStatus | ''>('');
-  const [showForm, setShowForm] = useState(false);
+  const [formMode, setFormMode] = useState<'create' | 'edit' | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const queryClient = useQueryClient();
 
   const { data: tasks, isLoading } = useQuery({
@@ -37,13 +39,47 @@ export default function TasksPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => tasksApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+
+  function openCreate() {
+    setEditingTask(null);
+    setFormMode('create');
+  }
+
+  function openEdit(task: Task) {
+    setEditingTask(task);
+    setFormMode('edit');
+  }
+
+  function closeForm() {
+    setFormMode(null);
+    setEditingTask(null);
+  }
+
+  function handleDelete(task: Task) {
+    if (!window.confirm(`Excluir a tarefa "${task.title}"?`)) return;
+    deleteMutation.mutate(task.id);
+  }
+
+  function handleFormSuccess() {
+    closeForm();
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+  }
+
   return (
     <div className="space-y-8">
       <PageHeader
         title="Tarefas"
         description="Gerencie suas tarefas e prioridades"
         action={
-          <Button onClick={() => setShowForm(true)} className="gap-2">
+          <Button onClick={openCreate} className="gap-2">
             <Plus className="h-4 w-4" />
             Nova tarefa
           </Button>
@@ -75,7 +111,7 @@ export default function TasksPage() {
         <MikaCard className="flex flex-col items-center py-16 text-center">
           <CheckCircle2 className="mb-3 h-10 w-10 text-text-tertiary" />
           <p className="text-text-tertiary">Nenhuma tarefa encontrada</p>
-          <Button variant="link" onClick={() => setShowForm(true)} className="mt-4">
+          <Button variant="link" onClick={openCreate} className="mt-4">
             Criar sua primeira tarefa
           </Button>
         </MikaCard>
@@ -123,6 +159,27 @@ export default function TasksPage() {
                       )}
                     </div>
                   </div>
+
+                  <div className="flex flex-shrink-0 gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => openEdit(task)}
+                      aria-label="Editar tarefa"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => handleDelete(task)}
+                      disabled={deleteMutation.isPending}
+                      aria-label="Excluir tarefa"
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </MikaCard>
             );
@@ -130,55 +187,67 @@ export default function TasksPage() {
         </div>
       )}
 
-      {showForm && (
-        <CreateTaskModal
+      {formMode && (
+        <TaskFormModal
+          mode={formMode}
+          task={editingTask ?? undefined}
           lifeAreas={lifeAreas ?? []}
-          onClose={() => setShowForm(false)}
-          onSuccess={() => {
-            setShowForm(false);
-            queryClient.invalidateQueries({ queryKey: ['tasks'] });
-            queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-          }}
+          onClose={closeForm}
+          onSuccess={handleFormSuccess}
         />
       )}
     </div>
   );
 }
 
-function CreateTaskModal({
+function TaskFormModal({
+  mode,
+  task,
   lifeAreas,
   onClose,
   onSuccess,
 }: {
+  mode: 'create' | 'edit';
+  task?: Task;
   lifeAreas: Array<{ id: string; label: string; color: string }>;
   onClose: () => void;
   onSuccess: () => void;
 }) {
   const [form, setForm] = useState({
-    title: '',
-    description: '',
-    priority: 3,
-    lifeAreaId: '',
-    dueAt: '',
+    title: task?.title ?? '',
+    description: task?.description ?? '',
+    priority: task?.priority ?? 3,
+    lifeAreaId: task?.lifeAreaId ?? '',
+    dueAt: task?.dueAt ? new Date(task.dueAt).toISOString().slice(0, 10) : '',
   });
 
   const mutation = useMutation({
-    mutationFn: () =>
-      tasksApi.create({
+    mutationFn: () => {
+      const payload = {
         title: form.title,
         description: form.description || undefined,
         priority: form.priority as 1 | 2 | 3 | 4 | 5,
         lifeAreaId: form.lifeAreaId || undefined,
         dueAt: form.dueAt ? new Date(form.dueAt) : undefined,
-        contextTags: [],
-      }),
+      };
+
+      if (mode === 'edit' && task) {
+        return tasksApi.update(task.id, payload);
+      }
+
+      return tasksApi.create({ ...payload, contextTags: [] });
+    },
     onSuccess,
   });
+
+  const isEdit = mode === 'edit';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <MikaCard className="w-full max-w-md shadow-2xl">
-        <h2 className="mb-5 text-lg font-bold text-text-primary">Nova Tarefa</h2>
+        <h2 className="mb-5 text-lg font-bold text-text-primary">
+          {isEdit ? 'Editar Tarefa' : 'Nova Tarefa'}
+        </h2>
 
         <div className="space-y-4">
           <div>
@@ -207,7 +276,9 @@ function CreateTaskModal({
               <Label className="mb-1.5">Prioridade</Label>
               <select
                 value={form.priority}
-                onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })}
+                onChange={(e) =>
+                  setForm({ ...form, priority: Number(e.target.value) as Task['priority'] })
+                }
                 className="w-full rounded-lg border border-input bg-surface px-3 py-2.5 text-sm text-text-primary focus:border-accent focus:outline-none"
               >
                 {Object.entries(PRIORITY_CONFIG).map(([v, c]) => (
@@ -253,7 +324,7 @@ function CreateTaskModal({
             className="flex-1 gap-2"
           >
             {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Criar tarefa
+            {isEdit ? 'Salvar' : 'Criar tarefa'}
           </Button>
         </div>
       </MikaCard>

@@ -1,11 +1,29 @@
 # State — Mika
 
 **Last Updated:** 2026-05-31  
-**Current Work:** M3 concluído localmente ✅ — Rotinas automáticas (F03 + F04 + meio-dia/noite)
+**Current Work:** MAINT-M1 estabilização concluída ✅ — bugs desktop, RAG prioridades, import área, UI tarefas
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-006: Hook useMediaQuery para breakpoint desktop (2026-05-31)
+
+**Decision:** Extrair `useMediaQuery` / `useIsDesktop` com lazy initializer síncrono no client  
+**Reason:** `useState(false)` + `useEffect` causava Sheet overlay bloqueando UI em desktop no 1º paint  
+**Impact:** `layout-context`, `ai-hub` e FAB compartilham mesma lógica; Sheet não monta em >=1280px
+
+### AD-007: RAG fallback em camadas para prioridades (2026-05-31)
+
+**Decision:** hybridSearch → query expandida → threshold 0.55; base threshold 0.65  
+**Reason:** Perguntas genéricas ("quais são minhas prioridades?") retornavam 0 chunks  
+**Impact:** Chat cruza tarefas P1/P2 + memória importada antes de dizer "não encontrei"
+
+### AD-008: lifeAreaRef id ou slug no import (2026-05-31)
+
+**Decision:** Backend resolve UUID (filtro UI) ou slug (frontmatter markdown)  
+**Reason:** UI enviava UUID mas service buscava só por slug  
+**Impact:** Import com área selecionada associa lifeAreaId correto
 
 ### AD-001: Stack TypeScript full-stack (2026-05-31)
 
@@ -46,13 +64,17 @@
 
 ## Active Blockers
 
-_Nenhum blocker ativo no momento._
+_Nenhum blocker ativo — MAINT-001 (desktop congelado), MAINT-002 (RAG prioridades) e MAINT-003 (import área) resolvidos em MAINT-M1._
 
 ---
 
 ## Lessons Learned
 
-_Nenhuma lição registrada ainda — projeto em fase inicial._
+### LL-001: Breakpoint SSR/hidratação com Sheet overlay (2026-05-31)
+
+**Context:** Tela congelada em desktop >=1280px após login  
+**Lesson:** Estado inicial de media query deve usar lazy initializer síncrono; não montar Sheet quando viewport é desktop  
+**Applied in:** `use-media-query.ts`, `ai-hub.tsx`
 
 ---
 
@@ -93,6 +115,7 @@ _Nenhuma lição registrada ainda — projeto em fase inicial._
 - [x] Swagger/OpenAPI em /docs ✅
 - [x] README runbook operacional atualizado ✅
 - [x] M2 F02 memória longo prazo (pgvector, worker, RAG, UI /memories) ✅
+- [x] MAINT-M1 estabilização (T001–T009): AI Hub desktop, RAG prioridades, import área, edit/delete tarefas ✅
 - [ ] T018 E2E smoke test (fora do escopo M1)
 - [ ] Configurar VPS e docker-compose.prod.yml
 

@@ -77,9 +77,10 @@ export class MemoryRepository {
     userId: string,
     queryEmbedding: number[],
     lifeAreaId?: string,
+    similarityThreshold: number = AI_CONFIG.similarityThreshold,
   ): Promise<RetrievedChunk[]> {
     const vector = embeddingToVectorLiteral(queryEmbedding);
-    const threshold = AI_CONFIG.similarityThreshold;
+    const threshold = similarityThreshold;
 
     const rows = lifeAreaId
       ? await this.prisma.$queryRaw<RawChunkRow[]>`
@@ -203,11 +204,17 @@ export class MemoryRepository {
     query: string,
     lifeAreaId?: string,
     topK = 5,
+    similarityThreshold?: number,
   ): Promise<RetrievedChunk[]> {
     let vectorResults: RetrievedChunk[] = [];
     try {
       const queryEmbedding = await generateEmbedding(query);
-      vectorResults = await this.vectorSearch(userId, queryEmbedding, lifeAreaId);
+      vectorResults = await this.vectorSearch(
+        userId,
+        queryEmbedding,
+        lifeAreaId,
+        similarityThreshold,
+      );
     } catch {
       vectorResults = [];
     }

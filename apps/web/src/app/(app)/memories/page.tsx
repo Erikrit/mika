@@ -1,19 +1,27 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Brain, Upload, Search, Loader2 } from 'lucide-react';
+import { Brain, Upload, Search, Loader2, RefreshCw } from 'lucide-react';
 import { memoryApi, lifeAreasApi } from '@/lib/api-client';
 import { PageHeader } from '@/components/ui/page-header';
 import { MikaCard } from '@/components/ui/mika-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+
+type ImportResult = { imported: number; queued?: boolean; sourceId?: string };
 
 export default function MemoriesPage() {
   const [lifeAreaFilter, setLifeAreaFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<unknown[] | null>(null);
+  const [importFeedback, setImportFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+  const [pollingHint, setPollingHint] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
@@ -22,7 +30,7 @@ export default function MemoriesPage() {
     queryFn: lifeAreasApi.list,
   });
 
-  const { data: chunks, isLoading } = useQuery({
+  const { data: chunks, isLoading, refetch } = useQuery({
     queryKey: ['memory-chunks', lifeAreaFilter],
     queryFn: () => memoryApi.listChunks(lifeAreaFilter || undefined),
   });
@@ -30,10 +38,38 @@ export default function MemoriesPage() {
   const importMutation = useMutation({
     mutationFn: (file: File) =>
       memoryApi.importMarkdown(file, lifeAreaFilter || undefined),
-    onSuccess: () => {
+    onSuccess: (result: ImportResult) => {
+      const msg =
+        result.queued === false
+          ? `${result.imported} chunk(s) importado(s).`
+          : `${result.imported} chunk(s) enviado(s) para indexação. Aguarde alguns segundos.`;
+      setImportFeedback({ type: 'success', message: msg });
       queryClient.invalidateQueries({ queryKey: ['memory-chunks'] });
+
+      let attempts = 0;
+      const poll = setInterval(() => {
+        attempts += 1;
+        queryClient.invalidateQueries({ queryKey: ['memory-chunks'] });
+        if (attempts >= 3) clearInterval(poll);
+      }, 5000);
+    },
+    onError: () => {
+      setImportFeedback({
+        type: 'error',
+        message: 'Falha ao importar o arquivo. Verifique o formato (.md) e tente novamente.',
+      });
     },
   });
+
+  useEffect(() => {
+    if (!importFeedback || importFeedback.type !== 'success') return;
+    if (chunks && chunks.length > 0) {
+      setPollingHint(false);
+      return;
+    }
+    const timer = setTimeout(() => setPollingHint(true), 30_000);
+    return () => clearTimeout(timer);
+  }, [importFeedback, chunks]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -46,7 +82,11 @@ export default function MemoriesPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) importMutation.mutate(file);
+    if (file) {
+      setImportFeedback(null);
+      setPollingHint(false);
+      importMutation.mutate(file);
+    }
     e.target.value = '';
   };
 
@@ -79,6 +119,38 @@ export default function MemoriesPage() {
           </>
         }
       />
+
+      {importFeedback && (
+        <div
+          className={cn(
+            'rounded-xl border px-4 py-3 text-sm',
+            importFeedback.type === 'success'
+              ? 'border-progress/30 bg-progress/10 text-text-primary'
+              : 'border-destructive/30 bg-destructive/10 text-destructive',
+          )}
+        >
+          {importFeedback.message}
+        </div>
+      )}
+
+      {pollingHint && (!chunks || chunks.length === 0) && (
+        <div className="rounded-xl border border-insight/30 bg-insight/5 px-4 py-3 text-sm text-text-secondary">
+          A indexação pode levar alguns segundos. Se os chunks não aparecerem, verifique se o worker
+          está rodando:{' '}
+          <code className="rounded bg-surface px-1.5 py-0.5 text-xs">
+            pnpm --filter worker dev
+          </code>
+          <Button
+            variant="link"
+            size="sm"
+            className="ml-2 h-auto p-0"
+            onClick={() => refetch()}
+          >
+            <RefreshCw className="mr-1 h-3.5 w-3.5" />
+            Atualizar
+          </Button>
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2">
         <Button
