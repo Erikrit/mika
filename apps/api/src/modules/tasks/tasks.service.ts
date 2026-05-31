@@ -69,6 +69,7 @@ export class TasksService {
         ...dto,
         status: dto.status?.toUpperCase() as never,
         energyLevel: dto.energyLevel?.toUpperCase() as never,
+        neglectedSince: null,
       },
       include: { lifeArea: true },
     });
@@ -80,7 +81,7 @@ export class TasksService {
     await this.findOne(userId, id);
     const task = await this.prisma.task.update({
       where: { id },
-      data: { status: 'DONE', completedAt: new Date() },
+      data: { status: 'DONE', completedAt: new Date(), neglectedSince: null },
     });
     await this.memoryQueue.enqueueUpsert(userId, 'TASK', id);
     return task;

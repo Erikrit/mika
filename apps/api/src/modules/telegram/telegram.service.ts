@@ -1,16 +1,32 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Bot, Context } from 'grammy';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { TasksService } from '../tasks/tasks.service';
 import { DashboardService } from '../dashboard/dashboard.service';
 import { ChatService } from '../chat/chat.service';
 import { AuthService } from '../auth/auth.service';
+import { ReflectionsService } from '../reflections/reflections.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 const TELEGRAM_MAX_LENGTH = 4096;
 
+type PendingRoutineKind = 'morning' | 'midday' | 'evening';
+
+type UserPreferences = {
+  pendingRoutine?: {
+    type: PendingRoutineKind;
+    routineRunId: string;
+    expiresAt: string;
+  };
+};
+
+const ROUTINE_TYPE_MAP: Record<PendingRoutineKind, 'morning' | 'midday' | 'evening'> = {
+  morning: 'morning',
+  midday: 'midday',
+  evening: 'evening',
+};
 @Injectable()
-export class TelegramService implements OnModuleInit {
+export class TelegramService implements OnModuleInit, OnModuleDestroy {
   private bot: Bot<Context> | null = null;
 
   constructor(
@@ -19,6 +35,7 @@ export class TelegramService implements OnModuleInit {
     private readonly dashboard: DashboardService,
     private readonly chat: ChatService,
     private readonly auth: AuthService,
+    private readonly reflections: ReflectionsService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -31,12 +48,23 @@ export class TelegramService implements OnModuleInit {
 
     this.bot = new Bot(token);
     this.registerCommands();
+    this.bot.catch((err) => {
+      this.logger.error({ err }, 'telegram bot error');
+    });
 
     if (process.env.NODE_ENV === 'production') {
       this.logger.info('Telegram bot configured for webhook mode');
     } else {
-      this.bot.start();
-      this.logger.info('Telegram bot started in polling mode');
+      await this.bot.api.deleteWebhook({ drop_pending_updates: true });
+      void this.bot.start({
+        onStart: () => this.logger.info('Telegram bot started in polling mode'),
+      });
+    }
+  }
+
+  async onModuleDestroy() {
+    if (this.bot) {
+      await this.bot.stop();
     }
   }
 
@@ -65,28 +93,8 @@ export class TelegramService implements OnModuleInit {
       );
     });
 
-    this.bot.command('vincular', async (ctx) => {
-      const chatId = ctx.from?.id;
-      if (!chatId) return;
-
-      const existingUserId = await this.getUserId(chatId);
-      if (existingUserId) {
-        await ctx.reply('✅ Sua conta já está vinculada!');
-        return;
-      }
-
-      const code = ctx.message?.text?.replace('/vincular', '').trim();
-      if (!code) {
-        await ctx.reply('ℹ️ Use: /vincular CODIGO\n\nGere o código em Configurações no app web.');
-        return;
-      }
-
-      try {
-        const result = await this.auth.linkTelegramByCode(code, String(chatId));
-        await ctx.reply(`✅ Conta vinculada com sucesso, ${result.name}! Use /ajuda para ver os comandos.`);
-      } catch {
-        await ctx.reply('❌ Código inválido ou expirado. Gere um novo código no app web.');
-      }
+    this.bot.hears(/^\/vincular(?:@[\w_]+)?(?:\s*\d{6})?\s*$/i, async (ctx) => {
+      await this.handleVincular(ctx);
     });
 
     this.bot.command('hoje', async (ctx) => {
@@ -167,15 +175,27 @@ export class TelegramService implements OnModuleInit {
 
     this.bot.on('message:text', async (ctx) => {
       const text = ctx.message.text.trim();
+
       if (text.startsWith('/')) return;
 
       const userId = await this.getUserId(ctx.from?.id);
       if (!userId) {
+        if (/^\d{6}$/.test(text)) {
+          await this.linkAccount(ctx, text);
+          return;
+        }
         await ctx.reply('❌ Conta não vinculada. Use /start para instruções de vinculação.');
         return;
       }
 
       await ctx.replyWithChatAction('typing');
+
+      const pending = await this.getPendingRoutine(userId);
+      if (pending && !this.isPendingExpired(pending.expiresAt)) {
+        await this.handleRoutineResponse(userId, pending.type, text);
+        await ctx.reply('✅ Anotado! Obrigada por compartilhar.');
+        return;
+      }
 
       try {
         const result = await this.chat.sendMessage(userId, text, 'TELEGRAM');
@@ -187,6 +207,94 @@ export class TelegramService implements OnModuleInit {
         this.logger.error({ userId, err }, 'telegram chat error');
         await ctx.reply('Estou com dificuldade agora, tente em alguns minutos');
       }
+    });
+  }
+
+  private extractLinkCode(ctx: Context): string | null {
+    const fromMatch = typeof ctx.match === 'string' ? ctx.match.trim() : '';
+    if (/^\d{6}$/.test(fromMatch)) return fromMatch;
+
+    const text = ctx.message?.text?.trim() ?? '';
+    const match = text.match(/^\/vincular(?:@[\w_]+)?\s*(\d{6})\b/i);
+    return match?.[1] ?? null;
+  }
+
+  private async handleVincular(ctx: Context) {
+    const chatId = ctx.from?.id;
+    if (!chatId) return;
+
+    const existingUserId = await this.getUserId(chatId);
+    if (existingUserId) {
+      await ctx.reply('✅ Sua conta já está vinculada!');
+      return;
+    }
+
+    const code = this.extractLinkCode(ctx);
+    if (!code) {
+      await ctx.reply('ℹ️ Use: /vincular CODIGO\n\nGere o código em Configurações no app web.');
+      return;
+    }
+
+    await this.linkAccount(ctx, code);
+  }
+
+  private async linkAccount(ctx: Context, code: string) {
+    const chatId = ctx.from?.id;
+    if (!chatId) return;
+
+    try {
+      const result = await this.auth.linkTelegramByCode(code, String(chatId));
+      await ctx.reply(`✅ Conta vinculada com sucesso, ${result.name}! Use /ajuda para ver os comandos.`);
+    } catch (err) {
+      this.logger.warn({ chatId, err }, 'telegram link failed');
+      await ctx.reply('❌ Código inválido ou expirado. Gere um novo código no app web.');
+    }
+  }
+
+  async sendToUser(userId: string, content: string): Promise<boolean> {
+    if (!this.bot) return false;
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.telegramChatId) return false;
+
+    const chunks = this.splitMessage(content);
+    for (const chunk of chunks) {
+      await this.bot.api.sendMessage(user.telegramChatId, chunk);
+    }
+    return true;
+  }
+
+  private async getPendingRoutine(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return null;
+
+    const prefs = (user.preferences ?? {}) as UserPreferences;
+    return prefs.pendingRoutine ?? null;
+  }
+
+  private isPendingExpired(expiresAt: string): boolean {
+    return new Date(expiresAt) < new Date();
+  }
+
+  private async handleRoutineResponse(
+    userId: string,
+    type: PendingRoutineKind,
+    content: string,
+  ) {
+    await this.reflections.create(userId, {
+      content,
+      routineType: ROUTINE_TYPE_MAP[type],
+    });
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return;
+
+    const prefs = { ...(user.preferences as UserPreferences) };
+    delete prefs.pendingRoutine;
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { preferences: prefs as object },
     });
   }
 
