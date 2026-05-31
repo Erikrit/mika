@@ -74,6 +74,42 @@ packages/ai   → Prompts, RAG utilities
 - **Privacy:** Dados pessoais sensíveis — preferência por infraestrutura própria (LGPD-ready)
 - **Portabilidade:** Web responsivo (desktop, tablet, celular) + Telegram como canal mobile
 
-## Visão Final
+## Visão de Longo Prazo
 
-Não é uma ToDo List. É um segundo cérebro digital que organiza, prioriza, recorda, alerta e apoia decisões — reduzindo carga mental e permitindo foco no que realmente importa.
+O Mika não será apenas um chatbot.
+
+A visão final é construir um Companion Operating System capaz de acompanhar o usuário em qualquer dispositivo.
+
+Evolução prevista:
+
+Fase 1 (Atual)
+- Web
+- Telegram
+- Memória persistente
+- Rotinas inteligentes
+
+Fase 2
+- Aplicativo Android
+- Operação local e online
+- Notificações nativas
+- Widgets inteligentes
+
+Fase 3
+- Assistente por voz
+- Wake word personalizada
+- Conversas contínuas
+
+Fase 4
+- Integração Alexa
+
+Fase 5
+- Integração Google Home
+
+Fase 6
+- Casa inteligente
+- Automações domésticas
+- Controle de dispositivos IoT
+
+Objetivo final:
+
+Transformar Mika em um sistema operacional pessoal focado em organização, memória, produtividade e tomada de decisões.

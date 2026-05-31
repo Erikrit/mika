@@ -148,3 +148,34 @@
 | 3 | Telegram Bot básico | Canal de uso imediato no celular |
 | 4 | OpenAI integração básica | Valor percebido desde cedo |
 | 5 | UI web mínima (PWA) | Visualização desktop/tablet |
+
+
+# M5 - Android Companion
+
+Status: Planejado
+
+Objetivo:
+
+Disponibilizar Mika como aplicativo Android.
+
+Funcionalidades:
+
+- Login
+- Dashboard
+- Chat
+- Memórias
+- Tarefas
+- Projetos
+- Notificações push
+- Rotinas diárias
+- Reflexões
+
+Tecnologia:
+
+- React Native
+ou
+- Flutter (avaliar)
+
+Critério de sucesso:
+
+Usuário conseguir utilizar Mika integralmente sem acessar versão web.
