@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { CurrentUser, type AuthUser } from '../../common/decorators/current-user.decorator';
 import { createZodDto } from 'nestjs-zod';
@@ -9,6 +10,8 @@ class UpdateEventDto extends createZodDto(UpdateEventSchema) {}
 class EventFiltersDto extends createZodDto(EventFiltersSchema) {}
 
 @Controller('events')
+@ApiTags('events')
+@ApiBearerAuth()
 export class EventsController {
   constructor(private readonly service: EventsService) {}
 

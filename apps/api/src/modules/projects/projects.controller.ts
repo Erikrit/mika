@@ -1,6 +1,7 @@
 import {
   Controller, Get, Post, Patch, Delete, Body, Param,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { CurrentUser, type AuthUser } from '../../common/decorators/current-user.decorator';
 import { createZodDto } from 'nestjs-zod';
@@ -10,6 +11,8 @@ class CreateProjectDto extends createZodDto(CreateProjectSchema) {}
 class UpdateProjectDto extends createZodDto(UpdateProjectSchema) {}
 
 @Controller('projects')
+@ApiTags('projects')
+@ApiBearerAuth()
 export class ProjectsController {
   constructor(private readonly service: ProjectsService) {}
 

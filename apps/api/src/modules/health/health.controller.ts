@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   HealthCheck,
   HealthCheckService,
@@ -9,6 +10,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('health')
+@ApiTags('health')
 export class HealthController {
   constructor(
     private readonly health: HealthCheckService,
@@ -18,6 +20,7 @@ export class HealthController {
   @Get()
   @Public()
   @HealthCheck()
+  @ApiOperation({ summary: 'Health check completo (database)' })
   async check() {
     return this.health.check([
       async (): Promise<HealthIndicatorResult> => {
@@ -33,6 +36,7 @@ export class HealthController {
 
   @Get('ping')
   @Public()
+  @ApiOperation({ summary: 'Ping simples' })
   ping() {
     return { status: 'ok', timestamp: new Date().toISOString() };
   }

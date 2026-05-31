@@ -46,3 +46,13 @@ export const eventsApi = {
   list: (params?: Record<string, string>) => api.get('/events', { params }).then(r => r.data),
   create: (data: unknown) => api.post('/events', data).then(r => r.data),
 };
+
+export const chatApi = {
+  sendMessage: (message: string, sessionId?: string) =>
+    api
+      .post<{ sessionId: string; reply: string; createdAt: string }>('/chat/message', {
+        message,
+        sessionId,
+      })
+      .then((r) => r.data),
+};

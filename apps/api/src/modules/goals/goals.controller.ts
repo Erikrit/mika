@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GoalsService } from './goals.service';
 import { CurrentUser, type AuthUser } from '../../common/decorators/current-user.decorator';
 import { createZodDto } from 'nestjs-zod';
@@ -8,6 +9,8 @@ class CreateGoalDto extends createZodDto(CreateGoalSchema) {}
 class UpdateGoalDto extends createZodDto(UpdateGoalSchema) {}
 
 @Controller('goals')
+@ApiTags('goals')
+@ApiBearerAuth()
 export class GoalsController {
   constructor(private readonly service: GoalsService) {}
 

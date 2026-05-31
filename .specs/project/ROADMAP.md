@@ -1,7 +1,7 @@
 # Roadmap — Mika
 
 **Current Milestone:** M1 — Fundação  
-**Status:** Planning
+**Status:** Done (local)
 
 ---
 
@@ -9,32 +9,36 @@
 
 **Goal:** Usuário consegue cadastrar informações centralizadas e interagir com Mika via Telegram com IA básica.  
 **Target:** 4–6 semanas (part-time)  
-**Critério de done:** CRUD completo F01 + bot Telegram respondendo + PostgreSQL rodando em Docker
+**Critério de done:** CRUD completo F01 + bot Telegram respondendo + PostgreSQL rodando em Docker + IA básica + Swagger
 
 ### Features
 
-**F01 — Centralização de Informações** — PLANNED
+**F01 — Centralização de Informações** — DONE (local)
 
 - CRUD de objetivos, tarefas, projetos, eventos, reflexões
 - Metas financeiras básicas (valor alvo, prazo, status)
 - Categorização por área de vida (LifeArea)
 - API REST documentada + UI web mínima
 
-**Telegram Bot (canal MVP)** — PLANNED
+**Telegram Bot (canal MVP)** — DONE (local)
 
 - Receber mensagens e comandos básicos
 - Consultar tarefas e eventos do dia
 - Registrar tarefa/reflexão via chat
+- Vinculação de conta via /vincular CODIGO
+- Chat inteligente via OpenAI
 
-**OpenAI Integração Básica** — PLANNED
+**OpenAI Integração Básica** — DONE (local)
 
-- Respostas conversacionais simples
-- Contexto limitado à sessão (memória longa vem em M2)
+- Respostas conversacionais simples (gpt-4o-mini)
+- Contexto limitado à sessão + dashboard (memória longa vem em M2)
+- AI Hub web + Telegram unificados via ChatModule
 
-**Infra Docker** — PLANNED
+**Infra Docker** — DONE (local dev)
 
-- PostgreSQL + Redis + API + Web + n8n (skeleton)
-- Deploy em VPS com docker-compose
+- PostgreSQL + Redis + API + Web
+- Runbook operacional no README
+- Deploy VPS pendente (próximo milestone)
 
 ---
 

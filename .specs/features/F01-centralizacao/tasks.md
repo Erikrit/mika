@@ -2,7 +2,7 @@
 
 **Spec**: `.specs/features/F01-centralizacao/spec.md`  
 **Design**: `.specs/features/F01-centralizacao/design.md`  
-**Status**: Ready for execution  
+**Status:** Done (local) — T001–T017 concluídos; T018 pendente (fora do escopo M1)  
 **Total tasks:** 18
 
 ---
@@ -38,7 +38,7 @@ graph TD
 
 ## T001 — Monorepo Setup
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** —  
 **Depends on:** —
 
@@ -65,7 +65,7 @@ graph TD
 
 ## T002 — Docker Dev Environment
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** —  
 **Depends on:** T001
 
@@ -88,7 +88,7 @@ graph TD
 
 ## T003 — Prisma Schema & Migrations
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** CENT-10  
 **Depends on:** T002
 
@@ -110,7 +110,7 @@ graph TD
 
 ## T004 — NestJS Bootstrap
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** —  
 **Depends on:** T003
 
@@ -134,7 +134,7 @@ graph TD
 
 ## T005 — LifeAreas Seed
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** CENT-10  
 **Depends on:** T003
 
@@ -156,7 +156,7 @@ graph TD
 
 ## T006 — TasksModule CRUD
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** CENT-01, CENT-02  
 **Depends on:** T004, T005
 
@@ -181,7 +181,7 @@ graph TD
 
 ## T007 — ProjectsModule CRUD
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** CENT-03, CENT-04  
 **Depends on:** T004, T005
 
@@ -204,7 +204,7 @@ graph TD
 
 ## T008 — GoalsModule CRUD
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** CENT-05  
 **Depends on:** T004, T005
 
@@ -225,7 +225,7 @@ graph TD
 
 ## T009 — EventsModule CRUD
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** CENT-06  
 **Depends on:** T004
 
@@ -247,7 +247,7 @@ graph TD
 
 ## T010 — ReflectionsModule (Encrypted)
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** CENT-07  
 **Depends on:** T004
 
@@ -270,7 +270,7 @@ graph TD
 
 ## T011 — FinanceGoalsModule (Encrypted)
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** CENT-08  
 **Depends on:** T004, T010
 
@@ -291,7 +291,7 @@ graph TD
 
 ## T012 — Dashboard Endpoint
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** CENT-01, CENT-06  
 **Depends on:** T006, T007, T009
 
@@ -313,7 +313,7 @@ graph TD
 
 ## T013 — Auth JWT Basic
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** —  
 **Depends on:** T004
 
@@ -334,7 +334,7 @@ graph TD
 
 ## T014 — Next.js Bootstrap
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** —  
 **Depends on:** T001, T013
 
@@ -357,7 +357,7 @@ graph TD
 
 ## T015 — Dashboard UI
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** CENT-09  
 **Depends on:** T012, T014
 
@@ -380,7 +380,7 @@ graph TD
 
 ## T016 — Tasks UI (CRUD)
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** CENT-09  
 **Depends on:** T006, T015
 
@@ -404,7 +404,7 @@ graph TD
 
 ## T017 — Telegram Bot Basic
 
-**Status:** Pending  
+**Status:** Done  
 **Requirement IDs:** —  
 **Depends on:** T006, T009, T012
 
@@ -468,15 +468,15 @@ graph TD
 
 | Requirement ID | Task(s) | Status |
 |----------------|---------|--------|
-| CENT-01 | T006, T012 | Pending |
-| CENT-02 | T006 | Pending |
-| CENT-03 | T007 | Pending |
-| CENT-04 | T007 | Pending |
-| CENT-05 | T008 | Pending |
-| CENT-06 | T009, T012 | Pending |
-| CENT-07 | T010 | Pending |
-| CENT-08 | T011 | Pending |
-| CENT-09 | T015, T016 | Pending |
-| CENT-10 | T005 | Pending |
+| CENT-01 | T006, T012 | Done |
+| CENT-02 | T006 | Done |
+| CENT-03 | T007 | Done |
+| CENT-04 | T007 | Done |
+| CENT-05 | T008 | Done |
+| CENT-06 | T009, T012 | Done |
+| CENT-07 | T010 | Done |
+| CENT-08 | T011 | Done |
+| CENT-09 | T015, T016 | Done |
+| CENT-10 | T005 | Done |
 
 **Coverage:** 10 total, 10 mapped to tasks, 0 unmapped ✅

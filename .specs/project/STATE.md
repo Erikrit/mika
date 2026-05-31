@@ -1,7 +1,7 @@
 # State — Mika
 
 **Last Updated:** 2026-05-31  
-**Current Work:** F01-centralizacao — Sprint 1-5 CONCLUÍDOS ✅ — Pronto para rodar em Docker
+**Current Work:** M1 concluído localmente ✅ — OpenAI + Telegram linking + Swagger + AI Hub chat
 
 ---
 
@@ -87,10 +87,12 @@ _Nenhuma lição registrada ainda — projeto em fase inicial._
 - [x] T013 Auth JWT básico ✅
 - [x] T014-T016 Next.js bootstrap + Dashboard UI + Tasks UI ✅
 - [x] T017 Telegram Bot básico ✅
-- [ ] Subir Docker Compose: `cd docker && docker compose up -d`
-- [ ] Rodar migration: `pnpm prisma:migrate`
-- [ ] Rodar seed: `pnpm prisma:seed`
-- [ ] Criar bot Telegram e configurar TELEGRAM_BOT_TOKEN no .env
+- [x] Vinculação Telegram (/vincular + settings web) ✅
+- [x] OpenAI integração básica (packages/ai + ChatModule) ✅
+- [x] AI Hub web chat habilitado ✅
+- [x] Swagger/OpenAPI em /docs ✅
+- [x] README runbook operacional atualizado ✅
+- [ ] T018 E2E smoke test (fora do escopo M1)
 - [ ] Configurar VPS e docker-compose.prod.yml
 
 ---

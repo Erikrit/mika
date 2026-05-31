@@ -17,6 +17,7 @@ import { ReflectionsModule } from './modules/reflections/reflections.module';
 import { FinanceGoalsModule } from './modules/finance-goals/finance-goals.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { TelegramModule } from './modules/telegram/telegram.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { TelegramModule } from './modules/telegram/telegram.module';
     ReflectionsModule,
     FinanceGoalsModule,
     DashboardModule,
+    ChatModule,
     TelegramModule,
   ],
   providers: [

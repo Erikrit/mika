@@ -1,0 +1,20 @@
+{
+  "name": "@mika/ai",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src/",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.3.22",
+    "ai": "^4.3.16"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "typescript": "^5.8.3"
+  }
+}

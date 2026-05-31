@@ -93,6 +93,11 @@ export const LoginSchema = z.object({
   password: z.string().min(6),
 });
 
+export const ChatMessageSchema = z.object({
+  message: z.string().min(1).max(4000),
+  sessionId: z.string().uuid().optional(),
+});
+
 export type CreateTaskDto = z.infer<typeof CreateTaskSchema>;
 export type UpdateTaskDto = z.infer<typeof UpdateTaskSchema>;
 export type TaskFilters = z.infer<typeof TaskFiltersSchema>;
@@ -107,3 +112,4 @@ export type CreateReflectionDto = z.infer<typeof CreateReflectionSchema>;
 export type CreateFinanceGoalDto = z.infer<typeof CreateFinanceGoalSchema>;
 export type UpdateFinanceGoalDto = z.infer<typeof UpdateFinanceGoalSchema>;
 export type LoginDto = z.infer<typeof LoginSchema>;
+export type ChatMessageDto = z.infer<typeof ChatMessageSchema>;

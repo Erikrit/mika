@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FinanceGoalsService } from './finance-goals.service';
 import { CurrentUser, type AuthUser } from '../../common/decorators/current-user.decorator';
 import { createZodDto } from 'nestjs-zod';
@@ -8,6 +9,8 @@ class CreateFinanceGoalDto extends createZodDto(CreateFinanceGoalSchema) {}
 class UpdateFinanceGoalDto extends createZodDto(UpdateFinanceGoalSchema) {}
 
 @Controller('finance-goals')
+@ApiTags('finance-goals')
+@ApiBearerAuth()
 export class FinanceGoalsController {
   constructor(private readonly service: FinanceGoalsService) {}
 
@@ -17,6 +20,7 @@ export class FinanceGoalsController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Listar metas financeiras (valores descriptografados na resposta)' })
   findAll(@CurrentUser() user: AuthUser) {
     return this.service.findAll(user.id);
   }

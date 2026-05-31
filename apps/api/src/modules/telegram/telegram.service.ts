@@ -3,7 +3,11 @@ import { Bot, Context } from 'grammy';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { TasksService } from '../tasks/tasks.service';
 import { DashboardService } from '../dashboard/dashboard.service';
+import { ChatService } from '../chat/chat.service';
+import { AuthService } from '../auth/auth.service';
 import { PrismaService } from '../prisma/prisma.service';
+
+const TELEGRAM_MAX_LENGTH = 4096;
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
@@ -13,6 +17,8 @@ export class TelegramService implements OnModuleInit {
     @InjectPinoLogger(TelegramService.name) private readonly logger: PinoLogger,
     private readonly tasks: TasksService,
     private readonly dashboard: DashboardService,
+    private readonly chat: ChatService,
+    private readonly auth: AuthService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -42,7 +48,10 @@ export class TelegramService implements OnModuleInit {
       if (!userId) {
         await ctx.reply(
           '👋 Olá! Sou a Mika, sua assistente pessoal.\n\n' +
-          'Para conectar sua conta, acesse o app web e vincule seu Telegram nas configurações.',
+          'Para conectar sua conta:\n' +
+          '1. Acesse o app web → Configurações\n' +
+          '2. Gere um código de vinculação\n' +
+          '3. Envie aqui: /vincular CODIGO',
         );
         return;
       }
@@ -51,13 +60,38 @@ export class TelegramService implements OnModuleInit {
         '/hoje — tarefas e eventos de hoje\n' +
         '/prioridades — top 5 tarefas por prioridade\n' +
         '/tarefa [texto] — criar nova tarefa\n' +
-        '/ajuda — ver todos os comandos',
+        '/ajuda — ver todos os comandos\n\n' +
+        '💬 Ou envie uma mensagem para conversar comigo!',
       );
+    });
+
+    this.bot.command('vincular', async (ctx) => {
+      const chatId = ctx.from?.id;
+      if (!chatId) return;
+
+      const existingUserId = await this.getUserId(chatId);
+      if (existingUserId) {
+        await ctx.reply('✅ Sua conta já está vinculada!');
+        return;
+      }
+
+      const code = ctx.message?.text?.replace('/vincular', '').trim();
+      if (!code) {
+        await ctx.reply('ℹ️ Use: /vincular CODIGO\n\nGere o código em Configurações no app web.');
+        return;
+      }
+
+      try {
+        const result = await this.auth.linkTelegramByCode(code, String(chatId));
+        await ctx.reply(`✅ Conta vinculada com sucesso, ${result.name}! Use /ajuda para ver os comandos.`);
+      } catch {
+        await ctx.reply('❌ Código inválido ou expirado. Gere um novo código no app web.');
+      }
     });
 
     this.bot.command('hoje', async (ctx) => {
       const userId = await this.getUserId(ctx.from?.id);
-      if (!userId) return ctx.reply('❌ Conta não vinculada. Use /start para começar.');
+      if (!userId) return ctx.reply('❌ Conta não vinculada. Use /start para instruções.');
 
       const data = await this.dashboard.getToday(userId);
 
@@ -91,7 +125,7 @@ export class TelegramService implements OnModuleInit {
 
     this.bot.command('tarefa', async (ctx) => {
       const userId = await this.getUserId(ctx.from?.id);
-      if (!userId) return ctx.reply('❌ Conta não vinculada. Use /start para começar.');
+      if (!userId) return ctx.reply('❌ Conta não vinculada. Use /start para instruções.');
 
       const text = ctx.message?.text?.replace('/tarefa', '').trim();
       if (!text) return ctx.reply('ℹ️ Use: /tarefa [texto da tarefa]');
@@ -102,7 +136,7 @@ export class TelegramService implements OnModuleInit {
 
     this.bot.command('prioridades', async (ctx) => {
       const userId = await this.getUserId(ctx.from?.id);
-      if (!userId) return ctx.reply('❌ Conta não vinculada. Use /start para começar.');
+      if (!userId) return ctx.reply('❌ Conta não vinculada. Use /start para instruções.');
 
       const tasks = await this.tasks.findAll(userId, { status: 'todo' });
       const top5 = tasks.slice(0, 5);
@@ -124,18 +158,47 @@ export class TelegramService implements OnModuleInit {
         '/hoje — resumo do dia (tarefas + eventos)\n' +
         '/prioridades — top 5 tarefas prioritárias\n' +
         '/tarefa [texto] — criar nova tarefa\n' +
+        '/vincular CODIGO — conectar conta web\n' +
         '/ajuda — esta mensagem\n\n' +
-        '💡 Em breve: chat inteligente com memória de longo prazo!',
+        '💬 Envie uma mensagem de texto para conversar comigo!',
         { parse_mode: 'Markdown' },
       );
     });
 
-    this.bot.on('message', async (ctx) => {
-      await ctx.reply(
-        '🤔 Ainda estou aprendendo! Use /ajuda para ver os comandos disponíveis.\n\n' +
-        'Em breve poderei responder perguntas contextuais! 🚀',
-      );
+    this.bot.on('message:text', async (ctx) => {
+      const text = ctx.message.text.trim();
+      if (text.startsWith('/')) return;
+
+      const userId = await this.getUserId(ctx.from?.id);
+      if (!userId) {
+        await ctx.reply('❌ Conta não vinculada. Use /start para instruções de vinculação.');
+        return;
+      }
+
+      await ctx.replyWithChatAction('typing');
+
+      try {
+        const result = await this.chat.sendMessage(userId, text, 'TELEGRAM');
+        const chunks = this.splitMessage(result.reply);
+        for (const chunk of chunks) {
+          await ctx.reply(chunk);
+        }
+      } catch (err) {
+        this.logger.error({ userId, err }, 'telegram chat error');
+        await ctx.reply('Estou com dificuldade agora, tente em alguns minutos');
+      }
     });
+  }
+
+  private splitMessage(text: string): string[] {
+    if (text.length <= TELEGRAM_MAX_LENGTH) return [text];
+    const chunks: string[] = [];
+    let remaining = text;
+    while (remaining.length > 0) {
+      chunks.push(remaining.slice(0, TELEGRAM_MAX_LENGTH));
+      remaining = remaining.slice(TELEGRAM_MAX_LENGTH);
+    }
+    return chunks;
   }
 
   private async getUserId(telegramChatId?: number): Promise<string | null> {
