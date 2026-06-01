@@ -59,16 +59,29 @@ function AiHubContent() {
 
     setInput('');
     setError(null);
-    setMessages((prev) => [...prev, { role: 'user', content: message }]);
+    setMessages((prev) => [
+      ...prev,
+      { role: 'user', content: message },
+      { role: 'assistant', content: '' },
+    ]);
     setLoading(true);
 
     try {
-      const result = await chatApi.sendMessage(message, sessionId);
+      const result = await chatApi.streamMessage(message, sessionId, (token) => {
+        setMessages((prev) => {
+          const next = [...prev];
+          const lastIdx = next.length - 1;
+          const last = next[lastIdx];
+          if (last?.role === 'assistant') {
+            next[lastIdx] = { ...last, content: last.content + token };
+          }
+          return next;
+        });
+      });
       setSessionId(result.sessionId);
-      setMessages((prev) => [...prev, { role: 'assistant', content: result.reply }]);
     } catch {
       setError('Não foi possível enviar a mensagem. Tente novamente.');
-      setMessages((prev) => prev.slice(0, -1));
+      setMessages((prev) => prev.slice(0, -2));
     } finally {
       setLoading(false);
     }

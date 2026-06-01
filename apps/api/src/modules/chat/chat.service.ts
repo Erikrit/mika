@@ -1,20 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { generateReply } from '@mika/ai';
+import {
+  generateReplyWithTools,
+  streamReplyWithTools,
+  summarizeOlderMessages,
+} from '@mika/ai';
 import { PrismaService } from '../prisma/prisma.service';
-import { DashboardService } from '../dashboard/dashboard.service';
-import { TasksService } from '../tasks/tasks.service';
 import { MemoryService } from '../memory/memory.service';
+import { ChatToolExecutorService } from './chat-tool-executor.service';
 import type { ChatChannel } from '@prisma/client';
+import type { Response } from 'express';
+
+const RECENT_HISTORY = 5;
+const SUMMARIZE_THRESHOLD = 20;
 
 @Injectable()
 export class ChatService {
   constructor(
     @InjectPinoLogger(ChatService.name) private readonly logger: PinoLogger,
     private readonly prisma: PrismaService,
-    private readonly dashboard: DashboardService,
-    private readonly tasks: TasksService,
     private readonly memory: MemoryService,
+    private readonly toolExecutor: ChatToolExecutorService,
   ) {}
 
   async sendMessage(
@@ -24,27 +30,16 @@ export class ChatService {
     sessionId?: string,
   ) {
     const session = await this.getOrCreateSession(userId, channel, sessionId);
+    const history = await this.prepareHistory(session.id);
+    const context = await this.buildLightContext(userId);
+    const executors = this.toolExecutor.createExecutors(userId, channel);
 
-    const history = await this.prisma.chatMessage.findMany({
-      where: { sessionId: session.id },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-    });
-
-    const context = await this.buildContext(userId, message, channel);
-
-    const result = await generateReply({
-      userId,
+    const result = await generateReplyWithTools({
       channel: channel === 'TELEGRAM' ? 'telegram' : 'web',
       context,
-      history: history
-        .reverse()
-        .filter((m) => m.role === 'USER' || m.role === 'ASSISTANT')
-        .map((m) => ({
-          role: m.role === 'USER' ? ('user' as const) : ('assistant' as const),
-          content: m.content,
-        })),
+      history,
       message,
+      executors,
     });
 
     this.logger.info(
@@ -53,20 +48,64 @@ export class ChatService {
     );
 
     const now = new Date();
-    await this.prisma.$transaction([
-      this.prisma.chatMessage.create({
-        data: { sessionId: session.id, role: 'USER', content: message },
-      }),
-      this.prisma.chatMessage.create({
-        data: { sessionId: session.id, role: 'ASSISTANT', content: result.reply },
-      }),
-      this.prisma.chatSession.update({
-        where: { id: session.id },
-        data: { updatedAt: now },
-      }),
-    ]);
+    await this.persistExchange(session.id, message, result.reply, now);
 
     return { sessionId: session.id, reply: result.reply, createdAt: now.toISOString() };
+  }
+
+  async streamMessage(
+    userId: string,
+    message: string,
+    res: Response,
+    sessionId?: string,
+  ): Promise<void> {
+    const session = await this.getOrCreateSession(userId, 'WEB', sessionId);
+    const history = await this.prepareHistory(session.id);
+    const context = await this.buildLightContext(userId);
+    const executors = this.toolExecutor.createExecutors(userId, 'WEB');
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders?.();
+
+    const stream = streamReplyWithTools({
+      channel: 'web',
+      context,
+      history,
+      message,
+      executors,
+    });
+
+    let fullReply = '';
+
+    try {
+      for await (const chunk of stream.textStream) {
+        fullReply += chunk;
+        res.write(`data: ${JSON.stringify({ token: chunk })}\n\n`);
+      }
+
+      const now = new Date();
+      await this.persistExchange(session.id, message, fullReply, now);
+
+      res.write(
+        `data: ${JSON.stringify({
+          done: true,
+          sessionId: session.id,
+          reply: fullReply,
+          createdAt: now.toISOString(),
+        })}\n\n`,
+      );
+    } catch (err) {
+      this.logger.error({ userId, err }, 'chat stream error');
+      res.write(
+        `data: ${JSON.stringify({
+          error: 'Estou com dificuldade agora, tente em alguns minutos',
+        })}\n\n`,
+      );
+    } finally {
+      res.end();
+    }
   }
 
   private async getOrCreateSession(
@@ -87,87 +126,72 @@ export class ChatService {
     });
   }
 
-  private async buildContext(
-    userId: string,
-    query: string,
-    channel: ChatChannel,
-  ): Promise<string> {
-    const [today, pendingTasks, memoryResult] = await Promise.all([
-      this.dashboard.getToday(userId),
-      this.tasks.findAll(userId, { status: 'todo' }),
-      this.memory.retrieveContext(userId, query),
-    ]);
+  private async prepareHistory(sessionId: string) {
+    const all = await this.prisma.chatMessage.findMany({
+      where: { sessionId },
+      orderBy: { createdAt: 'asc' },
+    });
 
-    const auditChannel = channel === 'TELEGRAM' ? 'TELEGRAM' : 'CHAT';
-    if (memoryResult.sensitiveChunkIds.length > 0) {
-      await this.memory.auditRetrievedChunks(
-        userId,
-        memoryResult.sensitiveChunkIds,
-        auditChannel,
-      );
-    }
-
-    const memoryContext = memoryResult.context;
-
-    const priorityTasks = pendingTasks.filter((t) => t.priority <= 2);
-    const topTasks = pendingTasks.slice(0, 10);
-    const lines: string[] = [];
-
-    lines.push(`Data: ${new Date().toLocaleDateString('pt-BR')}`);
-    lines.push(`Tarefas atrasadas: ${today.overdueTasks}`);
-    lines.push(
-      'Prioridades podem vir de tarefas cadastradas (P1/P2) ou de notas importadas na memória.',
+    const conversational = all.filter(
+      (m) => m.role === 'USER' || m.role === 'ASSISTANT',
     );
 
-    if (today.events.length > 0) {
-      lines.push('\nCompromissos de hoje:');
-      for (const e of today.events) {
-        const time = e.isAllDay
-          ? 'dia todo'
-          : e.startsAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        lines.push(`- ${time}: ${e.title}`);
-      }
-    } else {
-      lines.push('\nNenhum compromisso hoje.');
+    if (conversational.length <= SUMMARIZE_THRESHOLD) {
+      return conversational.slice(-RECENT_HISTORY).map((m) => ({
+        role: m.role === 'USER' ? ('user' as const) : ('assistant' as const),
+        content: m.content,
+      }));
     }
 
-    if (today.tasks.length > 0) {
-      lines.push('\nTarefas de hoje:');
-      for (const t of today.tasks) {
-        lines.push(`- [P${t.priority}] ${t.title}`);
-      }
-    }
+    const older = conversational.slice(0, -RECENT_HISTORY);
+    const recent = conversational.slice(-RECENT_HISTORY);
 
-    if (priorityTasks.length > 0) {
-      lines.push('\nTarefas de alta prioridade (P1/P2):');
-      for (const t of priorityTasks.slice(0, 5)) {
-        const due = t.dueAt
-          ? ` (vence ${t.dueAt.toLocaleDateString('pt-BR')})`
-          : '';
-        lines.push(`- [P${t.priority}] ${t.title}${due}`);
-      }
-    }
+    const summary = await summarizeOlderMessages(
+      older.map((m) => ({
+        role: m.role === 'USER' ? ('user' as const) : ('assistant' as const),
+        content: m.content,
+      })),
+    );
 
-    if (topTasks.length > 0) {
-      lines.push('\nTop tarefas pendentes por prioridade:');
-      for (const t of topTasks) {
-        const due = t.dueAt
-          ? ` (vence ${t.dueAt.toLocaleDateString('pt-BR')})`
-          : '';
-        lines.push(`- [P${t.priority}] ${t.title}${due}`);
-      }
-    }
+    return [
+      {
+        role: 'assistant' as const,
+        content: `[Resumo da conversa anterior]: ${summary}`,
+      },
+      ...recent.map((m) => ({
+        role: m.role === 'USER' ? ('user' as const) : ('assistant' as const),
+        content: m.content,
+      })),
+    ];
+  }
 
-    if (memoryResult.fixedProfile) {
+  private async buildLightContext(userId: string): Promise<string> {
+    const fixedProfile = await this.memory.getFixedProfileContext(userId);
+    const lines = [`Data: ${new Date().toLocaleDateString('pt-BR')}`];
+    if (fixedProfile) {
       lines.push('\n--- Perfil fixo ---');
-      lines.push(memoryResult.fixedProfile);
+      lines.push(fixedProfile);
     }
-
-    if (memoryContext) {
-      lines.push('\n--- Memória ---');
-      lines.push(memoryContext);
-    }
-
     return lines.join('\n');
+  }
+
+  private async persistExchange(
+    sessionId: string,
+    userMessage: string,
+    assistantReply: string,
+    now: Date,
+  ) {
+    await this.prisma.$transaction([
+      this.prisma.chatMessage.create({
+        data: { sessionId, role: 'USER', content: userMessage },
+      }),
+      this.prisma.chatMessage.create({
+        data: { sessionId, role: 'ASSISTANT', content: assistantReply },
+      }),
+      this.prisma.chatSession.update({
+        where: { id: sessionId },
+        data: { updatedAt: now },
+      }),
+    ]);
   }
 }

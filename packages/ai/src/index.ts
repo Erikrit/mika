@@ -1,5 +1,17 @@
 export { generateReply } from './generate-reply';
 export type { ChatMessage, GenerateReplyInput, GenerateReplyResult } from './generate-reply';
+export {
+  generateReplyWithTools,
+  streamReplyWithTools,
+} from './generate-reply-with-tools';
+export type {
+  GenerateReplyWithToolsInput,
+  GenerateReplyWithToolsResult,
+  StreamReplyWithToolsInput,
+} from './generate-reply-with-tools';
+export { summarizeOlderMessages } from './summarize-history';
+export type { ChatToolExecutors } from './tools/types';
+export { buildChatTools } from './tools/chat-tools';
 export { generateRoutine } from './generate-routine';
 export type {
   DailySummaryData,

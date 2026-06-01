@@ -6,16 +6,17 @@ Erik precisa conversar naturalmente com Mika para obter respostas contextualizad
 
 ## Goals
 
-- [ ] Chat conversacional via web e Telegram
-- [ ] Respostas contextualizadas com dados reais (tasks, events, goals, memory)
-- [ ] Tool calling para consultas e ações (criar tarefa, buscar memória)
-- [ ] Streaming de respostas na web
+- [x] Chat conversacional via web e Telegram
+- [x] Respostas contextualizadas com dados reais (tasks, events, goals, memory)
+- [x] Tool calling para consultas e ações (criar tarefa, buscar memória)
+- [x] Streaming de respostas na web
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
 | Voz / áudio | Future |
+| Consultas financeiras no chat (`get_finance_goals`) | v2/v3 (AD-013) |
 | Multi-idioma | v2 |
 | Chat entre usuários | N/A (single user) |
 | Decisões autônomas (Mika age sozinha) | Future (F08) |
@@ -74,6 +75,8 @@ Erik precisa conversar naturalmente com Mika para obter respostas contextualizad
 
 **User Story**: As Erik, I want to ask about my financial goals and get a summary so that I track progress without opening spreadsheets.
 
+**Status:** Adiado v2/v3 (AD-013) — tool removida do chat v1; API `FinanceGoalsModule` permanece.
+
 **Acceptance Criteria**:
 
 1. WHEN user asks "Como está minha situação financeira?" THEN system SHALL call get_finance_goals
@@ -122,17 +125,17 @@ Erik precisa conversar naturalmente com Mika para obter respostas contextualizad
 
 | Requirement ID | Story | Phase | Status |
 |----------------|-------|-------|--------|
-| CHAT-01 | P1: Prioridades | - | Pending |
-| CHAT-02 | P1: Memória | - | Pending |
-| CHAT-03 | P1: Telegram | - | Pending |
-| CHAT-04 | P2: Finanças | - | Pending |
-| CHAT-05 | P2: Criar Tarefa | - | Pending |
-| CHAT-06 | P2: Streaming Web | - | Pending |
+| CHAT-01 | P1: Prioridades | - | Done |
+| CHAT-02 | P1: Memória | - | Done |
+| CHAT-03 | P1: Telegram | - | Done |
+| CHAT-04 | P2: Finanças | - | Deferred (v2/v3) |
+| CHAT-05 | P2: Criar Tarefa | - | Done |
+| CHAT-06 | P2: Streaming Web | - | Done |
 
 ---
 
 ## Success Criteria
 
 - [ ] Resposta P95 < 5s (Telegram) / < 3s first token (web streaming)
-- [ ] Zero hallucination de datas/compromissos (dados reais only)
+- [x] Zero hallucination de datas/compromissos (dados reais only)
 - [ ] ≥80% das perguntas respondidas satisfatoriamente (auto-avaliação semanal)
