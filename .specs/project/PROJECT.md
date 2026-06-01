@@ -50,18 +50,22 @@ packages/ai   → Prompts, RAG utilities
 
 **v1 includes (MVP — F01 a F06):**
 
-- F01: Centralização de objetivos, tarefas, projetos, eventos, reflexões e metas financeiras básicas
+- F01: Centralização de objetivos, tarefas, projetos, eventos e reflexões (UI web em expansão — MAINT-M2)
 - F02: Memória de longo prazo com categorias (Profissional, Financeiro, Familiar, Saúde, Viagens)
 - F03: Resumo diário automático (prioridades, compromissos, pendências, alertas)
 - F04: Revisão semanal (concluídos, atrasados, perda de prioridade, riscos)
 - F05: Lembretes (tarefas, compromissos, datas, objetivos negligenciados)
 - F06: Chat inteligente contextual via web e Telegram
 
+**v1 — backend only (UI adiada v2/v3):**
+
+- Metas financeiras básicas (`FinanceGoalsModule` + API REST) — sem aba web nem tool de chat por enquanto (AD-013)
+
 **Explicitly out of scope (v1):**
 
 - F07 Análise emocional e padrões de humor
 - F08 Coaching avançado de produtividade
-- F09 Planejamento financeiro completo (receitas, gastos, investimentos)
+- F09 Planejamento financeiro completo (receitas, gastos, investimentos) — **UI v2/v3**; API básica de metas já existe
 - F10 Planejamento familiar multi-usuário
 - Integrações WhatsApp, Outlook, Google Drive, Gmail
 - App nativo iOS/Android (PWA responsivo primeiro)

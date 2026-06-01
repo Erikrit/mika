@@ -1,7 +1,9 @@
 # Roadmap — Mika
 
-**Current Milestone:** M5 — Proatividade
-**Status:** M4 Done · M5 Planned
+**Current Milestone:** MAINT-M2 — UI F01 (sem Finanças na v1) — **Done (local)**
+**Status:** M6 Done (local) · MAINT-M2 Done (local) · Finanças UI adiado v2/v3 (AD-013)
+
+> **Nota de numeração:** em `.specs/features/`, F05 = Lembretes e F06 = Chat Inteligente. No roadmap abaixo, F10/F11 correspondem à mesma entrega (M5/M6).
 
 ---
 
@@ -16,7 +18,7 @@
 **F01 — Centralização de Informações** — DONE (local)
 
 * CRUD de objetivos, tarefas, projetos, eventos, reflexões
-* Metas financeiras básicas (valor alvo, prazo, status)
+* Metas financeiras básicas (valor alvo, prazo, status) — **API only**; UI adiada v2/v3
 * Categorização por área de vida (LifeArea)
 * API REST documentada + UI web mínima
 
@@ -155,12 +157,12 @@ Mika deixa de ser apenas uma assistente com memória técnica e passa a atuar co
 
 ### Features
 
-**F10 — Sistema de Lembretes** — PLANNED
+**F10 — Sistema de Lembretes** — DONE (local)
 
-* Notificações Telegram + web push (PWA)
-* Lembretes de tarefas, compromissos, datas, objetivos negligenciados
-* Worker BullMQ para agendamento
-* Alertas baseados em contexto pessoal e objetivos importantes
+* Notificações Telegram (MVP)
+* Lembretes de tarefas, compromissos, objetivos negligenciados
+* Worker BullMQ `reminder-dispatch`
+* Web push (PWA) — P2 deferido
 
 ---
 
@@ -171,14 +173,13 @@ Mika deixa de ser apenas uma assistente com memória técnica e passa a atuar co
 
 ### Features
 
-**F11 — Chat Inteligente** — PLANNED
+**F11 — Chat Inteligente** — DONE (local)
 
-* Perguntas sobre semana, metas, finanças, mudanças
+* Perguntas sobre semana, metas, finanças via tool calling
 * Contexto agregado de F01 + F02 + rotinas + memória humanizada
-* Interface web + Telegram unificada
-* Sugestões proativas baseadas em contexto
-* Apoio à tomada de decisão
-* Recuperação seletiva de contexto via RAG/memória semântica
+* Interface web (SSE streaming) + Telegram unificada
+* Criação de tarefas via chat
+* Recuperação seletiva de contexto via tools/RAG
 
 ---
 
@@ -342,6 +343,7 @@ Mika deixa de ser apenas uma assistente virtual e passa a atuar como um Companio
 
 ## Future Considerations
 
+* **Finanças v2/v3** — Aba web, dashboard, chat `get_finance_goals`; evolução para F09 (receitas, gastos, investimentos). API `FinanceGoalsModule` já implementada (AD-013)
 * Integração Google Calendar
 * Integração Outlook
 * Integração Gmail
@@ -360,9 +362,9 @@ Mika deixa de ser apenas uma assistente virtual e passa a atuar como um Companio
 M1 - Fundação ✅
 M2 - Memória ✅
 M3 - Rotinas ✅
-M4 - Contexto Pessoal e Memória Humanizada
-M5 - Proatividade
-M6 - Copiloto
+M4 - Contexto Pessoal e Memória Humanizada ✅
+M5 - Proatividade ✅
+M6 - Copiloto ✅
 M7 - Assistente Completo
 M8 - Android Companion
 M9 - Expansão da Memória Pessoal

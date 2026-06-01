@@ -20,6 +20,7 @@ Erik gerencia simultaneamente trabalhos, família, finanças, saúde, viagens e 
 | Busca semântica / RAG | F02 — Memória |
 | Priorização automática por IA | F06 — Chat |
 | Multi-usuário | Future |
+| UI / chat de metas financeiras | v2/v3 — API backend mantida (AD-013) |
 
 ---
 
@@ -113,6 +114,8 @@ Erik gerencia simultaneamente trabalhos, família, finanças, saúde, viagens e 
 **User Story**: As Erik, I want to track financial goals with target and current amounts so that I can ask Mika about my financial situation.
 
 **Why P2**: Metas financeiras básicas (não controle completo F09).
+
+**Status (2026-05-31):** API implementada (`FinanceGoalsModule`); **UI web e chat adiados v2/v3** (AD-013). LifeArea `financial` e documentos de contexto financeiro continuam disponíveis.
 
 **Acceptance Criteria**:
 

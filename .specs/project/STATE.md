@@ -1,11 +1,35 @@
 # State — Mika
 
 **Last Updated:** 2026-05-31  
-**Current Work:** M5 Proatividade — planejamento
+**Current Work:** MAINT-M2 concluído — UI F01 (objetivos, projetos, agenda, reflexões, tarefas na sidebar)
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-014: Estudos e Insights ocultos na UI — adiado v2+ (2026-05-31)
+
+**Decision:** Remover Estudos e Insights da sidebar; rotas `/studies` e `/insights` redirecionam para início  
+**Reason:** Foco no assistente pessoal v1 (tarefas, objetivos, projetos, agenda, reflexões, contexto)  
+**Impact:** Rotas mantidas por compatibilidade; módulos backend intactos
+
+### AD-013: Finanças oculto na UI — adiado v2/v3 (2026-05-31)
+
+**Decision:** Remover aba Finanças da sidebar e dashboard; rota `/finance` redireciona para início; tool `get_finance_goals` fora do chat v1  
+**Reason:** Foco no assistente pessoal (tarefas, agenda, contexto, rotinas); planejamento financeiro completo é escopo v2/v3 (F09)  
+**Impact:** API `FinanceGoalsModule` e área de vida `financial` permanecem no backend; documentação atualizada com item no radar
+
+### AD-011: Lembretes via BullMQ delayed jobs (2026-05-31)
+
+**Decision:** `ReminderSchedulerService` na API + processor `reminder-dispatch` no worker  
+**Reason:** Consistência com padrão `memory-index`; fire-at `scheduledAt`  
+**Impact:** Hooks em Tasks/Events; DND 22:00–07:00; batching por minuto
+
+### AD-012: Chat copiloto com tool calling (2026-05-31)
+
+**Decision:** Vercel AI SDK `tools` + `maxSteps: 5`; contexto leve + RAG sob demanda  
+**Reason:** Anti-alucinação; dados reais via `get_tasks`, `search_memory`, etc.  
+**Impact:** `generateReplyWithTools`, SSE web, `ChatToolExecutorService`
 
 ### AD-006: Hook useMediaQuery para breakpoint desktop (2026-05-31)
 
@@ -100,6 +124,7 @@ _Nenhum blocker ativo — MAINT-001 (desktop congelado), MAINT-002 (RAG priorida
 
 ## Deferred Ideas
 
+- [ ] **Finanças (UI + chat)** — Metas financeiras na web, dashboard e tool `get_finance_goals`; API pronta — alvo v2/v3 (AD-013)
 - [ ] WhatsApp via Evolution API — Captured during: integrações externas
 - [ ] Backend Hono como micro-serviço leve para webhooks — Captured during: AD-002
 - [ ] App Flutter nativo — Captured during: multi-plataforma
