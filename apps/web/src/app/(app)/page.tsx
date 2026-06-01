@@ -7,7 +7,6 @@ import { dashboardApi, projectsApi, routinesApi } from '@/lib/api-client';
 import { formatTime, getGreeting, PRIORITY_CONFIG } from '@/lib/utils';
 import { MikaCard, MikaCardContent, MikaCardHeader, MikaCardTitle } from '@/components/ui/mika-card';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertTriangle,
@@ -16,10 +15,7 @@ import {
   FolderOpen,
   Lightbulb,
   Plus,
-  TrendingUp,
 } from 'lucide-react';
-
-const WEEKLY_PROGRESS = 78;
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -113,10 +109,6 @@ export default function DashboardPage() {
               {priorityTasks.length} tarefa{priorityTasks.length !== 1 ? 's' : ''} prioritária{priorityTasks.length !== 1 ? 's' : ''}
             </li>
             <li className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-progress" />
-              1 meta financeira em andamento
-            </li>
-            <li className="flex items-center gap-2">
               <FolderOpen className="h-4 w-4 text-insight" />
               {activeProjects.length > 0
                 ? `${activeProjects.length} projeto${activeProjects.length !== 1 ? 's' : ''} aguardando ação`
@@ -124,16 +116,6 @@ export default function DashboardPage() {
             </li>
           </ul>
         </MikaCardContent>
-      </MikaCard>
-
-      <MikaCard>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-text-secondary">Seu progresso semanal</p>
-            <span className="text-sm font-bold text-progress">{WEEKLY_PROGRESS}%</span>
-          </div>
-          <Progress value={WEEKLY_PROGRESS} className="h-2" />
-        </div>
       </MikaCard>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -261,7 +243,7 @@ export default function DashboardPage() {
             <p className="text-sm text-text-secondary">
               {data?.overdueTasks
                 ? `${data.overdueTasks} tarefa${data.overdueTasks > 1 ? 's' : ''} em atraso — revise para manter o ritmo.`
-                : `Progresso semanal em ${WEEKLY_PROGRESS}%. Mantenha o foco nas prioridades de hoje.`}
+                : 'Tudo em dia! Continue focado nas prioridades de hoje.'}
             </p>
           </MikaCardContent>
         </MikaCard>

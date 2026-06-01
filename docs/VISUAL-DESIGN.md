@@ -123,14 +123,17 @@ Implementada em `apps/web/src/app/globals.css` como tokens Tailwind.
 | Rota | Label |
 |------|-------|
 | `/` | Início |
-| `/memories` | Memórias |
+| `/tasks` | Tarefas |
+| `/context` | Contexto |
 | `/goals` | Objetivos |
-| `/studies` | Estudos |
-| `/finance` | Finanças |
 | `/projects` | Projetos |
 | `/events` | Agenda |
-| `/insights` | Insights |
+| `/reflections` | Reflexões |
 | `/settings` | Configurações |
+
+> **Finanças (`/finance`):** adiado v2/v3 — rota redireciona para início; API `FinanceGoalsModule` permanece no backend (AD-013).
+
+> **Estudos (`/studies`) e Insights (`/insights`):** adiados v2+ — rotas redirecionam para início (AD-014).
 
 Ícones via Lucide (equivalente visual aos emojis da spec, com consistência cross-platform).
 
@@ -223,7 +226,7 @@ Modo **padrão e único** na v1. Classe `dark` aplicada no `<html>`. Modo claro 
 |-----------|--------|-------|
 | Paleta de cores | ✅ | Tokens em `globals.css` |
 | Layout 3 colunas | ✅ | Header + Sidebar + Workspace + AI Hub |
-| Sidebar fixa com 9 itens | ✅ | `sidebar.tsx` |
+| Sidebar fixa com 8 itens (Início, Tarefas, Contexto, Objetivos, Projetos, Agenda, Reflexões, Config) | ✅ | `sidebar.tsx` |
 | AI Hub sempre presente | ⚠️ | Desktop: fixo; mobile: FAB + sheet |
 | Avatar esfera luminosa | ✅ | `mika-avatar.tsx` |
 | Cards 16px / 24px | ✅ | `mika-card.tsx` |

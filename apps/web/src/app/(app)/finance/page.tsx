@@ -1,14 +1,6 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { TrendingUp } from 'lucide-react';
-import { ComingSoonPage } from '@/components/ui/coming-soon-page';
-
+/** Rota mantida por compatibilidade; módulo Finanças adiado para v2/v3 (AD-013). */
 export default function FinancePage() {
-  return (
-    <ComingSoonPage
-      title="Finanças"
-      description="Metas e objetivos financeiros"
-      icon={TrendingUp}
-    />
-  );
+  redirect('/');
 }

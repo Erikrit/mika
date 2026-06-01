@@ -1,12 +1,6 @@
-import { BookOpen } from 'lucide-react';
-import { ComingSoonPage } from '@/components/ui/coming-soon-page';
+import { redirect } from 'next/navigation';
 
+/** Rota mantida por compatibilidade; módulo Estudos adiado para v2+ (AD-014). */
 export default function StudiesPage() {
-  return (
-    <ComingSoonPage
-      title="Estudos"
-      description="Trilhas de aprendizado e materiais de estudo"
-      icon={BookOpen}
-    />
-  );
+  redirect('/');
 }

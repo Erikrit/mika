@@ -1,5 +1,18 @@
 import { api } from '@/lib/api';
-import type { Task } from '@mika/shared';
+import type {
+  Task,
+  Goal,
+  Project,
+  Event,
+  Reflection,
+  CreateGoalDto,
+  UpdateGoalDto,
+  CreateProjectDto,
+  UpdateProjectDto,
+  CreateEventDto,
+  UpdateEventDto,
+  CreateReflectionDto,
+} from '@mika/shared';
 
 export interface DashboardData {
   tasks: Task[];
@@ -48,19 +61,57 @@ export const lifeAreasApi = {
   list: () => api.get<Array<{ id: string; slug: string; label: string; color: string; icon: string }>>('/life-areas').then(r => r.data),
 };
 
+export interface ProjectListItem extends Project {
+  lifeArea?: { label: string; color: string };
+  _count?: { tasks: number };
+  taskCount?: number;
+  completionPercentage?: number;
+}
+
+export interface GoalListItem extends Goal {
+  lifeArea?: { label: string; color: string };
+  isOverdue?: boolean;
+}
+
+export interface EventListItem extends Event {
+  lifeArea?: { label: string; color: string };
+}
+
 export const projectsApi = {
-  list: () => api.get('/projects').then(r => r.data),
-  create: (data: unknown) => api.post('/projects', data).then(r => r.data),
+  list: () => api.get<ProjectListItem[]>('/projects').then((r) => r.data),
+  get: (id: string) => api.get<ProjectListItem>(`/projects/${id}`).then((r) => r.data),
+  create: (data: CreateProjectDto) => api.post<Project>('/projects', data).then((r) => r.data),
+  update: (id: string, data: UpdateProjectDto) =>
+    api.patch<Project>(`/projects/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/projects/${id}`),
 };
 
 export const goalsApi = {
-  list: (horizon?: string) => api.get('/goals', { params: horizon ? { horizon } : {} }).then(r => r.data),
-  create: (data: unknown) => api.post('/goals', data).then(r => r.data),
+  list: (horizon?: string) =>
+    api.get<GoalListItem[]>('/goals', { params: horizon ? { horizon } : {} }).then((r) => r.data),
+  get: (id: string) => api.get<GoalListItem>(`/goals/${id}`).then((r) => r.data),
+  create: (data: CreateGoalDto) => api.post<Goal>('/goals', data).then((r) => r.data),
+  update: (id: string, data: UpdateGoalDto) =>
+    api.patch<Goal>(`/goals/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/goals/${id}`),
 };
 
 export const eventsApi = {
-  list: (params?: Record<string, string>) => api.get('/events', { params }).then(r => r.data),
-  create: (data: unknown) => api.post('/events', data).then(r => r.data),
+  list: (params?: Record<string, string>) =>
+    api.get<EventListItem[]>('/events', { params }).then((r) => r.data),
+  get: (id: string) => api.get<EventListItem>(`/events/${id}`).then((r) => r.data),
+  create: (data: CreateEventDto) => api.post<Event>('/events', data).then((r) => r.data),
+  update: (id: string, data: UpdateEventDto) =>
+    api.patch<Event>(`/events/${id}`, data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/events/${id}`),
+};
+
+export const reflectionsApi = {
+  list: () => api.get<Reflection[]>('/reflections').then((r) => r.data),
+  get: (id: string) => api.get<Reflection>(`/reflections/${id}`).then((r) => r.data),
+  create: (data: CreateReflectionDto) =>
+    api.post<Reflection>('/reflections', data).then((r) => r.data),
+  delete: (id: string) => api.delete(`/reflections/${id}`),
 };
 
 export const chatApi = {
@@ -71,6 +122,70 @@ export const chatApi = {
         sessionId,
       })
       .then((r) => r.data),
+
+  streamMessage: async (
+    message: string,
+    sessionId: string | undefined,
+    onToken: (token: string) => void,
+  ): Promise<{ sessionId: string; reply: string; createdAt: string }> => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('mika_access_token') : null;
+
+    const res = await fetch(`${API_URL}/chat/message/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ message, sessionId }),
+    });
+
+    if (!res.ok) {
+      throw new Error('Falha ao enviar mensagem');
+    }
+
+    const reader = res.body?.getReader();
+    if (!reader) throw new Error('Stream indisponível');
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let result: { sessionId: string; reply: string; createdAt: string } | null = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const payload = JSON.parse(line.slice(6)) as {
+          token?: string;
+          done?: boolean;
+          sessionId?: string;
+          reply?: string;
+          createdAt?: string;
+          error?: string;
+        };
+
+        if (payload.error) throw new Error(payload.error);
+        if (payload.token) onToken(payload.token);
+        if (payload.done && payload.sessionId && payload.reply && payload.createdAt) {
+          result = {
+            sessionId: payload.sessionId,
+            reply: payload.reply,
+            createdAt: payload.createdAt,
+          };
+        }
+      }
+    }
+
+    if (!result) throw new Error('Resposta incompleta');
+    return result;
+  },
 };
 
 export interface MemoryChunkItem {

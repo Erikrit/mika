@@ -1,12 +1,6 @@
-import { BarChart3 } from 'lucide-react';
-import { ComingSoonPage } from '@/components/ui/coming-soon-page';
+import { redirect } from 'next/navigation';
 
+/** Rota mantida por compatibilidade; módulo Insights adiado para v2+ (AD-014). */
 export default function InsightsPage() {
-  return (
-    <ComingSoonPage
-      title="Insights"
-      description="Análises e padrões sobre sua vida e produtividade"
-      icon={BarChart3}
-    />
-  );
+  redirect('/');
 }

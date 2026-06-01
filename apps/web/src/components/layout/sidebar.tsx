@@ -8,26 +8,24 @@ import {
   Home,
   Brain,
   Target,
-  BookOpen,
-  TrendingUp,
   FolderOpen,
   Calendar,
-  BarChart3,
   Settings,
   Menu,
   X,
+  CheckSquare,
+  PenLine,
 } from 'lucide-react';
 import { MikaAvatar } from '@/components/ui/mika-avatar';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Início', icon: Home },
+  { href: '/tasks', label: 'Tarefas', icon: CheckSquare },
   { href: '/context', label: 'Contexto', icon: Brain },
   { href: '/goals', label: 'Objetivos', icon: Target },
-  { href: '/studies', label: 'Estudos', icon: BookOpen },
-  { href: '/finance', label: 'Finanças', icon: TrendingUp },
   { href: '/projects', label: 'Projetos', icon: FolderOpen },
   { href: '/events', label: 'Agenda', icon: Calendar },
-  { href: '/insights', label: 'Insights', icon: BarChart3 },
+  { href: '/reflections', label: 'Reflexões', icon: PenLine },
   { href: '/settings', label: 'Configurações', icon: Settings },
 ];
 
