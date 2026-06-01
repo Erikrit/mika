@@ -175,6 +175,61 @@ export class ChatService {
     return lines.join('\n');
   }
 
+  async listWebSessions(userId: string, limit: number) {
+    const sessions = await this.prisma.chatSession.findMany({
+      where: { userId, channel: 'WEB' },
+      orderBy: { updatedAt: 'desc' },
+      take: limit,
+      include: {
+        messages: {
+          where: { role: { in: ['USER', 'ASSISTANT'] } },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { content: true },
+        },
+        _count: { select: { messages: true } },
+      },
+    });
+
+    return sessions.map((s) => {
+      const previewRaw = s.messages[0]?.content;
+      const preview =
+        previewRaw != null
+          ? previewRaw.length > 80
+            ? `${previewRaw.slice(0, 80)}…`
+            : previewRaw
+          : null;
+
+      return {
+        id: s.id,
+        title: s.title,
+        updatedAt: s.updatedAt.toISOString(),
+        preview,
+        messageCount: s._count.messages,
+      };
+    });
+  }
+
+  async getSessionMessages(userId: string, sessionId: string) {
+    const session = await this.prisma.chatSession.findFirst({
+      where: { id: sessionId, userId },
+    });
+    if (!session) throw new NotFoundException('Sessão não encontrada');
+
+    const messages = await this.prisma.chatMessage.findMany({
+      where: { sessionId, role: { in: ['USER', 'ASSISTANT'] } },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true, role: true, content: true, createdAt: true },
+    });
+
+    return messages.map((m) => ({
+      id: m.id,
+      role: m.role === 'USER' ? ('user' as const) : ('assistant' as const),
+      content: m.content,
+      createdAt: m.createdAt.toISOString(),
+    }));
+  }
+
   private async persistExchange(
     sessionId: string,
     userMessage: string,

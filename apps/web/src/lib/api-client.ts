@@ -114,7 +114,32 @@ export const reflectionsApi = {
   delete: (id: string) => api.delete(`/reflections/${id}`),
 };
 
+export interface ChatSessionItem {
+  id: string;
+  title: string | null;
+  updatedAt: string;
+  preview: string | null;
+  messageCount: number;
+}
+
+export interface ChatMessageItem {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: string;
+}
+
 export const chatApi = {
+  listSessions: (limit = 3) =>
+    api
+      .get<ChatSessionItem[]>('/chat/sessions', { params: { limit } })
+      .then((r) => r.data),
+
+  getSessionMessages: (sessionId: string) =>
+    api
+      .get<ChatMessageItem[]>(`/chat/sessions/${sessionId}/messages`)
+      .then((r) => r.data),
+
   sendMessage: (message: string, sessionId?: string) =>
     api
       .post<{ sessionId: string; reply: string; createdAt: string }>('/chat/message', {

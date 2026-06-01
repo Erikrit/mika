@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { AuthProvider } from '@/contexts/auth-context';
+import { ChatProvider } from '@/contexts/chat-context';
 import { LayoutProvider } from '@/contexts/layout-context';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -20,7 +21,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <LayoutProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <ChatProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </ChatProvider>
         </LayoutProvider>
       </AuthProvider>
     </QueryClientProvider>

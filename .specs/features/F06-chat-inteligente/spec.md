@@ -112,6 +112,21 @@ Erik precisa conversar naturalmente com Mika para obter respostas contextualizad
 
 ---
 
+### P1: Persistência do histórico na web (MAINT-M3)
+
+**User Story**: As Erik, I want my web chat history restored when I reopen the AI Hub or refresh the page so that I can continue reasoning without starting over.
+
+**Acceptance Criteria**:
+
+1. WHEN user opens AI Hub (web) THEN system SHALL load the last up to 3 WEB sessions from the API
+2. WHEN a stored session id exists in `localStorage` and is in that list THEN UI SHALL select it; ELSE the most recent session
+3. WHEN user closes mobile sheet or refreshes THEN messages SHALL remain available via API + `ChatContext`
+4. WHEN user taps "Nova conversa" THEN UI SHALL clear messages; the next send SHALL create a new DB session
+
+**Independent Test**: Conversar → fechar sheet → reabrir → mensagens visíveis; F5 → mesma conversa.
+
+---
+
 ## Edge Cases
 
 - WHEN OpenAI timeout THEN system SHALL respond: "Estou com dificuldade agora, tente em alguns minutos"

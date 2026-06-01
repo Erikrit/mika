@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useIsDesktop } from '@/hooks/use-media-query';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
+import { useChat } from '@/contexts/chat-context';
 import { useLayout } from '@/contexts/layout-context';
-import { chatApi, dashboardApi } from '@/lib/api-client';
+import { dashboardApi } from '@/lib/api-client';
 import { getGreeting } from '@/lib/utils';
 import { MikaAvatar } from '@/components/ui/mika-avatar';
 import { Badge } from '@/components/ui/badge';
@@ -19,20 +20,33 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { ArrowRight, Lightbulb, Loader2, Send, Sparkles } from 'lucide-react';
+import { ArrowRight, Lightbulb, Loader2, MessageSquarePlus, Send, Sparkles } from 'lucide-react';
 
-type ChatMessage = {
-  role: 'user' | 'assistant';
-  content: string;
-};
+function formatSessionLabel(preview: string | null, updatedAt: string, index: number) {
+  if (preview) {
+    return preview.length > 28 ? `${preview.slice(0, 28)}…` : preview;
+  }
+  const date = new Date(updatedAt).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+  });
+  return `Conversa ${index + 1} · ${date}`;
+}
 
 function AiHubContent() {
   const { user } = useAuth();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [sessionId, setSessionId] = useState<string | undefined>();
+  const {
+    sessions,
+    activeSessionId,
+    messages,
+    loading,
+    error,
+    sending,
+    selectSession,
+    startNewSession,
+    sendMessage,
+  } = useChat();
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data } = useQuery({
@@ -43,7 +57,7 @@ function AiHubContent() {
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+  }, [messages, sending, loading]);
 
   const priorityTasks = data?.tasks.filter((t) => t.priority <= 2) ?? [];
   const nextActions = [
@@ -53,42 +67,17 @@ function AiHubContent() {
 
   const suggestions = ['O que tenho para hoje?', 'Quais são minhas prioridades?', 'Organizar semana'];
 
+  const showEmptyState = messages.length === 0 && !loading;
+
   async function handleSend(text?: string) {
     const message = (text ?? input).trim();
-    if (!message || loading) return;
-
+    if (!message || sending) return;
     setInput('');
-    setError(null);
-    setMessages((prev) => [
-      ...prev,
-      { role: 'user', content: message },
-      { role: 'assistant', content: '' },
-    ]);
-    setLoading(true);
-
-    try {
-      const result = await chatApi.streamMessage(message, sessionId, (token) => {
-        setMessages((prev) => {
-          const next = [...prev];
-          const lastIdx = next.length - 1;
-          const last = next[lastIdx];
-          if (last?.role === 'assistant') {
-            next[lastIdx] = { ...last, content: last.content + token };
-          }
-          return next;
-        });
-      });
-      setSessionId(result.sessionId);
-    } catch {
-      setError('Não foi possível enviar a mensagem. Tente novamente.');
-      setMessages((prev) => prev.slice(0, -2));
-    } finally {
-      setLoading(false);
-    }
+    await sendMessage(message);
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
       <div className="flex flex-col items-center px-6 py-6 text-center">
         <MikaAvatar size="lg" />
         <p className="mt-3 text-lg font-semibold text-text-primary">{getGreeting(user?.name)}</p>
@@ -97,9 +86,45 @@ function AiHubContent() {
 
       <Separator />
 
-      <ScrollArea className="flex-1">
+      {sessions.length > 0 && (
+        <div className="flex min-h-0 flex-wrap items-center gap-1.5 border-b border-border px-3 py-2">
+          {sessions.map((session, index) => (
+            <Button
+              key={session.id}
+              type="button"
+              variant={activeSessionId === session.id ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-7 max-w-[9rem] truncate text-xs"
+              disabled={loading || sending}
+              onClick={() => void selectSession(session.id)}
+            >
+              {formatSessionLabel(session.preview, session.updatedAt, index)}
+            </Button>
+          ))}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1 text-xs"
+            disabled={loading || sending}
+            onClick={startNewSession}
+          >
+            <MessageSquarePlus className="h-3.5 w-3.5" />
+            Nova conversa
+          </Button>
+        </div>
+      )}
+
+      <ScrollArea className="min-h-0 flex-1">
         <div className="space-y-4 p-4">
-          {messages.length === 0 && (
+          {loading && messages.length === 0 && (
+            <div className="flex items-center justify-center gap-2 py-8 text-sm text-text-tertiary">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Carregando conversa...
+            </div>
+          )}
+
+          {showEmptyState && (
             <>
               <section>
                 <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
@@ -130,7 +155,7 @@ function AiHubContent() {
                 <p className="rounded-lg border border-insight/20 bg-insight/5 p-3 text-sm text-text-secondary">
                   {data?.overdueTasks
                     ? `Você tem ${data.overdueTasks} tarefa${data.overdueTasks > 1 ? 's' : ''} em atraso. Priorize-as para manter o foco.`
-                    : 'Seu progresso semanal está em 78%. Continue assim — consistência é a chave.'}
+                    : 'Tudo em dia! Pergunte o que precisa.'}
                 </p>
               </section>
 
@@ -168,7 +193,7 @@ function AiHubContent() {
             </div>
           ))}
 
-          {loading && (
+          {sending && (
             <div className="mr-6 flex items-center gap-2 rounded-lg border border-border bg-surface/50 px-3 py-2 text-sm text-text-tertiary">
               <Loader2 className="h-4 w-4 animate-spin" />
               Mika está pensando...
@@ -192,9 +217,9 @@ function AiHubContent() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Conversar com Mika..."
-            disabled={loading}
+            disabled={sending || loading}
           />
-          <Button type="submit" size="icon" disabled={loading || !input.trim()}>
+          <Button type="submit" size="icon" disabled={sending || loading || !input.trim()}>
             <Send className="h-4 w-4" />
           </Button>
         </form>
@@ -211,7 +236,7 @@ export function AiHub() {
 
   return (
     <>
-      {showPanel && (
+      {isDesktop && showPanel && (
         <aside className="hidden h-full w-80 flex-shrink-0 flex-col border-l border-border bg-bg-secondary/60 backdrop-blur-sm xl:flex xl:w-96">
           <AiHubContent />
         </aside>
@@ -219,7 +244,10 @@ export function AiHub() {
 
       {!isDesktop && (
         <Sheet open={showSheet} onOpenChange={setAiHubOpen}>
-          <SheetContent side="right" className="w-full max-w-sm border-border bg-bg-secondary p-0 xl:hidden">
+          <SheetContent
+            side="right"
+            className="flex h-full w-full max-w-sm flex-col border-border bg-bg-secondary p-0 xl:hidden"
+          >
             <SheetHeader className="sr-only">
               <SheetTitle>Assistente Mika</SheetTitle>
             </SheetHeader>

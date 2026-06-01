@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { ChatService } from './chat.service';
@@ -13,6 +13,20 @@ class ChatMessageDto extends createZodDto(ChatMessageSchema) {}
 @ApiBearerAuth()
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
+
+  @Get('sessions')
+  @ApiOperation({ summary: 'Listar sessões recentes do chat web' })
+  listSessions(@CurrentUser() user: AuthUser, @Query('limit') limit?: string) {
+    const parsed = parseInt(limit ?? '3', 10);
+    const n = Math.min(Math.max(Number.isFinite(parsed) ? parsed : 3, 1), 10);
+    return this.chatService.listWebSessions(user.id, n);
+  }
+
+  @Get('sessions/:id/messages')
+  @ApiOperation({ summary: 'Listar mensagens de uma sessão do chat' })
+  getSessionMessages(@CurrentUser() user: AuthUser, @Param('id') id: string) {
+    return this.chatService.getSessionMessages(user.id, id);
+  }
 
   @Post('message')
   @ApiOperation({ summary: 'Enviar mensagem ao assistente IA' })
