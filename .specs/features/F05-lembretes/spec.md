@@ -6,9 +6,9 @@ Mesmo com resumos diários, Erik esquece tarefas pontuais, compromissos próximo
 
 ## Goals
 
-- [ ] Notificar tarefas com dueAt próximo (1h, 1 dia antes)
-- [ ] Notificar eventos 30 min antes
-- [ ] Alertar objetivos negligenciados (>7 dias sem interação)
+- [x] Notificar tarefas com dueAt próximo (1h, 1 dia antes)
+- [x] Notificar eventos 30 min antes
+- [x] Alertar objetivos negligenciados (>7 dias sem interação)
 - [ ] Canais: Telegram (MVP) + web push (PWA, M4)
 
 ## Out of Scope
@@ -93,9 +93,9 @@ Mesmo com resumos diários, Erik esquece tarefas pontuais, compromissos próximo
 
 | Requirement ID | Story | Phase | Status |
 |----------------|-------|-------|--------|
-| REM-01 | P1: Lembrete Tarefa | - | Pending |
-| REM-02 | P1: Lembrete Evento | - | Pending |
-| REM-03 | P2: Objetivo Negligenciado | - | Pending |
+| REM-01 | P1: Lembrete Tarefa | - | Done |
+| REM-02 | P1: Lembrete Evento | - | Done |
+| REM-03 | P2: Objetivo Negligenciado | - | Done |
 | REM-04 | P2: Web Push | - | Pending |
 
 ---

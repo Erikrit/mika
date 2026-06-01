@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { ReminderSchedulerService } from '../reminders/reminder-scheduler.service';
 import type { CreateEventDto, UpdateEventDto, EventFilters } from '@mika/shared';
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly reminders: ReminderSchedulerService,
+  ) {}
 
   async create(userId: string, dto: CreateEventDto) {
-    return this.prisma.event.create({
+    const event = await this.prisma.event.create({
       data: {
         userId,
         lifeAreaId: dto.lifeAreaId,
@@ -21,6 +25,14 @@ export class EventsService {
       },
       include: { lifeArea: true },
     });
+    await this.reminders.syncEventReminder(
+      userId,
+      event.id,
+      event.title,
+      event.startsAt,
+      event.location,
+    );
+    return event;
   }
 
   async findAll(userId: string, filters: EventFilters) {
@@ -49,7 +61,7 @@ export class EventsService {
 
   async update(userId: string, id: string, dto: UpdateEventDto) {
     await this.findOne(userId, id);
-    return this.prisma.event.update({
+    const event = await this.prisma.event.update({
       where: { id },
       data: {
         ...dto,
@@ -57,10 +69,19 @@ export class EventsService {
       },
       include: { lifeArea: true },
     });
+    await this.reminders.syncEventReminder(
+      userId,
+      event.id,
+      event.title,
+      event.startsAt,
+      event.location,
+    );
+    return event;
   }
 
   async remove(userId: string, id: string) {
     await this.findOne(userId, id);
+    await this.reminders.cancelEntityReminders(userId, 'EVENT', id);
     await this.prisma.event.delete({ where: { id } });
   }
 

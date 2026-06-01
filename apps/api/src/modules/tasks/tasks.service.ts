@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MemoryQueueService } from '../memory/memory-queue.service';
+import { ReminderSchedulerService } from '../reminders/reminder-scheduler.service';
 import type { CreateTaskDto, UpdateTaskDto, TaskFilters } from '@mika/shared';
 
 @Injectable()
@@ -8,6 +9,7 @@ export class TasksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly memoryQueue: MemoryQueueService,
+    private readonly reminders: ReminderSchedulerService,
   ) {}
 
   async create(userId: string, dto: CreateTaskDto) {
@@ -27,6 +29,13 @@ export class TasksService {
       include: { lifeArea: true, project: { select: { id: true, title: true } } },
     });
     await this.memoryQueue.enqueueUpsert(userId, 'TASK', task.id);
+    await this.reminders.syncTaskReminder(
+      userId,
+      task.id,
+      task.title,
+      task.dueAt,
+      task.status,
+    );
     return task;
   }
 
@@ -74,6 +83,13 @@ export class TasksService {
       include: { lifeArea: true },
     });
     await this.memoryQueue.enqueueUpsert(userId, 'TASK', id);
+    await this.reminders.syncTaskReminder(
+      userId,
+      task.id,
+      task.title,
+      task.dueAt,
+      task.status,
+    );
     return task;
   }
 
@@ -84,11 +100,13 @@ export class TasksService {
       data: { status: 'DONE', completedAt: new Date(), neglectedSince: null },
     });
     await this.memoryQueue.enqueueUpsert(userId, 'TASK', id);
+    await this.reminders.cancelEntityReminders(userId, 'TASK', id);
     return task;
   }
 
   async remove(userId: string, id: string) {
     await this.findOne(userId, id);
+    await this.reminders.cancelEntityReminders(userId, 'TASK', id);
     await this.prisma.task.delete({ where: { id } });
     await this.memoryQueue.enqueueDelete(userId, 'TASK', id);
   }

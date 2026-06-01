@@ -2,6 +2,8 @@ import pino from 'pino';
 import { Worker } from 'bullmq';
 import { PrismaClient } from '@mika/database';
 import { createMemoryIndexWorker } from './processors/memory-index.processor';
+import { createReminderDispatchWorker } from './processors/reminder-dispatch.processor';
+import { ReminderDispatcherService } from './services/reminder-dispatcher.service';
 
 const logger = pino({
   level: process.env.LOG_LEVEL ?? 'info',
@@ -38,6 +40,19 @@ const neglectedWorker = new Worker(
 );
 
 const memoryIndexWorker = createMemoryIndexWorker(prisma, redisConnection);
+const reminderDispatchWorker = createReminderDispatchWorker(prisma, redisConnection);
+
+const reminderDispatcher = new ReminderDispatcherService(prisma);
+
+// Daily neglected goals alerts (max 1/week per goal — handled in dispatcher)
+const NEGLECTED_GOALS_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const neglectedGoalsTimer = setInterval(async () => {
+  try {
+    await reminderDispatcher.processNeglectedGoals();
+  } catch (err) {
+    logger.error({ err }, 'neglected goals processing failed');
+  }
+}, NEGLECTED_GOALS_INTERVAL_MS);
 
 neglectedWorker.on('completed', (job) => {
   logger.info({ jobId: job.id }, 'Job completed');
@@ -47,12 +62,14 @@ neglectedWorker.on('failed', (job, err) => {
   logger.error({ jobId: job?.id, err }, 'Job failed');
 });
 
-logger.info('🔄 Worker started (neglected-tasks + memory-index)');
+logger.info('🔄 Worker started (neglected-tasks + memory-index + reminder-dispatch)');
 
 process.on('SIGTERM', async () => {
   logger.info('Shutting down worker...');
+  clearInterval(neglectedGoalsTimer);
   await neglectedWorker.close();
   await memoryIndexWorker.close();
+  await reminderDispatchWorker.close();
   await prisma.$disconnect();
   process.exit(0);
 });
