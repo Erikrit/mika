@@ -14,6 +14,13 @@ export type ChatToolExecutors = {
     dueAt?: string;
     priority?: number;
   }) => Promise<string>;
+  updateTask: (params: {
+    taskId: string;
+    title?: string;
+    dueAt?: string;
+    priority?: number;
+  }) => Promise<string>;
+  deleteTask: (params: { taskId: string }) => Promise<string>;
 };
 
 export const getTasksParams = z.object({
@@ -39,4 +46,15 @@ export const createTaskParams = z.object({
   title: z.string().describe('Título da tarefa'),
   dueAt: z.string().optional().describe('ISO datetime de vencimento'),
   priority: z.number().min(1).max(5).optional().describe('Prioridade 1-5'),
+});
+
+export const updateTaskParams = z.object({
+  taskId: z.string().describe('ID da tarefa obtido via get_tasks'),
+  title: z.string().optional().describe('Novo título'),
+  dueAt: z.string().optional().describe('ISO datetime de vencimento'),
+  priority: z.number().min(1).max(5).optional().describe('Prioridade 1-5'),
+});
+
+export const deleteTaskParams = z.object({
+  taskId: z.string().describe('ID da tarefa a excluir, obtido via get_tasks'),
 });

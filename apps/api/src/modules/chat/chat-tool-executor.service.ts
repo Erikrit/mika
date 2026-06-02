@@ -1,12 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import type { ChatChannel } from '@prisma/client';
 import type { ChatToolExecutors } from '@mika/ai';
+import type { UpdateTaskDto } from '@mika/shared';
 import { TasksService } from '../tasks/tasks.service';
 import { EventsService } from '../events/events.service';
 import { MemoryService } from '../memory/memory.service';
 @Injectable()
 export class ChatToolExecutorService {
   constructor(
+    @InjectPinoLogger(ChatToolExecutorService.name)
+    private readonly logger: PinoLogger,
     private readonly tasks: TasksService,
     private readonly events: EventsService,
     private readonly memory: MemoryService,
@@ -94,6 +98,10 @@ export class ChatToolExecutorService {
           priority: (params.priority ?? 3) as 1 | 2 | 3 | 4 | 5,
           contextTags: [],
         });
+        this.logger.info(
+          { userId, tool: 'create_task', taskId: task.id, success: true },
+          'chat tool mutation',
+        );
         return JSON.stringify({
           success: true,
           task: {
@@ -103,6 +111,70 @@ export class ChatToolExecutorService {
             priority: task.priority,
           },
         });
+      },
+
+      updateTask: async (params) => {
+        try {
+          const dto: UpdateTaskDto = {};
+          if (params.title !== undefined) dto.title = params.title;
+          if (params.dueAt !== undefined) dto.dueAt = new Date(params.dueAt);
+          if (params.priority !== undefined) {
+            dto.priority = params.priority as 1 | 2 | 3 | 4 | 5;
+          }
+
+          const task = await this.tasks.update(userId, params.taskId, dto);
+          this.logger.info(
+            { userId, tool: 'update_task', taskId: params.taskId, success: true },
+            'chat tool mutation',
+          );
+          return JSON.stringify({
+            success: true,
+            task: {
+              id: task.id,
+              title: task.title,
+              dueAt: task.dueAt?.toISOString() ?? null,
+              priority: task.priority,
+            },
+          });
+        } catch (err) {
+          if (err instanceof NotFoundException) {
+            this.logger.info(
+              { userId, tool: 'update_task', taskId: params.taskId, success: false },
+              'chat tool mutation',
+            );
+            return JSON.stringify({
+              success: false,
+              message: 'Tarefa não encontrada',
+            });
+          }
+          throw err;
+        }
+      },
+
+      deleteTask: async (params) => {
+        try {
+          await this.tasks.remove(userId, params.taskId);
+          this.logger.info(
+            { userId, tool: 'delete_task', taskId: params.taskId, success: true },
+            'chat tool mutation',
+          );
+          return JSON.stringify({
+            success: true,
+            deletedId: params.taskId,
+          });
+        } catch (err) {
+          if (err instanceof NotFoundException) {
+            this.logger.info(
+              { userId, tool: 'delete_task', taskId: params.taskId, success: false },
+              'chat tool mutation',
+            );
+            return JSON.stringify({
+              success: false,
+              message: 'Tarefa não encontrada',
+            });
+          }
+          throw err;
+        }
       },
     };
   }

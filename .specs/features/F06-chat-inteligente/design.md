@@ -23,6 +23,8 @@
 | `search_memory` | MemoryService + audit sensível | CHAT-02 |
 | ~~`get_finance_goals`~~ | — | CHAT-04 adiado v2/v3 (AD-013) |
 | `create_task` | TasksService.create | CHAT-05 |
+| `update_task` | TasksService.update | CHAT-07 |
+| `delete_task` | TasksService.remove | CHAT-07 |
 
 ## Fluxo web (SSE)
 

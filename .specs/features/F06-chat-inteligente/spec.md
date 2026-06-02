@@ -93,9 +93,25 @@ Erik precisa conversar naturalmente com Mika para obter respostas contextualizad
 **Acceptance Criteria**:
 
 1. WHEN user message implies task creation THEN system SHALL call create_task tool with parsed title and dueAt
-2. WHEN task created THEN response SHALL confirm: "✅ Tarefa criada: [title] para [date]"
+2. WHEN task created THEN response SHALL confirm only after create_task returns success: true with task.id (cite title and id)
+3. WHEN user asks to create multiple tasks THEN system SHALL call create_task once per task
 
 **Independent Test**: "Lembre de ligar pro médico sexta" → tarefa criada com dueAt sexta.
+
+---
+
+### P2: Atualizar e Excluir Tarefa via Chat (MAINT-M4)
+
+**User Story**: As Erik, I want to update or delete tasks through natural language so that I don't need to open /tasks for simple changes.
+
+**Acceptance Criteria**:
+
+1. WHEN user asks to change due date, title or priority THEN system SHALL call get_tasks (if no id) then update_task
+2. WHEN update succeeds THEN response SHALL confirm only after update_task returns success: true
+3. WHEN user asks to delete task(s) THEN system SHALL call get_tasks then delete_task per taskId — never create_task with "excluir/deletar"
+4. WHEN delete succeeds THEN response SHALL confirm count deleted
+
+**Independent Test**: "Exclua todas as tarefas" → contagem diminui; nenhuma tarefa "Excluir…" criada.
 
 ---
 
@@ -132,7 +148,7 @@ Erik precisa conversar naturalmente com Mika para obter respostas contextualizad
 - WHEN OpenAI timeout THEN system SHALL respond: "Estou com dificuldade agora, tente em alguns minutos"
 - WHEN user sends empty message THEN system SHALL ignore
 - WHEN conversation >20 messages THEN system SHALL summarize older messages to fit context window
-- WHEN user asks to delete data THEN system SHALL NOT comply via chat (direct to settings)
+- WHEN user asks to delete data THEN system SHALL NOT comply via chat (direct to settings) — applies to **account/personal data deletion**, not individual task removal via `delete_task`
 
 ---
 
@@ -146,6 +162,7 @@ Erik precisa conversar naturalmente com Mika para obter respostas contextualizad
 | CHAT-04 | P2: Finanças | - | Deferred (v2/v3) |
 | CHAT-05 | P2: Criar Tarefa | - | Done |
 | CHAT-06 | P2: Streaming Web | - | Done |
+| CHAT-07 | P2: Atualizar/Excluir Tarefa | MAINT-M4 | Done |
 
 ---
 

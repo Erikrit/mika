@@ -95,7 +95,9 @@ Princípios:
 | `get_goals` | Objetivos por horizon | "Estou atrasado em alguma meta?" |
 | `get_finance_goals` | Metas financeiras | "Situação financeira?" |
 | `search_memory` | RAG search | Perguntas contextuais |
-| `create_task` | Criar tarefa | "Lembre de..." |
+| `create_task` | Criar tarefa nova | "Lembre de..." |
+| `update_task` | Atualizar tarefa existente | "Mude o vencimento de..." |
+| `delete_task` | Excluir tarefa por id | "Exclua a tarefa X" |
 | `create_reflection` | Salvar reflexão | Rotina noturna |
 
 ---

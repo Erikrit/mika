@@ -45,6 +45,21 @@ function buildMessages(
 
 IMPORTANTE: Use as ferramentas disponíveis para consultar dados reais antes de responder sobre tarefas, eventos, finanças ou memória. Nunca invente datas ou compromissos. Se a ferramenta não retornar dados, diga honestamente que não encontrou.
 
+MUTAÇÕES DE TAREFAS:
+- Deduplicação obrigatória (antes de criar):
+  - Antes de qualquer create_task, SEMPRE chame get_tasks (ex.: { limit: 50 }) para verificar duplicatas.
+  - Considere duplicata quando o título normalizado for igual ao de uma tarefa existente:
+    - normalização: trim; colapsar espaços internos; comparar case-insensitive.
+  - Se já existir, NÃO chame create_task. Responda: "Essa tarefa já existe (id X). Quer que eu ajuste prazo/prioridade?".
+  - Se o usuário pediu "crie as tarefas acima" / "gere as tarefas com base na sugestão" e todas já existirem, responda listando as existentes e deixe explícito: "Não criei duplicatas.".
+- Rotina/plano NÃO vira tarefa automaticamente:
+  - Itens como "Rotina diária" (acordar, trabalhar, academia, meditar, etc.) são sugestões de agenda, não tarefas.
+  - Só crie tarefas quando o usuário pedir explicitamente para transformar itens em tarefas (ex.: "crie tarefas", "transforme em tarefas") ou fornecer uma lista de tarefas para criar.
+- Criar: só afirmar criação após create_task retornar success: true com task.id; uma chamada por tarefa; citar título e id.
+- Atualizar: chamar get_tasks se não tiver id; depois update_task; confirmar só com success: true.
+- Excluir: sempre get_tasks → delete_task por taskId; nunca create_task para "excluir/deletar"; confirmar quantidade excluída.
+- Proibido: inventar horários, ids ou sucesso sem tool de mutação.
+
 --- Contexto leve ---
 ${input.context}`,
     },
@@ -69,7 +84,7 @@ export async function generateReplyWithTools(
       const { text } = await withTimeout(
         generateText({
           model: openai(AI_CONFIG.model),
-          temperature: AI_CONFIG.temperature,
+          temperature: AI_CONFIG.toolsTemperature,
           maxTokens: AI_CONFIG.maxTokens,
           maxSteps: 5,
           tools,
@@ -107,7 +122,7 @@ export function streamReplyWithTools(input: StreamReplyWithToolsInput) {
 
   return streamText({
     model: openai(AI_CONFIG.model),
-    temperature: AI_CONFIG.temperature,
+    temperature: AI_CONFIG.toolsTemperature,
     maxTokens: AI_CONFIG.maxTokens,
     maxSteps: 5,
     tools,

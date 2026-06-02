@@ -85,6 +85,17 @@ export class ChatService {
         res.write(`data: ${JSON.stringify({ token: chunk })}\n\n`);
       }
 
+      const steps = await stream.steps;
+      const toolCalls = steps.flatMap((step) =>
+        step.toolCalls.map((tc) => tc.toolName),
+      );
+      if (toolCalls.length > 0) {
+        this.logger.info(
+          { userId, toolCalls, count: toolCalls.length },
+          'chat stream tool calls',
+        );
+      }
+
       const now = new Date();
       await this.persistExchange(session.id, message, fullReply, now);
 

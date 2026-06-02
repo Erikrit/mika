@@ -2,9 +2,11 @@ import { tool } from 'ai';
 import type { ChatToolExecutors } from './types';
 import {
   createTaskParams,
+  deleteTaskParams,
   getEventsParams,
   getTasksParams,
   searchMemoryParams,
+  updateTaskParams,
 } from './types';
 
 export function buildChatTools(executors: ChatToolExecutors) {
@@ -29,9 +31,21 @@ export function buildChatTools(executors: ChatToolExecutors) {
     }),
     create_task: tool({
       description:
-        'Cria uma nova tarefa quando o usuário pedir para lembrar ou registrar algo.',
+        'Cria uma nova tarefa. Use apenas para tarefas novas; nunca para excluir ou renomear tarefas existentes.',
       parameters: createTaskParams,
       execute: async (params) => executors.createTask(params),
+    }),
+    update_task: tool({
+      description:
+        'Atualiza uma tarefa existente por id. O taskId é obrigatório (obtenha via get_tasks).',
+      parameters: updateTaskParams,
+      execute: async (params) => executors.updateTask(params),
+    }),
+    delete_task: tool({
+      description:
+        'Exclui uma tarefa por id obtido de get_tasks. Proibido criar tarefa com nome "excluir/deletar".',
+      parameters: deleteTaskParams,
+      execute: async (params) => executors.deleteTask(params),
     }),
   };
 }

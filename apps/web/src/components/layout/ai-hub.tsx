@@ -88,7 +88,7 @@ function AiHubContent() {
 
       {sessions.length > 0 && (
         <div className="flex min-h-0 flex-wrap items-center gap-1.5 border-b border-border px-3 py-2">
-          {sessions.map((session, index) => (
+          {sessions.slice(0, 1).map((session, index) => (
             <Button
               key={session.id}
               type="button"
@@ -98,7 +98,7 @@ function AiHubContent() {
               disabled={loading || sending}
               onClick={() => void selectSession(session.id)}
             >
-              {formatSessionLabel(session.preview, session.updatedAt, index)}
+              Última conversa · {formatSessionLabel(session.preview, session.updatedAt, index)}
             </Button>
           ))}
           <Button

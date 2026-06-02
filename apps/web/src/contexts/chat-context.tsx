@@ -14,7 +14,7 @@ import {
   type ChatSessionItem,
 } from '@/lib/api-client';
 
-const SESSION_STORAGE_KEY = 'mika_web_chat_session_id';
+const LAST_SESSION_STORAGE_KEY = 'mika_web_chat_last_session_id';
 
 export type ChatMessage = {
   role: 'user' | 'assistant';
@@ -35,21 +35,15 @@ type ChatContextValue = {
 
 const ChatContext = createContext<ChatContextValue | null>(null);
 
-function readStoredSessionId(): string | undefined {
+function storeLastSessionId(id: string) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(LAST_SESSION_STORAGE_KEY, id);
+  }
+}
+
+function readLastSessionId(): string | undefined {
   if (typeof window === 'undefined') return undefined;
-  return localStorage.getItem(SESSION_STORAGE_KEY) ?? undefined;
-}
-
-function storeSessionId(id: string) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(SESSION_STORAGE_KEY, id);
-  }
-}
-
-function clearStoredSessionId() {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem(SESSION_STORAGE_KEY);
-  }
+  return localStorage.getItem(LAST_SESSION_STORAGE_KEY) ?? undefined;
 }
 
 export function ChatProvider({ children }: { children: ReactNode }) {
@@ -67,7 +61,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     try {
       const items = await chatApi.getSessionMessages(id);
       setActiveSessionId(id);
-      storeSessionId(id);
+      storeLastSessionId(id);
       setMessages(
         items.map((m) => ({ role: m.role, content: m.content })),
       );
@@ -82,32 +76,27 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const list = await chatApi.listSessions(3);
-      setSessions(list);
+      const list = await chatApi.listSessions(1);
+      const lastId = readLastSessionId();
+      const ordered =
+        lastId && list.some((s) => s.id === lastId)
+          ? [...list].sort((a, b) => (a.id === lastId ? -1 : b.id === lastId ? 1 : 0))
+          : list;
+      setSessions(ordered);
 
-      const stored = readStoredSessionId();
-      const preferred =
-        stored && list.some((s) => s.id === stored)
-          ? stored
-          : list[0]?.id;
-
-      if (preferred) {
-        await selectSession(preferred);
-      } else {
-        setActiveSessionId(undefined);
-        setMessages([]);
-      }
+      // MAINT-M4: sempre iniciar em "Nova conversa" ao abrir/voltar ao chat.
+      setActiveSessionId(undefined);
+      setMessages([]);
     } catch {
       setError('Não foi possível carregar o histórico.');
     } finally {
       setLoading(false);
     }
-  }, [selectSession]);
+  }, []);
 
   const startNewSession = useCallback(() => {
     setActiveSessionId(undefined);
     setMessages([]);
-    clearStoredSessionId();
     setError(null);
   }, []);
 
@@ -142,9 +131,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         );
 
         setActiveSessionId(result.sessionId);
-        storeSessionId(result.sessionId);
+        storeLastSessionId(result.sessionId);
 
-        const list = await chatApi.listSessions(3);
+        const list = await chatApi.listSessions(1);
         setSessions(list);
       } catch {
         setError('Não foi possível enviar a mensagem. Tente novamente.');
