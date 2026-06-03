@@ -14,11 +14,14 @@
 
 ---
 
-## 2) Rede e HTTPS
-- [ ] `https://api.staging.<dominio>` responde (TLS válido).
-- [ ] `https://web.staging.<dominio>` responde (TLS válido).
-- [ ] Redirecionamento HTTP → HTTPS ativo.
-- [ ] (Se aplicável) Proteções de staging ativas (basic auth / allowlist).
+## 2) Rede (Hostinger sem domínio: `srv1727136.hstgr.cloud`)
+
+- [ ] `http://srv1727136.hstgr.cloud:3001` responde (API).
+- [ ] `http://srv1727136.hstgr.cloud:3000` responde (Web).
+
+**Com domínio + Caddy (futuro):**
+
+- [ ] `https://api.staging.<dominio>` e `https://web.staging.<dominio>` com TLS válido.
 
 ---
 
@@ -33,6 +36,9 @@
 ---
 
 ## 4) Web (funcional mínimo)
+
+Base URL: `http://srv1727136.hstgr.cloud:3000` (ou seu domínio).
+
 - [ ] `/login` carrega e autentica.
 - [ ] Sidebar abre e navega (tarefas/agenda/projetos/objetivos/reflexões).
 - [ ] AI Hub abre e permite enviar mensagem.

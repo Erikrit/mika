@@ -1,132 +1,230 @@
-# Ambiente de Teste (Staging) — VPS + Domínio + HTTPS
+# Ambiente de Teste (Staging) — Hostinger VPS
 
-**Objetivo:** Subir um ambiente de teste (pré-prod) do Mika em VPS com **domínio + HTTPS**, usando Docker Compose, para validar a v1 antes de uso real.  
-**Escopo do 1º ciclo:** **web + api + worker + postgres + redis**, **sem n8n** (opcional depois).
+**VPS atual:** `srv1727136.hstgr.cloud` (Hostinger KVM — **sem domínio próprio por enquanto**)  
+**Objetivo:** Subir Mika em staging com imagens Docker Hub (`mikaassit/*`).  
+**Escopo:** api + web + worker + postgres + redis — **sem n8n**, **sem Caddy** (acesso por **portas HTTP**).
 
-Base: `.specs/architecture/INFRA.md` e `docker/docker-compose.prod.yml`.
+| Serviço | URL de acesso |
+|---------|----------------|
+| **Web** | http://srv1727136.hstgr.cloud:3000 |
+| **API** | http://srv1727136.hstgr.cloud:3001 |
+| **Swagger** | http://srv1727136.hstgr.cloud:3001/docs |
 
----
+Arquivos:
+- `docker/docker-compose.staging.hostinger.yml` — compose para este cenário
+- `docker/.env.staging.example` — template de variáveis
+- `docker/README-DEPLOY.md` — build/push das imagens
 
-## 0) Pré-requisitos e decisões
-
-- **VPS**: recomendado 4GB RAM / 2 vCPU / 40GB SSD (staging).  
-- **Domínios** (exemplo):
-  - `web.staging.seudominio.com` → Web (Next.js)
-  - `api.staging.seudominio.com` → API (NestJS)
-- **HTTPS**: recomendado via **Caddy** (auto TLS).
-- **Acesso**: staging deve ser restrito (IP allowlist e/ou auth) — especialmente API e DB.
-
----
-
-## 1) Provisionamento da VPS (base)
-
-### 1.1 Criar usuário e hardening básico
-- Atualizar pacotes do sistema.
-- Criar usuário não-root (ex.: `mika`) e habilitar login por chave SSH.
-- Ajustar firewall:
-  - Liberar **80/443** (Caddy)
-  - Liberar **22** (SSH) restrito ao seu IP
-  - **Não expor** Postgres/Redis (apenas rede Docker interna)
-
-### 1.2 Instalar Docker e Docker Compose
-- Instalar Docker Engine + plugin do Compose.
-- Confirmar que `docker` e `docker compose` funcionam.
+> Quando tiver domínio próprio, use `docker/docker-compose.staging.yml` + Caddy (HTTPS). Ver seção [Futuro: domínio + HTTPS](#futuro-domínio--https).
 
 ---
 
-## 2) DNS do staging
+## Passo a passo — subir na VPS
 
-No provedor DNS:
-- Criar `A` record para `web.staging.seudominio.com` apontando para o IP da VPS.
-- Criar `A` record para `api.staging.seudominio.com` apontando para o IP da VPS.
+### 1) Conectar na VPS
 
-Aguardar propagação (pode levar minutos).
+No painel Hostinger, copie o IP e usuário SSH (geralmente `root`).
+
+```bash
+ssh root@srv1727136.hstgr.cloud
+# ou: ssh root@IP_DA_VPS
+```
+
+### 2) Instalar Docker (se ainda não tiver)
+
+```bash
+apt update && apt upgrade -y
+apt install -y ca-certificates curl
+curl -fsSL https://get.docker.com | sh
+docker compose version
+```
+
+### 3) Liberar portas no firewall
+
+Na VPS (ufw) e/ou no **firewall do painel Hostinger**:
+
+| Porta | Uso |
+|-------|-----|
+| 22 | SSH |
+| 3000 | Web (Next.js) |
+| 3001 | API (NestJS) |
+
+```bash
+ufw allow 22
+ufw allow 3000
+ufw allow 3001
+ufw enable
+```
+
+Não exponha Postgres (5432) nem Redis (6379) na internet.
+
+### 4) Clonar o repositório na VPS
+
+```bash
+mkdir -p /opt/mika && cd /opt/mika
+git clone https://github.com/SEU_USUARIO/mika.git .
+# Se o repo for privado, use deploy key ou token
+```
+
+Alternativa mínima: copiar só `docker/` + `.env.staging` via SCP.
+
+### 5) Criar `.env.staging`
+
+```bash
+cp docker/.env.staging.example .env.staging
+nano .env.staging
+```
+
+Valores para **esta VPS** (sem domínio):
+
+```bash
+VPS_HOST=srv1727136.hstgr.cloud
+
+MIKA_API_IMAGE=mikaassit/mika-api:staging
+MIKA_WEB_IMAGE=mikaassit/mika-web:staging
+MIKA_WORKER_IMAGE=mikaassit/mika-worker:staging
+
+PUBLIC_WEB_URL=http://srv1727136.hstgr.cloud:3000
+PUBLIC_API_URL=http://srv1727136.hstgr.cloud:3001
+
+POSTGRES_USER=mika
+POSTGRES_PASSWORD=<senha-forte>
+POSTGRES_DB=mika
+DATABASE_URL=postgresql://mika:<senha-forte>@postgres:5432/mika
+
+REDIS_PASSWORD=<senha-forte>
+
+JWT_SECRET=<openssl rand -hex 32>
+JWT_REFRESH_SECRET=<openssl rand -hex 32>
+ENCRYPTION_KEY=<openssl rand -hex 32>
+
+OPENAI_API_KEY=sk-...
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_ENABLED=true
+```
+
+> **Importante:** a imagem `mika-web` deve ter sido buildada com  
+> `NEXT_PUBLIC_API_URL=http://srv1727136.hstgr.cloud:3001`  
+> (ver passo 0 abaixo). Se a web foi buildada com `localhost`, refaça o build e o push.
+
+### 6) Login no Docker Hub e subir os containers
+
+```bash
+cd /opt/mika
+docker login
+docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging pull
+docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging up -d
+```
+
+Verificar:
+
+```bash
+docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging ps
+docker logs mika-api --tail 50
+docker logs mika-web --tail 50
+```
+
+### 7) Rodar migrações do banco
+
+```bash
+docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging exec api \
+  sh -c "cd packages/database && npx prisma migrate deploy"
+```
+
+### 8) Seed (primeira vez no staging)
+
+```bash
+docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging exec api \
+  sh -c "cd packages/database && npx prisma db seed"
+```
+
+Credenciais padrão do seed: ver `README.md` (`erik@mika.local` / senha do seed).
+
+### 9) Validar no navegador
+
+1. Abrir http://srv1727136.hstgr.cloud:3000/login  
+2. Fazer login  
+3. Abrir http://srv1727136.hstgr.cloud:3001/docs  
+4. Testar AI Hub (chat)  
+5. Checklist: `.specs/project/SMOKE-STAGING.md` (adaptar URLs para `:3000` e `:3001`)
+
+### 10) Vincular Telegram (opcional)
+
+1. No app: **Configurações** → Gerar código  
+2. No bot: `/vincular CODIGO`
 
 ---
 
-## 3) Preparar repositório e arquivos na VPS
+## Passo 0 — Antes da VPS (na sua máquina)
 
-### 3.1 Obter o código
-Opções (escolha uma):
-- `git clone` do repositório (recomendado).
-- Copiar via SCP/rsync.
+Se ainda não publicou as imagens com a URL correta da API:
 
-### 3.2 Criar arquivo de ambiente do staging
+```powershell
+cd "d:\projeto develop\mika"
+$env:NEXT_PUBLIC_API_URL = "http://srv1727136.hstgr.cloud:3001"
 
-Criar um `.env.staging` na raiz (ou no diretório do deploy) com **valores fortes**:
+docker build -f docker/Dockerfile.api -t mikaassit/mika-api:staging .
+docker build -f docker/Dockerfile.web --build-arg NEXT_PUBLIC_API_URL=$env:NEXT_PUBLIC_API_URL -t mikaassit/mika-web:staging .
+docker build -f docker/Dockerfile.worker -t mikaassit/mika-worker:staging .
 
-- **Banco**
-  - `POSTGRES_USER`
-  - `POSTGRES_PASSWORD`
-  - `POSTGRES_DB`
-  - `DATABASE_URL=postgresql://...` (host `postgres`, porta `5432`)
-- **Redis**
-  - `REDIS_PASSWORD`
-  - `REDIS_URL=redis://:REDIS_PASSWORD@redis:6379`
-- **Auth/Cripto**
-  - `JWT_SECRET` (32 bytes hex)
-  - `JWT_REFRESH_SECRET` (32 bytes hex)
-  - `ENCRYPTION_KEY` (32 bytes hex; AES-256)
-- **IA/Telegram**
-  - `OPENAI_API_KEY` (staging)
-  - `TELEGRAM_BOT_TOKEN` (opcional no staging; se não configurar, chat Telegram não valida)
-- **Web**
-  - `NEXT_PUBLIC_API_URL=https://api.staging.seudominio.com`
+docker push mikaassit/mika-api:staging
+docker push mikaassit/mika-web:staging
+docker push mikaassit/mika-worker:staging
+```
 
-> Geração de secrets (exemplo): `openssl rand -hex 32`
+Detalhes: `docker/README-DEPLOY.md`.
 
 ---
 
-## 4) Subir stack do staging (sem n8n no 1º ciclo)
+## Imagens necessárias
 
-O arquivo existente `docker/docker-compose.prod.yml` inclui `n8n`. Para o **1º ciclo de staging**, recomenda-se uma das abordagens:
+| Imagem | Tag |
+|--------|-----|
+| `mikaassit/mika-api` | `:staging` |
+| `mikaassit/mika-web` | `:staging` |
+| `mikaassit/mika-worker` | `:staging` |
 
-### Opção A (recomendada): usar `--profile`/override (quando disponível)
-- Criar um compose de override (ex.: `docker/docker-compose.staging.yml`) removendo o serviço `n8n`.
-
-### Opção B (simples): subir somente os serviços necessários
-- Subir explicitamente `postgres redis api web worker` (sem subir `n8n`).
-
-> O objetivo é validar v1 sem a camada de rotinas automatizadas por n8n no primeiro ciclo.
+Oficiais (pull automático): `pgvector/pgvector:pg16`, `redis:7-alpine`.
 
 ---
 
-## 5) Proxy HTTPS (Caddy) — recomendado
+## Redeploy (atualizar versão)
 
-### 5.1 Subir Caddy como reverse proxy
-Configurar Caddy para:
-- Terminar TLS para `web.staging...` e `api.staging...`
-- Encaminhar:
-  - `web.staging...` → `mika-web:3000`
-  - `api.staging...` → `mika-api:3001`
-
-### 5.2 Restrições recomendadas em staging
-- Proteger a API em staging (ex.: basic auth ou IP allowlist no proxy) se o ambiente ficar público.
-- Evitar que `/docs` fique aberto sem proteção.
+```bash
+cd /opt/mika
+git pull
+docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging pull
+docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging up -d
+docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging exec api \
+  sh -c "cd packages/database && npx prisma migrate deploy"
+```
 
 ---
 
-## 6) Migrações e seed (staging)
+## Futuro: domínio + HTTPS
 
-Após os containers subirem:
-- Rodar migrações no container da API: `prisma migrate deploy`
-- Rodar seed se for um ambiente novo (apenas staging): `prisma db seed`
+Quando tiver domínio (ex.: `mika.seudominio.com`):
 
-> O staging deve ter dados “de teste” controlados para validar o chat e UAT.
-
----
-
-## 7) Smoke pós-deploy (staging)
-
-Executar o smoke completo em `.specs/project/SMOKE-STAGING.md`.
+1. Apontar DNS `A` para o IP da VPS.  
+2. Usar `docker/docker-compose.staging.yml` + `docker/Caddyfile`.  
+3. Rebuild da web com `NEXT_PUBLIC_API_URL=https://api.seudominio.com`.  
+4. Fechar portas 3000/3001 no firewall público (só 80/443 via Caddy).
 
 ---
 
-## 8) Iteração 2 (opcional): habilitar n8n
+## Iteração 2 (opcional): n8n
 
-Quando o 1º ciclo estiver OK:
-- Subir `n8n` com auth básica (já previsto em `docker/docker-compose.prod.yml`)
-- Ajustar `N8N_WEBHOOK_URL` para o domínio do staging
-- Importar workflows de `docker/n8n/workflows/`
-- Validar rotinas chamando endpoints `/routines/*` com `X-Routine-Key`
+- Adicionar serviço `n8n` ao compose ou usar `docker-compose.prod.yml`.  
+- Workflows em `docker/n8n/workflows/`.  
+- Variável `ROUTINE_API_KEY` no `.env.staging`.
 
+---
+
+## Backup Postgres
+
+```bash
+mkdir -p /backups
+docker exec mika-postgres-staging pg_dump -U mika mika | gzip > /backups/mika-$(date +%Y%m%d).sql.gz
+```
+
+Retenção sugerida: 7 dias.

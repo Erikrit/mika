@@ -1,0 +1,10 @@
+# Domínios via variáveis de ambiente do serviço caddy (docker-compose.staging.yml)
+# Ex.: WEB_DOMAIN=web.staging.seudominio.com  API_DOMAIN=api.staging.seudominio.com
+
+{$WEB_DOMAIN} {
+	reverse_proxy web:3000
+}
+
+{$API_DOMAIN} {
+	reverse_proxy api:3001
+}

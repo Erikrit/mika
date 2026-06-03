@@ -154,7 +154,8 @@ _Nenhum blocker ativo — MAINT-001 (desktop congelado), MAINT-002 (RAG priorida
 - [x] M2 F02 memória longo prazo (pgvector, worker, RAG, UI /memories) ✅
 - [x] MAINT-M1 estabilização (T001–T009): AI Hub desktop, RAG prioridades, import área, edit/delete tarefas ✅
 - [ ] T018 E2E smoke test (fora do escopo M1)
-- [ ] Configurar VPS e docker-compose.prod.yml
+- [x] Docker staging: `docker-compose.staging.yml`, worker, Caddy, `README-DEPLOY.md` (2026-06-02)
+- [ ] Subir VPS Hostinger e validar smoke staging
 
 ---
 

@@ -14,7 +14,9 @@
     "prisma:generate": "pnpm --filter @mika/database prisma:generate",
     "prisma:migrate": "pnpm --filter @mika/database prisma:migrate",
     "prisma:seed": "pnpm --filter @mika/database db:seed",
-    "prisma:studio": "pnpm --filter @mika/database prisma:studio"
+    "prisma:studio": "pnpm --filter @mika/database prisma:studio",
+    "docker:build:api": "docker build -f docker/Dockerfile.api -t mikaassit/mika-api:staging .",
+    "docker:build:worker": "docker build -f docker/Dockerfile.worker -t mikaassit/mika-worker:staging ."
   },
   "devDependencies": {
     "turbo": "^2.5.0",

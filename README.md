@@ -208,6 +208,10 @@ Perguntas de exemplo: *"O que preciso fazer esta semana?"*, *"Lembre de ligar pr
 
 | [.specs/project/STATE.md](.specs/project/STATE.md) | Decisões, blockers, memória persistente |
 
+| [.specs/project/AMBIENTE-DE-TESTE-STAGING.md](.specs/project/AMBIENTE-DE-TESTE-STAGING.md) | VPS, domínio, HTTPS, deploy staging |
+
+| [docker/README-DEPLOY.md](docker/README-DEPLOY.md) | Build/push das imagens e compose staging |
+
 | [.specs/architecture/](.specs/architecture/) | Stack, arquitetura, dados, segurança, IA, infra |
 
 | [.specs/features/](.specs/features/) | Specs por feature (F01–F06 MVP) |

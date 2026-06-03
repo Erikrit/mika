@@ -84,5 +84,5 @@ Consideramos v1 pronta para subir ambiente de teste quando:
 - [ ] Gates (build + migrate) passaram.
 - [ ] Checklist UAT (seção 3) executado e registrado.
 
-Próximo passo: seguir o runbook em `.specs/project/AMBIENTE-DE-TESTE-STAGING.md`.
+Próximo passo: seguir o runbook em `.specs/project/AMBIENTE-DE-TESTE-STAGING.md` e `docker/README-DEPLOY.md`.
 
