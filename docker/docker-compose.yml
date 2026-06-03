@@ -2,16 +2,17 @@ services:
   postgres:
     image: pgvector/pgvector:pg16
     container_name: mika-postgres
+    restart: always
     environment:
-      POSTGRES_USER: mika
-      POSTGRES_PASSWORD: changeme
-      POSTGRES_DB: mika
+      POSTGRES_USER: ${POSTGRES_USER:-mika}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-mika}
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mika -d mika"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mika} -d ${POSTGRES_DB:-mika}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -19,6 +20,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: mika-redis
+    restart: always
     ports:
       - "6379:6379"
     volumes:
@@ -30,22 +32,74 @@ services:
       retries: 5
     command: redis-server --save 60 1 --loglevel warning
 
+  api:
+    image: mikaassit/mika-api:latest
+    container_name: mika-api
+    restart: always
+    env_file:
+      - ../.env
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: ${DATABASE_URL:-postgresql://mika:changeme@postgres:5432/mika?schema=public}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    image: mikaassit/mika-worker:latest
+    container_name: mika-worker
+    restart: always
+    env_file:
+      - ../.env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-postgresql://mika:changeme@postgres:5432/mika?schema=public}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    image: mikaassit/mika-web:latest
+    container_name: mika-web
+    restart: always
+    env_file:
+      - ../.env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
   n8n:
     image: n8nio/n8n:latest
     container_name: mika-n8n
+    restart: always
     ports:
       - "5678:5678"
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=changeme
-      - WEBHOOK_URL=http://localhost:5678
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-changeme}
+      - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:5678}
       - ROUTINE_API_KEY=${ROUTINE_API_KEY:-dev-routine-key-change-in-production}
       - GENERIC_TIMEZONE=America/Sao_Paulo
     volumes:
       - n8ndata:/home/node/.n8n
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
 volumes:
   pgdata:
