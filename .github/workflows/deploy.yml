@@ -45,7 +45,7 @@ jobs:
           file: docker/Dockerfile.web
           push: true
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_API_URL=http://2.25.165.198:3001
           tags: |
             mikaassit/mika-web:latest
             mikaassit/mika-web:${{ github.sha }}
