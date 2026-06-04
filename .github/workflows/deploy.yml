@@ -1,4 +1,4 @@
-name: Deploy Mika
+name: Publish Mika Docker Images
 
 on:
   push:
@@ -49,27 +49,3 @@ jobs:
           tags: |
             mikaassit/mika-web:latest
             mikaassit/mika-web:${{ github.sha }}
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Deploy VPS
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: ${{ secrets.SERVER_PORT }}
-
-          script: |
-            cd /opt/mika
-
-            git pull origin main
-
-            docker compose -f docker/docker-compose.yml pull
-
-            docker compose -f docker/docker-compose.yml up -d
-
-            docker image prune -af
