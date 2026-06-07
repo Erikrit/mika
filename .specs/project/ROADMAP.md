@@ -1,7 +1,7 @@
 # Roadmap — Mika
 
-**Current Milestone:** M7 — Entrada por Voz no Chat — **Planned**
-**Status:** M6 Done (local) · MAINT-M2 Done (local) · M7 planejado · Finanças UI adiado v2/v3 (AD-013)
+**Current Milestone:** M8 — Assistente Completo — **Planned**
+**Status:** M6 Done (local) · MAINT-M2 Done (local) · M7 Done (implementação) · UAT M7 pendente · Finanças UI adiado v2/v3 (AD-013)
 
 > **Nota de numeração:** em `.specs/features/`, F05 = Lembretes e F06 = Chat Inteligente. No roadmap abaixo, F10/F11 correspondem à mesma entrega (M5/M6). A entrada por voz no chat foi antecipada como M7 por entregar valor imediato antes da Voz Conversacional completa.
 
@@ -187,11 +187,11 @@ Mika deixa de ser apenas uma assistente com memória técnica e passa a atuar co
 
 **Goal:** Permitir que o usuário fale comandos para Mika no AI Hub, convertendo voz em texto e reutilizando o fluxo atual do Chat Inteligente.
 **Target:** +1 semana após M6
-**Status:** Planned
+**Status:** Done
 
 ### Features
 
-**F11A — Entrada por Voz no Chat** — PLANNED
+**F11A — Entrada por Voz no Chat** — DONE (implementação)
 
 * Botão de microfone no AI Hub ao lado do envio
 * Speech-to-Text no navegador com idioma pt-BR
@@ -399,7 +399,7 @@ M3 - Rotinas ✅
 M4 - Contexto Pessoal e Memória Humanizada ✅
 M5 - Proatividade ✅
 M6 - Copiloto ✅
-M7 - Entrada por Voz no Chat
+M7 - Entrada por Voz no Chat ✅
 M8 - Assistente Completo
 M9 - Android Companion
 M10 - Expansão da Memória Pessoal

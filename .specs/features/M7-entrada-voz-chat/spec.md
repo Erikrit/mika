@@ -102,19 +102,19 @@ Falar: “Mika, o que eu preciso fazer amanhã?” → enviar → resposta usa d
 
 | Requirement ID | Story | Prioridade | Status |
 |----------------|-------|------------|--------|
-| VOICE-CHAT-01 | Criar tarefa por voz | P1 | Planned |
-| VOICE-CHAT-02 | Consultar contexto por voz | P1 | Planned |
-| VOICE-CHAT-03 | Estados visuais de microfone | P1 | Planned |
-| VOICE-CHAT-04 | Tratamento de navegador incompatível | P1 | Planned |
+| VOICE-CHAT-01 | Criar tarefa por voz | P1 | Implemented |
+| VOICE-CHAT-02 | Consultar contexto por voz | P1 | Implemented |
+| VOICE-CHAT-03 | Estados visuais de microfone | P1 | Implemented |
+| VOICE-CHAT-04 | Tratamento de navegador incompatível | P1 | Implemented |
 | VOICE-CHAT-05 | Envio automático opcional | P2 | Deferred |
 
 ---
 
 ## Success Criteria
 
-- [ ] Usuário consegue criar tarefa por voz no AI Hub.
-- [ ] Usuário consegue consultar tarefas/eventos por voz.
-- [ ] O fluxo atual de tool calling permanece inalterado.
-- [ ] Funciona em Chrome desktop, Edge desktop e Chrome Android.
-- [ ] Mensagens e estados visíveis estão em pt-BR.
+- [ ] Usuário consegue criar tarefa por voz no AI Hub. *(UAT pendente)*
+- [ ] Usuário consegue consultar tarefas/eventos por voz. *(UAT pendente)*
+- [x] O fluxo atual de tool calling permanece inalterado.
+- [ ] Funciona em Chrome desktop, Edge desktop e Chrome Android. *(UAT pendente)*
+- [x] Mensagens e estados visíveis estão em pt-BR.
 - [ ] UAT manual registrado em `tasks.md`.

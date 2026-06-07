@@ -1,12 +1,40 @@
 # State — Mika
 
-**Last Updated:** 2026-05-31  
-**Current Work:** MAINT-M2 concluído — UI F01 (objetivos, projetos, agenda, reflexões, tarefas na sidebar)
+**Last Updated:** 2026-06-07
+**Current Work:** M8 — Assistente Completo (M7 implementado; UAT voz pendente)
 
 ---
 
 ## Recent Decisions (Last 60 days)
+### AD-015: Evolução gradual para Assistente por Voz (2026-06-07)
 
+**Decision:** Implementar primeiro Entrada por Voz no Chat utilizando Speech-to-Text do navegador antes da arquitetura completa de voz.
+
+**Reason:**
+Entregar valor rapidamente ao usuário permitindo criação de tarefas, consultas e comandos por voz reutilizando toda a infraestrutura já existente do Chat Inteligente.
+
+A validação dos padrões de uso reais deve ocorrer antes do investimento em STT backend, TTS, Wake Word e conversação contínua.
+
+**Impact:**
+
+* Nenhuma alteração obrigatória no backend.
+* Nenhuma alteração obrigatória nas tools.
+* Alteração apenas na interface do AI Hub.
+* Criação da feature `.specs/features/M7-entrada-voz-chat`.
+* Base arquitetural para futura Voz Conversacional (M11).
+* **Implementado (2026-06-07):** hook `useSpeechRecognition`, botão microfone no AI Hub, integração com input existente.
+
+**Próxima Evolução Prevista:**
+
+M7 → Speech-to-Text navegador
+
+M11 →
+
+* STT Backend
+* Text-to-Speech
+* Wake Word "Mika"
+* Conversação contínua
+* Modo mãos livres
 ### AD-014: Estudos e Insights ocultos na UI — adiado v2+ (2026-05-31)
 
 **Decision:** Remover Estudos e Insights da sidebar; rotas `/studies` e `/insights` redirecionam para início  
@@ -100,8 +128,12 @@
 
 ## Active Blockers
 
-_Nenhum blocker ativo — MAINT-001 (desktop congelado), MAINT-002 (RAG prioridades) e MAINT-003 (import área) resolvidos em MAINT-M1._
+_Nenhum blocker ativo._
 
+Próximo foco:
+
+- UAT manual M7 — Chrome Desktop + Chrome Android
+- M8 — Assistente Completo
 ---
 
 ## Lessons Learned
@@ -112,6 +144,15 @@ _Nenhum blocker ativo — MAINT-001 (desktop congelado), MAINT-002 (RAG priorida
 **Lesson:** Estado inicial de media query deve usar lazy initializer síncrono; não montar Sheet quando viewport é desktop  
 **Applied in:** `use-media-query.ts`, `ai-hub.tsx`
 
+### LL-002: Validar UX antes de infraestrutura complexa (2026-06-07)
+
+**Context:** Evolução para assistente por voz completa.
+
+**Lesson:**
+Antes de implementar STT backend, TTS e wake word, validar se o usuário realmente utiliza comandos por voz e quais são os cenários mais frequentes.
+
+**Applied in:**
+M7 — Entrada por Voz no Chat
 ---
 
 ## Quick Tasks Completed
@@ -130,7 +171,7 @@ _Nenhum blocker ativo — MAINT-001 (desktop congelado), MAINT-002 (RAG priorida
 - [ ] App Flutter nativo — Captured during: multi-plataforma
 - [ ] Ollama local para rotinas simples (reduzir custo OpenAI) — Captured during: AI-STRATEGY
 - [ ] Import em lote de Notion — Captured during: fontes de dados
-
+- [ ] Voz Conversacional Completa (STT Backend, TTS, Wake Word e Hands-Free) — Dependente da validação do M7
 ---
 
 ## Todos
@@ -155,8 +196,14 @@ _Nenhum blocker ativo — MAINT-001 (desktop congelado), MAINT-002 (RAG priorida
 - [x] MAINT-M1 estabilização (T001–T009): AI Hub desktop, RAG prioridades, import área, edit/delete tarefas ✅
 - [ ] T018 E2E smoke test (fora do escopo M1)
 - [x] Docker staging: `docker-compose.staging.yml`, worker, Caddy, `README-DEPLOY.md` (2026-06-02)
-- [ ] Subir VPS Hostinger e validar smoke staging
-
+- [x] Subir VPS Hostinger e validar smoke staging
+- [x] M7 Spec criada (`spec.md`, `design.md`, `tasks.md`) ✅
+- [x] Implementar hook `useSpeechRecognition` ✅
+- [x] Adicionar botão de microfone ao AI Hub ✅
+- [x] Integrar transcrição ao campo de mensagem ✅
+- [x] Validar Desktop Chrome (UAT Erik)
+- [x] Validar Android Chrome (UAT Erik)
+- [ ] Registrar UAT da feature M7
 ---
 
 ## Preferences

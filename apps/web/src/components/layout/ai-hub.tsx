@@ -2,6 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useIsDesktop } from '@/hooks/use-media-query';
+import {
+  getSpeechRecognitionErrorMessage,
+  useSpeechRecognition,
+} from '@/hooks/use-speech-recognition';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth-context';
 import { useChat } from '@/contexts/chat-context';
@@ -20,7 +24,17 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { ArrowRight, Lightbulb, Loader2, MessageSquarePlus, Send, Sparkles } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  ArrowRight,
+  Lightbulb,
+  Loader2,
+  MessageSquarePlus,
+  Mic,
+  MicOff,
+  Send,
+  Sparkles,
+} from 'lucide-react';
 
 function formatSessionLabel(preview: string | null, updatedAt: string, index: number) {
   if (preview) {
@@ -48,6 +62,27 @@ function AiHubContent() {
   } = useChat();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const {
+    isSupported: isVoiceSupported,
+    isListening,
+    isProcessing,
+    interimTranscript,
+    finalTranscript,
+    error: voiceError,
+    startListening,
+    stopListening,
+    resetTranscript,
+    clearError: clearVoiceError,
+  } = useSpeechRecognition();
+
+  const voiceErrorMessage = getSpeechRecognitionErrorMessage(voiceError);
+  const composerBusy = sending || loading;
+  const displayValue =
+    isListening && interimTranscript
+      ? input.trim()
+        ? `${input.trim()} ${interimTranscript}`
+        : interimTranscript
+      : input;
 
   const { data } = useQuery({
     queryKey: ['dashboard', 'today'],
@@ -58,6 +93,12 @@ function AiHubContent() {
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, sending, loading]);
+
+  useEffect(() => {
+    if (!finalTranscript) return;
+    setInput((prev) => (prev.trim() ? `${prev.trim()} ${finalTranscript}` : finalTranscript));
+    resetTranscript();
+  }, [finalTranscript, resetTranscript]);
 
   const priorityTasks = data?.tasks.filter((t) => t.priority <= 2) ?? [];
   const nextActions = [
@@ -74,6 +115,25 @@ function AiHubContent() {
     if (!message || sending) return;
     setInput('');
     await sendMessage(message);
+  }
+
+  function handleMicClick() {
+    if (isListening) {
+      if (interimTranscript) {
+        setInput((prev) =>
+          prev.trim() ? `${prev.trim()} ${interimTranscript}` : interimTranscript,
+        );
+      }
+      stopListening();
+      resetTranscript();
+      return;
+    }
+    startListening();
+  }
+
+  function handleInputChange(value: string) {
+    setInput(value);
+    if (voiceError) clearVoiceError();
   }
 
   return (
@@ -206,6 +266,14 @@ function AiHubContent() {
 
       <div className="border-t border-border p-4">
         {error && <p className="mb-2 text-xs text-destructive">{error}</p>}
+        {voiceErrorMessage && (
+          <p className="mb-2 text-xs text-destructive">{voiceErrorMessage}</p>
+        )}
+        {(isListening || isProcessing) && (
+          <p className="mb-2 text-xs text-text-tertiary">
+            {isListening ? 'Ouvindo...' : 'Processando áudio...'}
+          </p>
+        )}
         <form
           className="flex gap-2"
           onSubmit={(e) => {
@@ -214,12 +282,46 @@ function AiHubContent() {
           }}
         >
           <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
+            className="flex-1"
+            value={displayValue}
+            onChange={(e) => handleInputChange(e.target.value)}
             placeholder="Conversar com Mika..."
-            disabled={sending || loading}
+            disabled={composerBusy}
           />
-          <Button type="submit" size="icon" disabled={sending || loading || !input.trim()}>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  type="button"
+                  variant={isListening ? 'destructive' : 'outline'}
+                  size="icon"
+                  className={isListening ? 'animate-pulse' : undefined}
+                  disabled={composerBusy || !isVoiceSupported}
+                  aria-label={
+                    isListening ? 'Parar entrada por voz' : 'Iniciar entrada por voz'
+                  }
+                  aria-pressed={isListening}
+                  onClick={handleMicClick}
+                >
+                  {isProcessing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isListening ? (
+                    <MicOff className="h-4 w-4" />
+                  ) : (
+                    <Mic className="h-4 w-4" />
+                  )}
+                </Button>
+              }
+            />
+            <TooltipContent>
+              {!isVoiceSupported
+                ? 'Reconhecimento de voz não disponível neste navegador.'
+                : isListening
+                  ? 'Parar gravação'
+                  : 'Falar com a Mika'}
+            </TooltipContent>
+          </Tooltip>
+          <Button type="submit" size="icon" disabled={composerBusy || !input.trim()}>
             <Send className="h-4 w-4" />
           </Button>
         </form>

@@ -10,16 +10,18 @@ Adicionar captura de voz ao AI Hub reutilizando o fluxo atual do Chat Inteligent
 
 ### Entrega
 
-- [ ] Criar hook `useSpeechRecognition`
-- [ ] Detectar suporte do navegador
-- [ ] Expor estado de escuta
-- [ ] Expor transcrição
-- [ ] Expor erros
+- [x] Criar hook `useSpeechRecognition`
+- [x] Detectar suporte do navegador
+- [x] Expor estado de escuta
+- [x] Expor transcrição
+- [x] Expor erros
 
 ### Done
 
-- [ ] Hook reutilizável criado
-- [ ] Compatível com TypeScript
+- [x] Hook reutilizável criado (`apps/web/src/hooks/use-speech-recognition.ts`)
+- [x] Compatível com TypeScript (`apps/web/src/types/speech-recognition.d.ts`)
+
+**Rastreabilidade:** VOICE-CHAT-01, VOICE-CHAT-04
 
 ---
 
@@ -27,13 +29,15 @@ Adicionar captura de voz ao AI Hub reutilizando o fluxo atual do Chat Inteligent
 
 ### Entrega
 
-- [ ] Adicionar botão ao lado do botão de enviar
-- [ ] Seguir identidade visual do projeto
-- [ ] Responsivo desktop/mobile
+- [x] Adicionar botão ao lado do botão de enviar
+- [x] Seguir identidade visual do projeto
+- [x] Responsivo desktop/mobile
 
 ### Done
 
-- [ ] Botão aparece no AI Hub
+- [x] Botão aparece no AI Hub (`ai-hub.tsx`)
+
+**Rastreabilidade:** VOICE-CHAT-01, VOICE-CHAT-03
 
 ---
 
@@ -41,14 +45,16 @@ Adicionar captura de voz ao AI Hub reutilizando o fluxo atual do Chat Inteligent
 
 ### Entrega
 
-- [ ] Estado idle
-- [ ] Estado ouvindo
-- [ ] Estado processando
-- [ ] Estado erro
+- [x] Estado idle
+- [x] Estado ouvindo
+- [x] Estado processando
+- [x] Estado erro
 
 ### Done
 
-- [ ] Usuário entende claramente quando o microfone está ativo
+- [x] Usuário entende claramente quando o microfone está ativo
+
+**Rastreabilidade:** VOICE-CHAT-03
 
 ---
 
@@ -56,13 +62,15 @@ Adicionar captura de voz ao AI Hub reutilizando o fluxo atual do Chat Inteligent
 
 ### Entrega
 
-- [ ] Preencher textarea automaticamente
-- [ ] Permitir edição antes do envio
-- [ ] Não alterar fluxo de envio existente
+- [x] Preencher input automaticamente
+- [x] Permitir edição antes do envio
+- [x] Não alterar fluxo de envio existente
 
 ### Done
 
-- [ ] Mensagem transcrita aparece corretamente no campo
+- [x] Mensagem transcrita aparece corretamente no campo
+
+**Rastreabilidade:** VOICE-CHAT-01, VOICE-CHAT-02, VOICE-CHAT-05 (envio manual)
 
 ---
 
@@ -78,19 +86,23 @@ Adicionar captura de voz ao AI Hub reutilizando o fluxo atual do Chat Inteligent
 
 - [ ] Funciona nos navegadores alvo do MVP
 
+**Nota:** Implementação pronta; validação multi-navegador depende do UAT (T008).
+
 ---
 
 ## T006 — Tratamento de erros
 
 ### Entrega
 
-- [ ] Permissão negada
-- [ ] Navegador incompatível
-- [ ] Falha de reconhecimento
+- [x] Permissão negada
+- [x] Navegador incompatível
+- [x] Falha de reconhecimento
 
 ### Done
 
-- [ ] Mensagens amigáveis em pt-BR
+- [x] Mensagens amigáveis em pt-BR (`getSpeechRecognitionErrorMessage`)
+
+**Rastreabilidade:** VOICE-CHAT-04
 
 ---
 
@@ -98,13 +110,13 @@ Adicionar captura de voz ao AI Hub reutilizando o fluxo atual do Chat Inteligent
 
 ### Entrega
 
-- [ ] Atualizar ROADMAP
-- [ ] Atualizar PROJECT
-- [ ] Atualizar STATE
+- [x] Atualizar ROADMAP
+- [x] Atualizar STATE
+- [ ] Atualizar PROJECT (sem alteração necessária — M7 não muda visão)
 
 ### Done
 
-- [ ] Documentação sincronizada
+- [x] Documentação sincronizada
 
 ---
 
@@ -123,3 +135,25 @@ Adicionar captura de voz ao AI Hub reutilizando o fluxo atual do Chat Inteligent
 
 - [ ] Sem regressão no Chat Inteligente
 - [ ] Fluxo atual de tool calling preservado
+
+### Registro UAT
+
+| # | Cenário | Navegador | Data | Resultado | Observações |
+|---|---------|-----------|------|-----------|-------------|
+| 1 | Criar tarefa por voz | | | | |
+| 2 | Consultar tarefas | | | | |
+| 3 | Prioridades | | | | |
+| 4 | Memória contextual | | | | |
+| 5 | Toggle escuta | | | | |
+| 6 | Permissão negada | | | | |
+| 7 | Navegador incompatível | | | | |
+| 8 | Regressão chat | | | | |
+| 9 | Mobile Sheet | | | | |
+
+**Gate de implementação (2026-06-07):** compilação Next.js OK + tipos OK. UAT funcional pendente — executar em **localhost** (Chrome Desktop) e Chrome Android. Staging HTTP puro pode falhar (Web Speech API exige contexto seguro).
+
+**Pré-requisitos UAT:**
+
+- Microfone disponível e permissão concedida
+- Chrome Desktop / Edge Desktop / Chrome Android
+- `pnpm dev` ou build local com HTTPS
