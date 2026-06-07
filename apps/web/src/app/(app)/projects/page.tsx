@@ -243,6 +243,12 @@ function ProjectFormModal({
     startDate: project?.startDate ? new Date(project.startDate).toISOString().slice(0, 10) : '',
     targetDate: project?.targetDate ? new Date(project.targetDate).toISOString().slice(0, 10) : '',
   });
+  const [formError, setFormError] = useState<string | null>(null);
+
+  function updateForm(patch: Partial<typeof form>) {
+    setFormError(null);
+    setForm((prev) => ({ ...prev, ...patch }));
+  }
 
   const mutation = useMutation({
     mutationFn: () => {
@@ -264,6 +270,9 @@ function ProjectFormModal({
       return projectsApi.create(payload as CreateProjectDto);
     },
     onSuccess,
+    onError: () => {
+      setFormError('Não foi possível salvar o projeto. Tente novamente.');
+    },
   });
 
   const isEdit = mode === 'edit';
@@ -282,7 +291,7 @@ function ProjectFormModal({
             <Input
               autoFocus
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              onChange={(e) => updateForm({ title: e.target.value })}
               placeholder="Nome do projeto"
             />
           </div>
@@ -291,7 +300,7 @@ function ProjectFormModal({
             <Label className="mb-1.5">Descrição</Label>
             <textarea
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) => updateForm({ description: e.target.value })}
               rows={2}
               className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
             />
@@ -302,7 +311,7 @@ function ProjectFormModal({
               <Label className="mb-1.5">Área de vida *</Label>
               <select
                 value={form.lifeAreaId}
-                onChange={(e) => setForm({ ...form, lifeAreaId: e.target.value })}
+                onChange={(e) => updateForm({ lifeAreaId: e.target.value })}
                 className={SELECT_CLASS}
               >
                 {lifeAreas.map((a) => (
@@ -319,7 +328,7 @@ function ProjectFormModal({
               <Label className="mb-1.5">Status</Label>
               <select
                 value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value as ProjectStatus })}
+                onChange={(e) => updateForm({ status: e.target.value as ProjectStatus })}
                 className={SELECT_CLASS}
               >
                 <option value="active">Ativo</option>
@@ -334,7 +343,7 @@ function ProjectFormModal({
               <select
                 value={form.priority}
                 onChange={(e) =>
-                  setForm({ ...form, priority: Number(e.target.value) as typeof form.priority })
+                  updateForm({ priority: Number(e.target.value) as typeof form.priority })
                 }
                 className={SELECT_CLASS}
               >
@@ -353,7 +362,7 @@ function ProjectFormModal({
               <Input
                 type="date"
                 value={form.startDate}
-                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                onChange={(e) => updateForm({ startDate: e.target.value })}
               />
             </div>
 
@@ -362,11 +371,13 @@ function ProjectFormModal({
               <Input
                 type="date"
                 value={form.targetDate}
-                onChange={(e) => setForm({ ...form, targetDate: e.target.value })}
+                onChange={(e) => updateForm({ targetDate: e.target.value })}
               />
             </div>
           </div>
         </div>
+
+        {formError && <p className="mt-4 text-sm text-destructive">{formError}</p>}
 
         <div className="mt-6 flex gap-3">
           <Button variant="secondary" onClick={onClose} className="flex-1">

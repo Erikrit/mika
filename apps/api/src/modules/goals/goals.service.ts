@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PrismaService } from '../prisma/prisma.service';
 import { MemoryQueueService } from '../memory/memory-queue.service';
 import type { CreateGoalDto, UpdateGoalDto } from '@mika/shared';
@@ -6,6 +7,7 @@ import type { CreateGoalDto, UpdateGoalDto } from '@mika/shared';
 @Injectable()
 export class GoalsService {
   constructor(
+    @InjectPinoLogger(GoalsService.name) private readonly logger: PinoLogger,
     private readonly prisma: PrismaService,
     private readonly memoryQueue: MemoryQueueService,
   ) {}
@@ -24,7 +26,7 @@ export class GoalsService {
       },
       include: { lifeArea: true },
     });
-    await this.memoryQueue.enqueueUpsert(userId, 'GOAL', goal.id);
+    this.enqueueGoalMemory(userId, goal.id);
     return goal;
   }
 
@@ -66,13 +68,25 @@ export class GoalsService {
       },
       include: { lifeArea: true },
     });
-    await this.memoryQueue.enqueueUpsert(userId, 'GOAL', id);
+    this.enqueueGoalMemory(userId, id);
     return goal;
   }
 
   async remove(userId: string, id: string) {
     await this.findOne(userId, id);
     await this.prisma.goal.delete({ where: { id } });
-    await this.memoryQueue.enqueueDelete(userId, 'GOAL', id);
+    this.enqueueGoalMemoryDelete(userId, id);
+  }
+
+  private enqueueGoalMemory(userId: string, goalId: string) {
+    void this.memoryQueue.enqueueUpsert(userId, 'GOAL', goalId).catch((err) => {
+      this.logger.warn({ err, goalId }, 'Falha ao enfileirar indexação de objetivo');
+    });
+  }
+
+  private enqueueGoalMemoryDelete(userId: string, goalId: string) {
+    void this.memoryQueue.enqueueDelete(userId, 'GOAL', goalId).catch((err) => {
+      this.logger.warn({ err, goalId }, 'Falha ao enfileirar remoção de objetivo da memória');
+    });
   }
 }

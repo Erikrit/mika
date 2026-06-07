@@ -241,6 +241,12 @@ function GoalFormModal({
     progress: goal?.progress ?? 0,
     targetDate: goal?.targetDate ? new Date(goal.targetDate).toISOString().slice(0, 10) : '',
   });
+  const [formError, setFormError] = useState<string | null>(null);
+
+  function updateForm(patch: Partial<typeof form>) {
+    setFormError(null);
+    setForm((prev) => ({ ...prev, ...patch }));
+  }
 
   const mutation = useMutation({
     mutationFn: () => {
@@ -261,6 +267,9 @@ function GoalFormModal({
       return goalsApi.create(payload as CreateGoalDto);
     },
     onSuccess,
+    onError: () => {
+      setFormError('Não foi possível salvar o objetivo. Tente novamente.');
+    },
   });
 
   const isEdit = mode === 'edit';
@@ -279,7 +288,7 @@ function GoalFormModal({
             <Input
               autoFocus
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              onChange={(e) => updateForm({ title: e.target.value })}
               placeholder="Qual é seu objetivo?"
             />
           </div>
@@ -288,7 +297,7 @@ function GoalFormModal({
             <Label className="mb-1.5">Descrição</Label>
             <textarea
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) => updateForm({ description: e.target.value })}
               rows={2}
               className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
             />
@@ -299,7 +308,7 @@ function GoalFormModal({
               <Label className="mb-1.5">Área de vida *</Label>
               <select
                 value={form.lifeAreaId}
-                onChange={(e) => setForm({ ...form, lifeAreaId: e.target.value })}
+                onChange={(e) => updateForm({ lifeAreaId: e.target.value })}
                 className={SELECT_CLASS}
               >
                 {lifeAreas.map((a) => (
@@ -316,7 +325,7 @@ function GoalFormModal({
               <Label className="mb-1.5">Horizonte</Label>
               <select
                 value={form.horizon}
-                onChange={(e) => setForm({ ...form, horizon: e.target.value as GoalHorizon })}
+                onChange={(e) => updateForm({ horizon: e.target.value as GoalHorizon })}
                 className={SELECT_CLASS}
               >
                 <option value="short">Curto prazo</option>
@@ -329,7 +338,7 @@ function GoalFormModal({
               <Label className="mb-1.5">Status</Label>
               <select
                 value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value as GoalStatus })}
+                onChange={(e) => updateForm({ status: e.target.value as GoalStatus })}
                 className={SELECT_CLASS}
               >
                 <option value="active">Ativo</option>
@@ -347,7 +356,7 @@ function GoalFormModal({
                 min={0}
                 max={100}
                 value={form.progress}
-                onChange={(e) => setForm({ ...form, progress: Number(e.target.value) })}
+                onChange={(e) => updateForm({ progress: Number(e.target.value) })}
                 className="w-full accent-accent"
               />
             </div>
@@ -357,11 +366,13 @@ function GoalFormModal({
               <Input
                 type="date"
                 value={form.targetDate}
-                onChange={(e) => setForm({ ...form, targetDate: e.target.value })}
+                onChange={(e) => updateForm({ targetDate: e.target.value })}
               />
             </div>
           </div>
         </div>
+
+        {formError && <p className="mt-4 text-sm text-destructive">{formError}</p>}
 
         <div className="mt-6 flex gap-3">
           <Button variant="secondary" onClick={onClose} className="flex-1">

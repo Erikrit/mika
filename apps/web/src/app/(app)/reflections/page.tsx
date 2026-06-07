@@ -158,6 +158,12 @@ function ReflectionFormModal({
     mood: '',
     routineType: '' as '' | RoutineType,
   });
+  const [formError, setFormError] = useState<string | null>(null);
+
+  function updateForm(patch: Partial<typeof form>) {
+    setFormError(null);
+    setForm((prev) => ({ ...prev, ...patch }));
+  }
 
   const mutation = useMutation({
     mutationFn: () => {
@@ -170,6 +176,9 @@ function ReflectionFormModal({
       return reflectionsApi.create(payload);
     },
     onSuccess,
+    onError: () => {
+      setFormError('Não foi possível salvar a reflexão. Tente novamente.');
+    },
   });
 
   return (
@@ -183,7 +192,7 @@ function ReflectionFormModal({
             <textarea
               autoFocus
               value={form.content}
-              onChange={(e) => setForm({ ...form, content: e.target.value })}
+              onChange={(e) => updateForm({ content: e.target.value })}
               rows={6}
               placeholder="Como você está se sentindo? O que aprendeu hoje?"
               className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
@@ -196,8 +205,7 @@ function ReflectionFormModal({
               <select
                 value={form.energyLevel}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
+                  updateForm({
                     energyLevel: e.target.value as typeof form.energyLevel,
                   })
                 }
@@ -215,8 +223,7 @@ function ReflectionFormModal({
               <select
                 value={form.routineType}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
+                  updateForm({
                     routineType: e.target.value as typeof form.routineType,
                   })
                 }
@@ -236,12 +243,14 @@ function ReflectionFormModal({
             <input
               type="text"
               value={form.mood}
-              onChange={(e) => setForm({ ...form, mood: e.target.value })}
+              onChange={(e) => updateForm({ mood: e.target.value })}
               placeholder="Ex.: tranquilo, animado..."
               className="w-full rounded-lg border border-input bg-surface px-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none"
             />
           </div>
         </div>
+
+        {formError && <p className="mt-4 text-sm text-destructive">{formError}</p>}
 
         <div className="mt-6 flex gap-3">
           <Button variant="secondary" onClick={onClose} className="flex-1">

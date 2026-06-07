@@ -41,6 +41,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
+      WEB_URL: ${WEB_URL:-http://localhost:3000}
       DATABASE_URL: ${DATABASE_URL:-postgresql://mika:changeme@postgres:5432/mika?schema=public}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
     ports:
@@ -68,15 +69,16 @@ services:
         condition: service_healthy
 
   web:
-    image: mikaassit/mika-web:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.web
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     container_name: mika-web
     restart: always
-    env_file:
-      - ../.env
     environment:
       NODE_ENV: production
       PORT: 3000
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     ports:
       - "3000:3000"
     depends_on:

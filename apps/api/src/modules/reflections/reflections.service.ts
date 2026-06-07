@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PrismaService } from '../prisma/prisma.service';
 import { EncryptionService } from '../../common/encryption.service';
 import { MemoryQueueService } from '../memory/memory-queue.service';
@@ -7,6 +8,7 @@ import type { CreateReflectionDto } from '@mika/shared';
 @Injectable()
 export class ReflectionsService {
   constructor(
+    @InjectPinoLogger(ReflectionsService.name) private readonly logger: PinoLogger,
     private readonly prisma: PrismaService,
     private readonly encryption: EncryptionService,
     private readonly memoryQueue: MemoryQueueService,
@@ -23,7 +25,7 @@ export class ReflectionsService {
         routineType: dto.routineType?.toUpperCase() as never,
       },
     });
-    await this.memoryQueue.enqueueUpsert(userId, 'REFLECTION', reflection.id);
+    this.enqueueReflectionMemory(userId, reflection.id);
     return { ...reflection, content: dto.content };
   }
 
@@ -49,6 +51,18 @@ export class ReflectionsService {
   async remove(userId: string, id: string) {
     await this.findOne(userId, id);
     await this.prisma.reflection.delete({ where: { id } });
-    await this.memoryQueue.enqueueDelete(userId, 'REFLECTION', id);
+    this.enqueueReflectionMemoryDelete(userId, id);
+  }
+
+  private enqueueReflectionMemory(userId: string, reflectionId: string) {
+    void this.memoryQueue.enqueueUpsert(userId, 'REFLECTION', reflectionId).catch((err) => {
+      this.logger.warn({ err, reflectionId }, 'Falha ao enfileirar indexação de reflexão');
+    });
+  }
+
+  private enqueueReflectionMemoryDelete(userId: string, reflectionId: string) {
+    void this.memoryQueue.enqueueDelete(userId, 'REFLECTION', reflectionId).catch((err) => {
+      this.logger.warn({ err, reflectionId }, 'Falha ao enfileirar remoção de reflexão da memória');
+    });
   }
 }

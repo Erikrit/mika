@@ -5,6 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 export const api = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 30_000,
 });
 
 api.interceptors.request.use((config) => {
@@ -34,6 +35,11 @@ api.interceptors.response.use(
         localStorage.removeItem('mika_refresh_token');
         window.location.href = '/login';
       }
+    }
+    if (!error.response && error.code === 'ECONNABORTED') {
+      error.message = 'A requisição demorou demais. Verifique sua conexão e tente novamente.';
+    } else if (!error.response) {
+      error.message = 'Não foi possível conectar ao servidor. Tente novamente.';
     }
     return Promise.reject(error);
   },

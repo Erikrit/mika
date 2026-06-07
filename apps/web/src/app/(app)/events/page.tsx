@@ -268,6 +268,12 @@ function EventFormModal({
     startsAt: defaultStart,
     endsAt: defaultEnd,
   });
+  const [formError, setFormError] = useState<string | null>(null);
+
+  function updateForm(patch: Partial<typeof form>) {
+    setFormError(null);
+    setForm((prev) => ({ ...prev, ...patch }));
+  }
 
   const mutation = useMutation({
     mutationFn: () => {
@@ -297,6 +303,9 @@ function EventFormModal({
       return eventsApi.create(payload as CreateEventDto);
     },
     onSuccess,
+    onError: () => {
+      setFormError('Não foi possível salvar o evento. Tente novamente.');
+    },
   });
 
   const isEdit = mode === 'edit';
@@ -314,7 +323,7 @@ function EventFormModal({
             <Input
               autoFocus
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              onChange={(e) => updateForm({ title: e.target.value })}
               placeholder="Nome do compromisso"
             />
           </div>
@@ -323,7 +332,7 @@ function EventFormModal({
             <Label className="mb-1.5">Descrição</Label>
             <textarea
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) => updateForm({ description: e.target.value })}
               rows={2}
               className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
             />
@@ -333,7 +342,7 @@ function EventFormModal({
             <Label className="mb-1.5">Local</Label>
             <Input
               value={form.location}
-              onChange={(e) => setForm({ ...form, location: e.target.value })}
+              onChange={(e) => updateForm({ location: e.target.value })}
               placeholder="Opcional"
             />
           </div>
@@ -342,7 +351,7 @@ function EventFormModal({
             <input
               type="checkbox"
               checked={form.isAllDay}
-              onChange={(e) => setForm({ ...form, isAllDay: e.target.checked })}
+              onChange={(e) => updateForm({ isAllDay: e.target.checked })}
               className="rounded border-input accent-accent"
             />
             Dia inteiro
@@ -354,7 +363,7 @@ function EventFormModal({
               <Input
                 type={form.isAllDay ? 'date' : 'datetime-local'}
                 value={form.startsAt}
-                onChange={(e) => setForm({ ...form, startsAt: e.target.value })}
+                onChange={(e) => updateForm({ startsAt: e.target.value })}
               />
             </div>
 
@@ -363,7 +372,7 @@ function EventFormModal({
               <Input
                 type={form.isAllDay ? 'date' : 'datetime-local'}
                 value={form.endsAt}
-                onChange={(e) => setForm({ ...form, endsAt: e.target.value })}
+                onChange={(e) => updateForm({ endsAt: e.target.value })}
               />
             </div>
           </div>
@@ -373,7 +382,7 @@ function EventFormModal({
               <Label className="mb-1.5">Área de vida</Label>
               <select
                 value={form.lifeAreaId}
-                onChange={(e) => setForm({ ...form, lifeAreaId: e.target.value })}
+                onChange={(e) => updateForm({ lifeAreaId: e.target.value })}
                 className={SELECT_CLASS}
               >
                 <option value="">Sem área</option>
@@ -386,6 +395,8 @@ function EventFormModal({
             </div>
           )}
         </div>
+
+        {formError && <p className="mt-4 text-sm text-destructive">{formError}</p>}
 
         <div className="mt-6 flex gap-3">
           <Button variant="secondary" onClick={onClose} className="flex-1">

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PrismaService } from '../prisma/prisma.service';
 import { MemoryQueueService } from '../memory/memory-queue.service';
 import type { CreateProjectDto, UpdateProjectDto } from '@mika/shared';
@@ -6,6 +7,7 @@ import type { CreateProjectDto, UpdateProjectDto } from '@mika/shared';
 @Injectable()
 export class ProjectsService {
   constructor(
+    @InjectPinoLogger(ProjectsService.name) private readonly logger: PinoLogger,
     private readonly prisma: PrismaService,
     private readonly memoryQueue: MemoryQueueService,
   ) {}
@@ -25,7 +27,7 @@ export class ProjectsService {
       },
       include: { lifeArea: true },
     });
-    await this.memoryQueue.enqueueUpsert(userId, 'PROJECT', project.id);
+    this.enqueueProjectMemory(userId, project.id);
     return project;
   }
 
@@ -67,13 +69,25 @@ export class ProjectsService {
       },
       include: { lifeArea: true },
     });
-    await this.memoryQueue.enqueueUpsert(userId, 'PROJECT', id);
+    this.enqueueProjectMemory(userId, id);
     return project;
   }
 
   async remove(userId: string, id: string) {
     await this.findOne(userId, id);
     await this.prisma.project.delete({ where: { id } });
-    await this.memoryQueue.enqueueDelete(userId, 'PROJECT', id);
+    this.enqueueProjectMemoryDelete(userId, id);
+  }
+
+  private enqueueProjectMemory(userId: string, projectId: string) {
+    void this.memoryQueue.enqueueUpsert(userId, 'PROJECT', projectId).catch((err) => {
+      this.logger.warn({ err, projectId }, 'Falha ao enfileirar indexação de projeto');
+    });
+  }
+
+  private enqueueProjectMemoryDelete(userId: string, projectId: string) {
+    void this.memoryQueue.enqueueDelete(userId, 'PROJECT', projectId).catch((err) => {
+      this.logger.warn({ err, projectId }, 'Falha ao enfileirar remoção de projeto da memória');
+    });
   }
 }

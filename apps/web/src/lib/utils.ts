@@ -30,6 +30,12 @@ export const STATUS_CONFIG = {
   cancelled: { label: 'Cancelado', color: 'bg-critical/10 text-critical' },
 } as const;
 
+export type TaskStatus = keyof typeof STATUS_CONFIG;
+
+export function normalizeTaskStatus(status: string): TaskStatus {
+  return String(status).toLowerCase() as TaskStatus;
+}
+
 export function getGreeting(name?: string): string {
   const hour = new Date().getHours();
   const firstName = name?.split(' ')[0] ?? 'você';

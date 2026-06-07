@@ -92,6 +92,8 @@ pnpm --filter web dev      # http://localhost:3000
 
 ```
 
+> **Nota:** CRUD básico (tarefas, eventos, projetos, etc.) funciona sem Redis. Redis e os workers (`memory-index`, `reminder-dispatch`) são necessários apenas para indexação de memória, lembretes e outras funcionalidades assíncronas.
+
 
 
 Acesse [http://localhost:3000/login](http://localhost:3000/login) e entre com as credenciais acima.

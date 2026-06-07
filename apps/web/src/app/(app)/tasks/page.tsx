@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi, lifeAreasApi } from '@/lib/api-client';
-import { PRIORITY_CONFIG, STATUS_CONFIG, cn } from '@/lib/utils';
+import { PRIORITY_CONFIG, STATUS_CONFIG, cn, normalizeTaskStatus } from '@/lib/utils';
 import { PageHeader } from '@/components/ui/page-header';
 import { MikaCard } from '@/components/ui/mika-card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ export default function TasksPage() {
   const [statusFilter, setStatusFilter] = useState<TaskStatus | ''>('');
   const [formMode, setFormMode] = useState<'create' | 'edit' | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: tasks, isLoading } = useQuery({
@@ -34,27 +35,37 @@ export default function TasksPage() {
   const completeMutation = useMutation({
     mutationFn: (id: string) => tasksApi.complete(id),
     onSuccess: () => {
+      setActionError(null);
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+    onError: () => {
+      setActionError('Não foi possível concluir a tarefa. Tente novamente.');
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => tasksApi.delete(id),
     onSuccess: () => {
+      setActionError(null);
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+    onError: () => {
+      setActionError('Não foi possível excluir a tarefa. Tente novamente.');
     },
   });
 
   function openCreate() {
     setEditingTask(null);
     setFormMode('create');
+    setActionError(null);
   }
 
   function openEdit(task: Task) {
     setEditingTask(task);
     setFormMode('edit');
+    setActionError(null);
   }
 
   function closeForm() {
@@ -67,8 +78,11 @@ export default function TasksPage() {
     deleteMutation.mutate(task.id);
   }
 
-  function handleFormSuccess() {
+  function handleFormSuccess(mode: 'create' | 'edit') {
     closeForm();
+    if (mode === 'create') {
+      setStatusFilter('');
+    }
     queryClient.invalidateQueries({ queryKey: ['tasks'] });
     queryClient.invalidateQueries({ queryKey: ['dashboard'] });
   }
@@ -101,6 +115,10 @@ export default function TasksPage() {
         )}
       </div>
 
+      {actionError && (
+        <p className="text-sm text-destructive">{actionError}</p>
+      )}
+
       {isLoading ? (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
@@ -118,18 +136,20 @@ export default function TasksPage() {
       ) : (
         <div className="space-y-2">
           {tasks?.map((task) => {
+            const status = normalizeTaskStatus(task.status);
             const p = PRIORITY_CONFIG[task.priority as keyof typeof PRIORITY_CONFIG];
-            const s = STATUS_CONFIG[task.status as keyof typeof STATUS_CONFIG];
+            const s = STATUS_CONFIG[status];
+            const isDone = status === 'done';
             return (
               <MikaCard key={task.id} className="py-4">
                 <div className="flex items-start gap-4">
                   <button
                     type="button"
-                    onClick={() => task.status !== 'done' && completeMutation.mutate(task.id)}
-                    disabled={task.status === 'done' || completeMutation.isPending}
+                    onClick={() => !isDone && completeMutation.mutate(task.id)}
+                    disabled={isDone || completeMutation.isPending}
                     className={cn(
                       'mt-0.5 flex-shrink-0 transition-colors duration-200',
-                      task.status === 'done' ? 'text-progress' : 'text-text-tertiary hover:text-accent',
+                      isDone ? 'text-progress' : 'text-text-tertiary hover:text-accent',
                     )}
                   >
                     <CheckCircle2 className="h-5 w-5" />
@@ -139,7 +159,7 @@ export default function TasksPage() {
                     <p
                       className={cn(
                         'font-medium',
-                        task.status === 'done' ? 'text-text-tertiary line-through' : 'text-text-primary',
+                        isDone ? 'text-text-tertiary line-through' : 'text-text-primary',
                       )}
                     >
                       {task.title}
@@ -211,7 +231,7 @@ function TaskFormModal({
   task?: Task;
   lifeAreas: Array<{ id: string; label: string; color: string }>;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (mode: 'create' | 'edit') => void;
 }) {
   const [form, setForm] = useState({
     title: task?.title ?? '',
@@ -220,6 +240,12 @@ function TaskFormModal({
     lifeAreaId: task?.lifeAreaId ?? '',
     dueAt: task?.dueAt ? new Date(task.dueAt).toISOString().slice(0, 10) : '',
   });
+  const [formError, setFormError] = useState<string | null>(null);
+
+  function updateForm(patch: Partial<typeof form>) {
+    setFormError(null);
+    setForm((prev) => ({ ...prev, ...patch }));
+  }
 
   const mutation = useMutation({
     mutationFn: () => {
@@ -237,14 +263,23 @@ function TaskFormModal({
 
       return tasksApi.create({ ...payload, contextTags: [] });
     },
-    onSuccess,
+    onSuccess: () => onSuccess(mode),
+    onError: () => {
+      setFormError('Não foi possível salvar a tarefa. Tente novamente.');
+    },
   });
 
   const isEdit = mode === 'edit';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <MikaCard className="w-full max-w-md shadow-2xl">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={onClose}
+    >
+      <MikaCard
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="mb-5 text-lg font-bold text-text-primary">
           {isEdit ? 'Editar Tarefa' : 'Nova Tarefa'}
         </h2>
@@ -256,7 +291,7 @@ function TaskFormModal({
               autoFocus
               type="text"
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              onChange={(e) => updateForm({ title: e.target.value })}
               placeholder="O que precisa ser feito?"
             />
           </div>
@@ -265,7 +300,7 @@ function TaskFormModal({
             <Label className="mb-1.5">Descrição</Label>
             <textarea
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) => updateForm({ description: e.target.value })}
               rows={2}
               className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/30"
             />
@@ -277,7 +312,7 @@ function TaskFormModal({
               <select
                 value={form.priority}
                 onChange={(e) =>
-                  setForm({ ...form, priority: Number(e.target.value) as Task['priority'] })
+                  updateForm({ priority: Number(e.target.value) as Task['priority'] })
                 }
                 className="w-full rounded-lg border border-input bg-surface px-3 py-2.5 text-sm text-text-primary focus:border-accent focus:outline-none"
               >
@@ -292,7 +327,7 @@ function TaskFormModal({
               <Input
                 type="date"
                 value={form.dueAt}
-                onChange={(e) => setForm({ ...form, dueAt: e.target.value })}
+                onChange={(e) => updateForm({ dueAt: e.target.value })}
               />
             </div>
           </div>
@@ -302,7 +337,7 @@ function TaskFormModal({
               <Label className="mb-1.5">Área de vida</Label>
               <select
                 value={form.lifeAreaId}
-                onChange={(e) => setForm({ ...form, lifeAreaId: e.target.value })}
+                onChange={(e) => updateForm({ lifeAreaId: e.target.value })}
                 className="w-full rounded-lg border border-input bg-surface px-3 py-2.5 text-sm text-text-primary focus:border-accent focus:outline-none"
               >
                 <option value="">Sem área</option>
@@ -313,6 +348,8 @@ function TaskFormModal({
             </div>
           )}
         </div>
+
+        {formError && <p className="mt-4 text-sm text-destructive">{formError}</p>}
 
         <div className="mt-6 flex gap-3">
           <Button variant="secondary" onClick={onClose} className="flex-1">

@@ -3,12 +3,32 @@ import { Logger } from 'nestjs-pino';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
+function resolveCorsOrigins(): string | string[] {
+  const fromList = process.env.CORS_ORIGINS?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  if (fromList?.length) {
+    return fromList.length === 1 ? fromList[0] : fromList;
+  }
+
+  const origins = new Set<string>();
+  origins.add(process.env.WEB_URL ?? 'http://localhost:3000');
+
+  process.env.CORS_EXTRA_ORIGINS?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .forEach((origin) => origins.add(origin));
+
+  const list = [...origins];
+  return list.length === 1 ? list[0] : list;
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
   app.useLogger(app.get(Logger));
   app.enableCors({
-    origin: process.env.WEB_URL ?? 'http://localhost:3000',
+    origin: resolveCorsOrigins(),
     credentials: true,
   });
   app.setGlobalPrefix('');

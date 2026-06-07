@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PrismaService } from '../prisma/prisma.service';
 import { MemoryQueueService } from '../memory/memory-queue.service';
 import { ReminderSchedulerService } from '../reminders/reminder-scheduler.service';
@@ -7,6 +8,7 @@ import type { CreateTaskDto, UpdateTaskDto, TaskFilters } from '@mika/shared';
 @Injectable()
 export class TasksService {
   constructor(
+    @InjectPinoLogger(TasksService.name) private readonly logger: PinoLogger,
     private readonly prisma: PrismaService,
     private readonly memoryQueue: MemoryQueueService,
     private readonly reminders: ReminderSchedulerService,
@@ -28,8 +30,8 @@ export class TasksService {
       },
       include: { lifeArea: true, project: { select: { id: true, title: true } } },
     });
-    await this.memoryQueue.enqueueUpsert(userId, 'TASK', task.id);
-    await this.reminders.syncTaskReminder(
+    this.enqueueTaskMemory(userId, task.id);
+    this.syncTaskReminderAsync(
       userId,
       task.id,
       task.title,
@@ -82,8 +84,8 @@ export class TasksService {
       },
       include: { lifeArea: true },
     });
-    await this.memoryQueue.enqueueUpsert(userId, 'TASK', id);
-    await this.reminders.syncTaskReminder(
+    this.enqueueTaskMemory(userId, id);
+    this.syncTaskReminderAsync(
       userId,
       task.id,
       task.title,
@@ -99,16 +101,16 @@ export class TasksService {
       where: { id },
       data: { status: 'DONE', completedAt: new Date(), neglectedSince: null },
     });
-    await this.memoryQueue.enqueueUpsert(userId, 'TASK', id);
-    await this.reminders.cancelEntityReminders(userId, 'TASK', id);
+    this.enqueueTaskMemory(userId, id);
+    this.cancelTaskRemindersAsync(userId, id);
     return task;
   }
 
   async remove(userId: string, id: string) {
     await this.findOne(userId, id);
-    await this.reminders.cancelEntityReminders(userId, 'TASK', id);
+    this.cancelTaskRemindersAsync(userId, id);
     await this.prisma.task.delete({ where: { id } });
-    await this.memoryQueue.enqueueDelete(userId, 'TASK', id);
+    this.enqueueTaskMemoryDelete(userId, id);
   }
 
   async getTodayTasks(userId: string, timezone: string = 'America/Sao_Paulo') {
@@ -140,6 +142,38 @@ export class TasksService {
         status: { in: ['TODO', 'IN_PROGRESS'] },
         dueAt: { lt: now },
       },
+    });
+  }
+
+  private enqueueTaskMemory(userId: string, taskId: string) {
+    void this.memoryQueue.enqueueUpsert(userId, 'TASK', taskId).catch((err) => {
+      this.logger.warn({ err, taskId }, 'Falha ao enfileirar indexação de tarefa');
+    });
+  }
+
+  private enqueueTaskMemoryDelete(userId: string, taskId: string) {
+    void this.memoryQueue.enqueueDelete(userId, 'TASK', taskId).catch((err) => {
+      this.logger.warn({ err, taskId }, 'Falha ao enfileirar remoção de tarefa da memória');
+    });
+  }
+
+  private syncTaskReminderAsync(
+    userId: string,
+    taskId: string,
+    title: string,
+    dueAt: Date | null,
+    status: string,
+  ) {
+    void this.reminders
+      .syncTaskReminder(userId, taskId, title, dueAt, status)
+      .catch((err) => {
+        this.logger.warn({ err, taskId }, 'Falha ao enfileirar lembrete de tarefa');
+      });
+  }
+
+  private cancelTaskRemindersAsync(userId: string, taskId: string) {
+    void this.reminders.cancelEntityReminders(userId, 'TASK', taskId).catch((err) => {
+      this.logger.warn({ err, taskId }, 'Falha ao cancelar lembretes de tarefa');
     });
   }
 }

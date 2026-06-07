@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PrismaService } from '../prisma/prisma.service';
 import { ReminderSchedulerService } from '../reminders/reminder-scheduler.service';
 import type { CreateEventDto, UpdateEventDto, EventFilters } from '@mika/shared';
@@ -6,6 +7,7 @@ import type { CreateEventDto, UpdateEventDto, EventFilters } from '@mika/shared'
 @Injectable()
 export class EventsService {
   constructor(
+    @InjectPinoLogger(EventsService.name) private readonly logger: PinoLogger,
     private readonly prisma: PrismaService,
     private readonly reminders: ReminderSchedulerService,
   ) {}
@@ -25,7 +27,7 @@ export class EventsService {
       },
       include: { lifeArea: true },
     });
-    await this.reminders.syncEventReminder(
+    this.syncEventReminderAsync(
       userId,
       event.id,
       event.title,
@@ -69,7 +71,7 @@ export class EventsService {
       },
       include: { lifeArea: true },
     });
-    await this.reminders.syncEventReminder(
+    this.syncEventReminderAsync(
       userId,
       event.id,
       event.title,
@@ -81,7 +83,7 @@ export class EventsService {
 
   async remove(userId: string, id: string) {
     await this.findOne(userId, id);
-    await this.reminders.cancelEntityReminders(userId, 'EVENT', id);
+    this.cancelEventRemindersAsync(userId, id);
     await this.prisma.event.delete({ where: { id } });
   }
 
@@ -99,6 +101,26 @@ export class EventsService {
       },
       orderBy: { startsAt: 'asc' },
       include: { lifeArea: true },
+    });
+  }
+
+  private syncEventReminderAsync(
+    userId: string,
+    eventId: string,
+    title: string,
+    startsAt: Date,
+    location: string | null,
+  ) {
+    void this.reminders
+      .syncEventReminder(userId, eventId, title, startsAt, location)
+      .catch((err) => {
+        this.logger.warn({ err, eventId }, 'Falha ao enfileirar lembrete de evento');
+      });
+  }
+
+  private cancelEventRemindersAsync(userId: string, eventId: string) {
+    void this.reminders.cancelEntityReminders(userId, 'EVENT', eventId).catch((err) => {
+      this.logger.warn({ err, eventId }, 'Falha ao cancelar lembretes de evento');
     });
   }
 }
