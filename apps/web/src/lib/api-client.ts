@@ -153,7 +153,7 @@ export const chatApi = {
     sessionId: string | undefined,
     onToken: (token: string) => void,
   ): Promise<{ sessionId: string; reply: string; createdAt: string }> => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://2.25.165.198:3001';
     const token =
       typeof window !== 'undefined' ? localStorage.getItem('mika_access_token') : null;
 
