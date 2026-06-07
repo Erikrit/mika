@@ -1,9 +1,9 @@
 # Roadmap — Mika
 
-**Current Milestone:** MAINT-M2 — UI F01 (sem Finanças na v1) — **Done (local)**
-**Status:** M6 Done (local) · MAINT-M2 Done (local) · Finanças UI adiado v2/v3 (AD-013)
+**Current Milestone:** M7 — Entrada por Voz no Chat — **Planned**
+**Status:** M6 Done (local) · MAINT-M2 Done (local) · M7 planejado · Finanças UI adiado v2/v3 (AD-013)
 
-> **Nota de numeração:** em `.specs/features/`, F05 = Lembretes e F06 = Chat Inteligente. No roadmap abaixo, F10/F11 correspondem à mesma entrega (M5/M6).
+> **Nota de numeração:** em `.specs/features/`, F05 = Lembretes e F06 = Chat Inteligente. No roadmap abaixo, F10/F11 correspondem à mesma entrega (M5/M6). A entrada por voz no chat foi antecipada como M7 por entregar valor imediato antes da Voz Conversacional completa.
 
 ---
 
@@ -183,7 +183,35 @@ Mika deixa de ser apenas uma assistente com memória técnica e passa a atuar co
 
 ---
 
-## M7 — Assistente Completo
+## M7 — Entrada por Voz no Chat
+
+**Goal:** Permitir que o usuário fale comandos para Mika no AI Hub, convertendo voz em texto e reutilizando o fluxo atual do Chat Inteligente.
+**Target:** +1 semana após M6
+**Status:** Planned
+
+### Features
+
+**F11A — Entrada por Voz no Chat** — PLANNED
+
+* Botão de microfone no AI Hub ao lado do envio
+* Speech-to-Text no navegador com idioma pt-BR
+* Transcrição preenchendo o input atual do chat
+* Envio manual após revisão do texto transcrito
+* Reutilização do ChatModule, SSE streaming, histórico e tool calling existentes
+* Criação de tarefas e consultas contextuais por voz sem alterar contrato das tools
+* Tratamento de permissão negada, navegador incompatível e falha de reconhecimento
+
+### Critério de Sucesso
+
+* Usuário consegue criar tarefas por voz
+* Usuário consegue consultar tarefas, eventos e prioridades por voz
+* Nenhuma alteração necessária no fluxo atual de tool calling
+* Funciona em Chrome Desktop, Edge Desktop e Chrome Android
+* UAT manual registrado em `.specs/features/M7-entrada-voz-chat/tasks.md`
+
+---
+
+## M8 — Assistente Completo
 
 **Goal:** Evoluir Mika para um segundo cérebro digital capaz de auxiliar no crescimento pessoal e profissional.
 
@@ -219,7 +247,7 @@ Mika deixa de ser apenas uma assistente com memória técnica e passa a atuar co
 
 ---
 
-## M8 — Android Companion
+## M9 — Android Companion
 
 **Goal:** Disponibilizar Mika como aplicativo Android completo.
 
@@ -247,7 +275,7 @@ Usuário conseguir utilizar Mika integralmente sem acessar a versão web.
 
 ---
 
-## M9 — Expansão da Memória Pessoal
+## M10 — Expansão da Memória Pessoal
 
 **Goal:** Transformar Mika em uma memória viva da evolução do usuário ao longo dos anos.
 
@@ -295,21 +323,27 @@ Usuário conseguir utilizar Mika integralmente sem acessar a versão web.
 
 ---
 
-## M10 — Voz Conversacional
+## M11 — Voz Conversacional
 
-**Goal:** Permitir interação natural por voz.
+**Goal:** Permitir interação natural por voz, indo além da transcrição pontual do M7.
 
 ### Funcionalidades
 
-* Conversação contínua
-* Speech-to-Text
-* Text-to-Speech
-* Wake Word personalizada
+* STT backend para maior controle, privacidade configurável e compatibilidade cross-browser
+* Text-to-Speech para Mika responder em voz natural
+* Conversação contínua com sessão de áudio
+* Wake word personalizada “Mika”
 * Modo mãos livres
+* Estratégia de permissão, privacidade e não persistência indevida de áudio
+* Fallback para entrada por texto quando voz não estiver disponível
+
+### Observação
+
+Este milestone depende do aprendizado do M7. A entrada por voz no chat é a ponte técnica e de UX para validar comandos reais antes de investir em STT backend, TTS, wake word e modo mãos livres.
 
 ---
 
-## M11 — Alexa / Google Home
+## M12 — Alexa / Google Home
 
 **Goal:** Tornar Mika acessível pelos principais assistentes domésticos.
 
@@ -322,7 +356,7 @@ Usuário conseguir utilizar Mika integralmente sem acessar a versão web.
 
 ---
 
-## M12 — Casa Inteligente
+## M13 — Casa Inteligente
 
 **Goal:** Transformar Mika no centro de automação pessoal e residencial.
 
@@ -365,10 +399,11 @@ M3 - Rotinas ✅
 M4 - Contexto Pessoal e Memória Humanizada ✅
 M5 - Proatividade ✅
 M6 - Copiloto ✅
-M7 - Assistente Completo
-M8 - Android Companion
-M9 - Expansão da Memória Pessoal
-M10 - Voz Conversacional
-M11 - Alexa / Google Home
-M12 - Casa Inteligente
+M7 - Entrada por Voz no Chat
+M8 - Assistente Completo
+M9 - Android Companion
+M10 - Expansão da Memória Pessoal
+M11 - Voz Conversacional
+M12 - Alexa / Google Home
+M13 - Casa Inteligente
 ```
