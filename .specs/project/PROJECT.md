@@ -57,6 +57,10 @@ packages/ai   → Prompts, RAG utilities
 - F05: Lembretes (tarefas, compromissos, datas, objetivos negligenciados)
 - F06: Chat inteligente contextual via web e Telegram
 
+**v1.5 / evolução imediata:**
+
+- F11A: Entrada por voz no chat utilizando Speech-to-Text do navegador, mantendo o fluxo atual do ChatModule e das tools
+
 **v1 — backend only (UI adiada v2/v3):**
 
 - Metas financeiras básicas (`FinanceGoalsModule` + API REST) — sem aba web nem tool de chat por enquanto (AD-013)
@@ -100,10 +104,19 @@ Fase 2
 - Notificações nativas
 - Widgets inteligentes
 
+Fase 2.5
+- Entrada por voz no chat
+- Speech-to-Text no navegador
+- Captura rápida de tarefas e compromissos
+- Integração com fluxo existente do copiloto
+
 Fase 3
-- Assistente por voz
+- Assistente por voz completo
+- STT backend
+- Text-to-Speech
 - Wake word personalizada
 - Conversas contínuas
+- Modo mãos livres
 
 Fase 4
 - Integração Alexa
