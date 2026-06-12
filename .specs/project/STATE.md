@@ -1,11 +1,40 @@
 # State — Mika
 
-**Last Updated:** 2026-06-07
-**Current Work:** M8 — Assistente Completo (M7 implementado; UAT voz pendente)
+**Last Updated:** 2026-06-12
+**Current Work:** Repriorização V1 — simplificar integrações, fortalecer Projetos, Dashboard e Agenda
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-016: Repriorização de integrações e roadmap da V1 (2026-06-12)
+
+**Decision:** Reposicionar a Mika V1 como assistente pessoal Web/PWA focada em organização, projetos, tarefas, agenda e memória, removendo integrações pouco utilizadas ou prematuras da prioridade atual.
+
+**Mudanças aprovadas:**
+
+* Telegram deixa de ser canal prioritário/ativo da V1 e passa para legado/opcional.
+* Aplicativo Desktop nativo deixa de fazer parte do roadmap.
+* Web/PWA responsivo passa a ser o canal principal.
+* n8n deixa de ser peça central e passa a opcional/complementar.
+* Projetos passam a centralizar objetivos, tarefas, eventos, marcos, arquivos e prompts.
+* Aba Objetivos deve ser removida ou ocultada da navegação principal.
+* Dashboard e Agenda devem exibir calendário + tarefas do dia.
+* Integrações futuras prioritárias: Google Calendar, Microsoft To Do, Web Push/PWA notifications e Gmail.
+
+**Reason:**
+A V1 precisa validar a experiência principal com baixo custo e baixa complexidade. Telegram era um sistema antigo e quase não utilizado. Desktop nativo aumentaria escopo sem necessidade, já que Web/PWA cobre notebook, navegador e celular.
+
+**Impact:**
+
+* Não criar novas features dependentes de Telegram.
+* Não planejar Tauri, Electron ou app desktop separado.
+* Atualizar roadmap e specs para refletir a nova prioridade.
+* Criar spec para Projetos por prompt/arquivo.
+* Revisar a UI para consolidar Objetivos dentro de Projetos.
+
+**Documento:** `.specs/project/AD-016-repriorizacao-integracoes-e-roadmap.md`
+
 ### AD-015: Evolução gradual para Assistente por Voz (2026-06-07)
 
 **Decision:** Implementar primeiro Entrada por Voz no Chat utilizando Speech-to-Text do navegador antes da arquitetura completa de voz.
@@ -35,6 +64,7 @@ M11 →
 * Wake Word "Mika"
 * Conversação contínua
 * Modo mãos livres
+
 ### AD-014: Estudos e Insights ocultos na UI — adiado v2+ (2026-05-31)
 
 **Decision:** Remover Estudos e Insights da sidebar; rotas `/studies` e `/insights` redirecionam para início  
@@ -62,7 +92,7 @@ M11 →
 ### AD-006: Hook useMediaQuery para breakpoint desktop (2026-05-31)
 
 **Decision:** Extrair `useMediaQuery` / `useIsDesktop` com lazy initializer síncrono no client  
-**Reason:** `useState(false)` + `useEffect` causava Sheet overlay bloqueando UI em desktop no 1º paint  
+**Reason:** `useState(false)` + `useEffect` causava Sheet overlay bloqueando UI em telas grandes no 1º paint  
 **Impact:** `layout-context`, `ai-hub` e FAB compartilham mesma lógica; Sheet não monta em >=1280px
 
 ### AD-007: RAG fallback em camadas para prioridades (2026-05-31)
@@ -87,29 +117,25 @@ M11 →
 ### AD-002: NestJS mantido sobre Hono (2026-05-31)
 
 **Decision:** Manter NestJS em vez de Hono para o backend  
-**Reason:** Projeto complexo multi-módulo (CRUD, IA, Telegram, workers, filas); NestJS facilita organização e testes  
+**Reason:** Projeto complexo multi-módulo (CRUD, IA, workers, filas); NestJS facilita organização e testes  
 **Trade-off:** ~50–100MB RAM a mais vs Hono; aceitável em VPS 4GB  
-**Impact:** Estrutura modular desde o início (modules: tasks, projects, memory, chat, telegram)
+**Impact:** Estrutura modular desde o início
 
-### AD-003: Telegram como canal MVP (2026-05-31)
+### AD-003: Telegram como canal MVP — superada por AD-016 (2026-05-31)
 
-**Decision:** Bot Telegram antes de WhatsApp  
-**Reason:** API oficial estável, notificações confiáveis, sem risco de ban, custo zero  
-**Trade-off:** Usuário precisa ter Telegram instalado  
-**Impact:** F05 lembretes via Telegram na v1; WhatsApp adiado para Future Considerations
+**Decision original:** Bot Telegram antes de WhatsApp.  
+**Status atual:** Superada por AD-016. Telegram fica como legado/opcional e não deve receber novas features prioritárias.
 
 ### AD-004: PWA antes de app nativo (2026-05-31)
 
 **Decision:** Next.js PWA responsivo como interface multi-dispositivo  
-**Reason:** Um codebase para web/tablet/desktop/celular; instalável; barato de hospedar  
-**Trade-off:** Push notifications limitadas no iOS; mitigado por Telegram  
-**Impact:** Capacitor/Tauri avaliado apenas se push nativo for crítico
+**Reason:** Um codebase para web, tablet, notebook e celular; instalável; barato de hospedar  
+**Impact atualizado por AD-016:** Desktop nativo está fora do roadmap; PWA segue como estratégia principal.
 
 ### AD-005: Modelo TLC Spec-Driven (2026-05-31)
 
 **Decision:** Adotar workflow Specify → Design → Tasks → Execute via skill tlc-spec-driven  
 **Reason:** Rastreabilidade de requisitos, tasks atômicas, memória persistente entre sessões  
-**Trade-off:** Overhead de documentação inicial  
 **Impact:** Toda feature em `.specs/features/` com spec.md; design/tasks para features Large
 
 ### AD-009: Testes unitários fora do escopo de entrega (2026-05-31)
@@ -121,7 +147,7 @@ M11 →
 ### AD-010: Conteúdo e documentação em pt-BR (2026-05-31)
 
 **Decision:** UI, labels, mensagens de API ao usuário, specs e docs de produto em português brasileiro  
-**Reason:** Produto e operador são lusófonos; reduz inconsistência (ex.: labels "RAG on" vs "RAG ligado")  
+**Reason:** Produto e operador são lusófonos; reduz inconsistência  
 **Impact:** Revisar strings em novas telas/APIs; identificadores técnicos de código podem permanecer em inglês
 
 ---
@@ -132,16 +158,20 @@ _Nenhum blocker ativo._
 
 Próximo foco:
 
-- UAT manual M7 — Chrome Desktop + Chrome Android
-- M8 — Assistente Completo
+- Atualizar roadmap e arquitetura conforme AD-016
+- Criar spec para Projetos por prompt/arquivo
+- Redesenhar Dashboard com calendário + tarefas do dia
+- Redesenhar Agenda com eventos + tarefas
+- Ocultar/remover aba Objetivos da navegação principal
+
 ---
 
 ## Lessons Learned
 
 ### LL-001: Breakpoint SSR/hidratação com Sheet overlay (2026-05-31)
 
-**Context:** Tela congelada em desktop >=1280px após login  
-**Lesson:** Estado inicial de media query deve usar lazy initializer síncrono; não montar Sheet quando viewport é desktop  
+**Context:** Tela congelada em telas grandes >=1280px após login  
+**Lesson:** Estado inicial de media query deve usar lazy initializer síncrono; não montar Sheet quando viewport é tela grande  
 **Applied in:** `use-media-query.ts`, `ai-hub.tsx`
 
 ### LL-002: Validar UX antes de infraestrutura complexa (2026-06-07)
@@ -153,13 +183,24 @@ Antes de implementar STT backend, TTS e wake word, validar se o usuário realmen
 
 **Applied in:**
 M7 — Entrada por Voz no Chat
+
+### LL-003: Remover integrações pouco usadas antes de expandir produto (2026-06-12)
+
+**Context:** Telegram, n8n e integrações futuras estavam aumentando a complexidade antes da validação completa da V1.
+
+**Lesson:**
+A Mika deve validar primeiro o fluxo principal de organização pessoal: dashboard, agenda, projetos, tarefas, memória e criação assistida por IA.
+
+**Applied in:**
+AD-016 — Repriorização de integrações e roadmap
+
 ---
 
 ## Quick Tasks Completed
 
 | # | Description | Date | Commit | Status |
 |---|-------------|------|--------|--------|
-| — | — | — | — | — |
+| — | AD-016 criada para repriorização de integrações e roadmap | 2026-06-12 | cd4225f | Done |
 
 ---
 
@@ -168,10 +209,12 @@ M7 — Entrada por Voz no Chat
 - [ ] **Finanças (UI + chat)** — Metas financeiras na web, dashboard e tool `get_finance_goals`; API pronta — alvo v2/v3 (AD-013)
 - [ ] WhatsApp via Evolution API — Captured during: integrações externas
 - [ ] Backend Hono como micro-serviço leve para webhooks — Captured during: AD-002
-- [ ] App Flutter nativo — Captured during: multi-plataforma
+- [ ] App Flutter nativo — Captured during: multi-plataforma mobile
 - [ ] Ollama local para rotinas simples (reduzir custo OpenAI) — Captured during: AI-STRATEGY
 - [ ] Import em lote de Notion — Captured during: fontes de dados
 - [ ] Voz Conversacional Completa (STT Backend, TTS, Wake Word e Hands-Free) — Dependente da validação do M7
+- [ ] Telegram Bot — legado/opcional, sem novas features prioritárias (AD-016)
+
 ---
 
 ## Todos
@@ -186,14 +229,14 @@ M7 — Entrada por Voz no Chat
 - [x] T012 Dashboard endpoint ✅
 - [x] T013 Auth JWT básico ✅
 - [x] T014-T016 Next.js bootstrap + Dashboard UI + Tasks UI ✅
-- [x] T017 Telegram Bot básico ✅
-- [x] Vinculação Telegram (/vincular + settings web) ✅
+- [x] T017 Telegram Bot básico ✅ legado
+- [x] Vinculação Telegram (/vincular + settings web) ✅ legado
 - [x] OpenAI integração básica (packages/ai + ChatModule) ✅
 - [x] AI Hub web chat habilitado ✅
 - [x] Swagger/OpenAPI em /docs ✅
 - [x] README runbook operacional atualizado ✅
 - [x] M2 F02 memória longo prazo (pgvector, worker, RAG, UI /memories) ✅
-- [x] MAINT-M1 estabilização (T001–T009): AI Hub desktop, RAG prioridades, import área, edit/delete tarefas ✅
+- [x] MAINT-M1 estabilização (T001–T009): AI Hub, RAG prioridades, import área, edit/delete tarefas ✅
 - [ ] T018 E2E smoke test (fora do escopo M1)
 - [x] Docker staging: `docker-compose.staging.yml`, worker, Caddy, `README-DEPLOY.md` (2026-06-02)
 - [x] Subir VPS Hostinger e validar smoke staging
@@ -201,9 +244,15 @@ M7 — Entrada por Voz no Chat
 - [x] Implementar hook `useSpeechRecognition` ✅
 - [x] Adicionar botão de microfone ao AI Hub ✅
 - [x] Integrar transcrição ao campo de mensagem ✅
-- [x] Validar Desktop Chrome (UAT Erik)
+- [x] Validar navegador Chrome em tela grande (UAT Erik)
 - [x] Validar Android Chrome (UAT Erik)
 - [ ] Registrar UAT da feature M7
+- [ ] Criar spec `M8-projetos-por-prompt-arquivo`
+- [ ] Ocultar/remover aba Objetivos da navegação principal
+- [ ] Redesenhar Dashboard com calendário + tarefas do dia
+- [ ] Redesenhar Agenda com eventos + tarefas
+- [ ] Rebaixar Telegram para legado nas demais docs e configs
+
 ---
 
 ## Preferences
