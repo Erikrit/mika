@@ -1,9 +1,8 @@
 import axios from 'axios';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://2.25.165.198:3001';
+import { API_BASE_PATH } from '@/lib/api-config';
 
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE_PATH,
   headers: { 'Content-Type': 'application/json' },
   timeout: 30_000,
 });
@@ -25,7 +24,7 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('mika_refresh_token');
         if (!refreshToken) throw new Error('No refresh token');
-        const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+        const { data } = await axios.post(`${API_BASE_PATH}/auth/refresh`, { refreshToken });
         localStorage.setItem('mika_access_token', data.accessToken);
         localStorage.setItem('mika_refresh_token', data.refreshToken);
         original.headers.Authorization = `Bearer ${data.accessToken}`;

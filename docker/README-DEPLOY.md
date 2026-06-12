@@ -11,19 +11,14 @@
 Imagens oficiais no compose (sem build): `pgvector/pgvector:pg16`, `redis:7-alpine`, `caddy:2-alpine`.
 
 ---
- 
+
 ## Build e push (na sua máquina)
 
 Na **raiz do monorepo**:
 
 ```bash
-# Defina a URL pública da API antes do build da web
-export NEXT_PUBLIC_API_URL=srv1727136.hstgr.cloud
-
 docker build -f docker/Dockerfile.api -t mikaassit/mika-api:staging .
-docker build -f docker/Dockerfile.web \
-  --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
-  -t mikaassit/mika-web:staging .
+docker build -f docker/Dockerfile.web -t mikaassit/mika-web:staging .
 docker build -f docker/Dockerfile.worker -t mikaassit/mika-worker:staging .
 
 docker login
@@ -35,16 +30,15 @@ docker push mikaassit/mika-worker:staging
 **PowerShell:**
 
 ```powershell
-$env:NEXT_PUBLIC_API_URL = "https://api.srv1727136.hstgr.cloud"
 docker build -f docker/Dockerfile.api -t mikaassit/mika-api:staging .
-docker build -f docker/Dockerfile.web --build-arg NEXT_PUBLIC_API_URL=$env:NEXT_PUBLIC_API_URL -t mikaassit/mika-web:staging .
+docker build -f docker/Dockerfile.web -t mikaassit/mika-web:staging .
 docker build -f docker/Dockerfile.worker -t mikaassit/mika-worker:staging .
 docker push mikaassit/mika-api:staging
 docker push mikaassit/mika-web:staging
 docker push mikaassit/mika-worker:staging
 ```
 
-> A web embute `NEXT_PUBLIC_API_URL` no build. Staging e produção precisam de **tags ou builds separados** se as URLs forem diferentes.
+> A web usa proxy same-origin (`/backend/*`). **Uma única imagem** serve local, staging e produção — `INTERNAL_API_URL` é definido em runtime no compose (`http://api:3001`).
 
 ---
 
@@ -55,7 +49,6 @@ docker push mikaassit/mika-worker:staging
 1. Instalar Docker + Compose na VPS.
 2. Liberar portas **3000** (web) e **3001** (api) no firewall.
 3. Copiar `docker/.env.staging.example` → `.env.staging` (URLs já apontam para `srv1727136.hstgr.cloud`).
-4. Build da web com `NEXT_PUBLIC_API_URL=http://srv1727136.hstgr.cloud:3001` antes do push.
 
 ```bash
 docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging pull
@@ -96,7 +89,7 @@ docker compose -f docker/docker-compose.staging.yml --env-file .env.staging exec
 
 ```bash
 cp .env.example .env
-# Ajustar DATABASE_URL, REDIS_PASSWORD, NEXT_PUBLIC_API_URL, etc.
+# Ajustar DATABASE_URL, REDIS_PASSWORD, INTERNAL_API_URL (se necessário), etc.
 
 docker compose -f docker/docker-compose.prod.yml up -d --build postgres redis api web worker
 # Sem n8n: não incluir o serviço n8n na linha de comando

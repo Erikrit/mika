@@ -1,4 +1,5 @@
 import { api } from '@/lib/api';
+import { API_BASE_PATH } from '@/lib/api-config';
 import type {
   Task,
   Goal,
@@ -153,11 +154,10 @@ export const chatApi = {
     sessionId: string | undefined,
     onToken: (token: string) => void,
   ): Promise<{ sessionId: string; reply: string; createdAt: string }> => {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://2.25.165.198:3001';
     const token =
       typeof window !== 'undefined' ? localStorage.getItem('mika_access_token') : null;
 
-    const res = await fetch(`${API_URL}/chat/message/stream`, {
+    const res = await fetch(`${API_BASE_PATH}/chat/message/stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -353,10 +353,6 @@ export const memoryApi = {
     if (opts?.category) form.append('category', opts.category);
     if (opts?.memoryType) form.append('memoryType', opts.memoryType);
     if (opts?.privacyLevel) form.append('privacyLevel', opts.privacyLevel);
-    return api
-      .post('/memory/import', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-      .then((r) => r.data);
+    return api.post('/memory/import', form).then((r) => r.data);
   },
 };

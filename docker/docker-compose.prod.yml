@@ -32,11 +32,10 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.web
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: mika-web
     environment:
       - NODE_ENV=production
+      - INTERNAL_API_URL=http://api:3001
     ports:
       - "3000:3000"
     depends_on:
