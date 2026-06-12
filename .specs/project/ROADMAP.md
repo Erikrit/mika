@@ -1,17 +1,15 @@
 # Roadmap — Mika
 
-**Current Milestone:** M8 — Assistente Completo — **Planned**
-**Status:** M6 Done (local) · MAINT-M2 Done (local) · M7 Done (implementação) · UAT M7 pendente · Finanças UI adiado v2/v3 (AD-013)
+**Current Milestone:** M8 — Repriorização V1 + Projetos Inteligentes — **Planned**  
+**Status:** M6 Done (local) · MAINT-M2 Done (local) · M7 Done (implementação) · UAT M7 pendente · AD-016 aplicada
 
-> **Nota de numeração:** em `.specs/features/`, F05 = Lembretes e F06 = Chat Inteligente. No roadmap abaixo, F10/F11 correspondem à mesma entrega (M5/M6). A entrada por voz no chat foi antecipada como M7 por entregar valor imediato antes da Voz Conversacional completa.
+> **Direção atual:** simplificar a V1, remover dependências pouco utilizadas, fortalecer Web/PWA, Dashboard, Agenda e Projetos como centro da Mika.
 
 ---
 
-## M1 — Fundação (Fase 1)
+## M1 — Fundação (Fase 1) ✅
 
-**Goal:** Usuário consegue cadastrar informações centralizadas e interagir com Mika via Telegram com IA básica.
-**Target:** 4–6 semanas (part-time)
-**Critério de done:** CRUD completo F01 + bot Telegram respondendo + PostgreSQL rodando em Docker + IA básica + Swagger
+**Goal:** Usuário consegue cadastrar informações centralizadas e interagir com Mika via Web/PWA com IA básica.
 
 ### Features
 
@@ -22,236 +20,214 @@
 * Categorização por área de vida (LifeArea)
 * API REST documentada + UI web mínima
 
-**Telegram Bot (canal MVP)** — DONE (local)
-
-* Receber mensagens e comandos básicos
-* Consultar tarefas e eventos do dia
-* Registrar tarefa/reflexão via chat
-* Vinculação de conta via /vincular CODIGO
-* Chat inteligente via OpenAI
-
 **OpenAI Integração Básica** — DONE (local)
 
-* Respostas conversacionais simples (gpt-4o-mini)
-* Contexto limitado à sessão + dashboard (memória longa vem em M2)
-* AI Hub web + Telegram unificados via ChatModule
+* Respostas conversacionais simples
+* Contexto limitado à sessão + dashboard
+* AI Hub web via ChatModule
 
 **Infra Docker** — DONE (local dev)
 
-* PostgreSQL + Redis + API + Web
+* PostgreSQL + Redis + API + Web + Worker
 * Runbook operacional no README
-* Deploy VPS pendente (próximo milestone)
+
+**Telegram Bot** — DONE, mas rebaixado para legado por AD-016
+
+* Não é mais canal prioritário da V1
+* Não deve receber novas features prioritárias
+* Pode permanecer apenas por compatibilidade, desde que não consuma recursos desnecessários
 
 ---
 
-## M2 — Memória (Fase 2)
+## M2 — Memória (Fase 2) ✅
 
 **Goal:** Mika lembra contextos de longo prazo e responde perguntas como "Como está meu planejamento para João Pessoa?"
-**Target:** +3–4 semanas após M1
-
-### Features
 
 **F02 — Memória de Longo Prazo** — DONE (local)
 
-* MemoryChunk + pgvector + full-text (tsvector)
-* Worker BullMQ `memory-index` com retry 3x
+* MemoryChunk + pgvector + full-text
+* Worker BullMQ `memory-index`
 * RAG híbrido no ChatModule
 * API `/memory/chunks`, `/memory/search`, `/memory/import`
 * UI web `/memories` com upload Markdown
 
 ---
 
-## M3 — Rotinas (Fase 3)
+## M3 — Rotinas (Fase 3) ✅ / Revisar dependência n8n
 
 **Goal:** Resumos e revisões automáticas entregues sem ação manual do usuário.
-**Target:** +2–3 semanas após M2
 
-### Features
+### Status atual
 
-**F03 — Resumo Diário** — DONE (local)
+* Resumo diário, check-in meio-dia, reflexão noturna e revisão semanal existem.
+* n8n deixa de ser requisito central por AD-016.
+* Próxima revisão deve avaliar mover rotinas essenciais para backend/worker.
 
-* Rotina manhã 07:00 via n8n
-* Prioridades, compromissos, pendências, alertas
-* Captura de prioridade matinal via Telegram
+### Direção
 
-**F04 — Revisão Semanal** — DONE (local)
-
-* Rotina domingo 20:00
-* Concluídos, atrasados, perda de prioridade, riscos
-
-**Rotinas Meio-dia e Noite** — DONE (local)
-
-* Check-in meio-dia 12:30
-* Reflexão noturna 21:00
+* Rotinas principais devem funcionar sem Telegram.
+* Entrega principal deve ser via Web/PWA e, futuramente, Web Push.
+* n8n pode permanecer como automação opcional.
 
 ---
 
-## M4 — Contexto Pessoal e Memória Humanizada
+## M4 — Contexto Pessoal e Memória Humanizada ✅
 
-**Goal:** Permitir que Mika compreenda o contexto de vida do usuário, usando arquivos pessoais importados, memórias categorizadas e busca semântica sob demanda para gerar interações mais humanas, úteis e alinhadas aos objetivos reais.
-**Target:** +2–3 semanas após M3
+**Goal:** Permitir que Mika compreenda o contexto de vida do usuário usando arquivos pessoais, memórias categorizadas e busca semântica.
+
 **Status:** Done (UAT 2026-05-31)
 
-### Princípio Técnico
+### Resultado
 
-A Mika não deve colocar todo o conteúdo pessoal diretamente no prompt fixo. O contexto deve ser recuperado sob demanda por RAG/memória semântica, buscando apenas os trechos relevantes para cada conversa, rotina ou sugestão.
-
-### Features
-
-**F05 — Importação de Documentos Pessoais** — DONE (local)
-
-**F06 — Classificação de Memória em 3 Camadas** — DONE (local)
-
-**F07 — Recuperação Contextual Segura** — DONE (local)
-
-**F08 — Interações Humanizadas e Companheiras** — DONE (local)
-
-**F09 — Gestão de Consentimento e Privacidade** — DONE (local)
-
-Hub `/context`: templates guiados, editor `/context/[id]`, aba Avançado (trechos, saúde, auditoria). `/memories` → redirect.
-
-#### Memória Fixa
-
-* Quem é o usuário
-* Estilo de comunicação preferido
-* Objetivos principais
-* Valores, preferências e limites
-* Forma ideal da Mika interagir com o usuário
-
-#### Memória Evolutiva
-
-* Conquistas
-* Mudanças de planos
-* Decisões recentes
-* Aprendizados
-* Projetos iniciados, pausados ou concluídos
-* Histórico de evolução pessoal e profissional
-
-#### Memória Sensível
-
-* Informações pessoais que exigem maior cuidado
-* Dados financeiros
-* Dados familiares ou de relacionamento
-* Reflexões pessoais privadas
-* Conteúdos que precisam de consentimento e controle de acesso
-
-### Critério de Done
-
-* [x] Usuário consegue importar documentos pessoais em uma área dedicada
-* [x] Mika indexa e classifica documentos em memória fixa, evolutiva e sensível
-* [x] Chat consegue recuperar contexto relevante sem carregar tudo no prompt fixo
-* [x] Mika consegue responder e sugerir ações considerando objetivos de vida e histórico pessoal
-* [x] Memórias sensíveis possuem controle explícito de uso, edição e exclusão
-* [x] UAT manual Erik (2026-05-31)
-
-### Resultado Esperado
-
-Mika deixa de ser apenas uma assistente com memória técnica e passa a atuar como uma companheira contextual, capaz de lembrar o que importa, respeitar limites e ajudar o usuário a se manter alinhado com sua própria história, objetivos e evolução.
+Mika atua como companheira contextual, capaz de lembrar o que importa, respeitar limites e ajudar o usuário a se manter alinhado com sua história, objetivos e evolução.
 
 ---
 
-## M5 — Proatividade
+## M5 — Proatividade ✅ / Repriorizar canal
 
 **Goal:** Mika alerta proativamente antes que o usuário esqueça.
-**Target:** +2 semanas após M4
 
-### Features
+### Status atual
 
-**F10 — Sistema de Lembretes** — DONE (local)
-
-* Notificações Telegram (MVP)
-* Lembretes de tarefas, compromissos, objetivos negligenciados
 * Worker BullMQ `reminder-dispatch`
-* Web push (PWA) — P2 deferido
+* Lembretes de tarefas, compromissos e objetivos negligenciados
+
+### Mudança AD-016
+
+* Telegram deixa de ser canal MVP.
+* Web Push/PWA Notifications passa a ser prioridade futura.
+* Lembretes devem ser desenhados para funcionar primeiro no app Web/PWA.
 
 ---
 
-## M6 — Copiloto
+## M6 — Copiloto ✅
 
 **Goal:** Chat contextual completo com memória, priorização e apoio à decisão.
-**Target:** +3–4 semanas após M5
 
 ### Features
 
-**F11 — Chat Inteligente** — DONE (local)
-
-* Perguntas sobre semana, metas, finanças via tool calling
+* Perguntas sobre semana, metas e contexto via tool calling
 * Contexto agregado de F01 + F02 + rotinas + memória humanizada
-* Interface web (SSE streaming) + Telegram unificada
+* Interface web com SSE streaming
 * Criação de tarefas via chat
 * Recuperação seletiva de contexto via tools/RAG
 
+### Mudança AD-016
+
+* O canal principal do copiloto é Web/PWA.
+* Telegram fica legado/opcional.
+
 ---
 
-## M7 — Entrada por Voz no Chat
+## M7 — Entrada por Voz no Chat ✅
 
 **Goal:** Permitir que o usuário fale comandos para Mika no AI Hub, convertendo voz em texto e reutilizando o fluxo atual do Chat Inteligente.
-**Target:** +1 semana após M6
+
 **Status:** Done
 
 ### Features
 
-**F11A — Entrada por Voz no Chat** — DONE (implementação)
-
-* Botão de microfone no AI Hub ao lado do envio
+* Botão de microfone no AI Hub
 * Speech-to-Text no navegador com idioma pt-BR
 * Transcrição preenchendo o input atual do chat
 * Envio manual após revisão do texto transcrito
 * Reutilização do ChatModule, SSE streaming, histórico e tool calling existentes
-* Criação de tarefas e consultas contextuais por voz sem alterar contrato das tools
-* Tratamento de permissão negada, navegador incompatível e falha de reconhecimento
+* Criação de tarefas e consultas contextuais por voz
 
 ### Critério de Sucesso
 
 * Usuário consegue criar tarefas por voz
 * Usuário consegue consultar tarefas, eventos e prioridades por voz
-* Nenhuma alteração necessária no fluxo atual de tool calling
-* Funciona em Chrome Desktop, Edge Desktop e Chrome Android
+* Funciona em navegadores compatíveis e Chrome Android
 * UAT manual registrado em `.specs/features/M7-entrada-voz-chat/tasks.md`
 
 ---
 
-## M8 — Assistente Completo
+## M8 — Repriorização V1 + Projetos Inteligentes
 
-**Goal:** Evoluir Mika para um segundo cérebro digital capaz de auxiliar no crescimento pessoal e profissional.
+**Goal:** Ajustar a Mika para a direção correta da V1: menos integrações, mais valor real em organização pessoal.
 
-### Features
+### Features planejadas
 
-**F12 — Análise Emocional** — PLANNED
+**F12 — Simplificação de Integrações** — PLANNED
 
-* Identificação de padrões emocionais
-* Histórico emocional
-* Tendências de comportamento
-* Uso cuidadoso de memórias sensíveis
+* Rebaixar Telegram para legado/opcional
+* Remover dependência operacional de Telegram em novos fluxos
+* Revisar n8n como opcional
+* Manter Redis/Worker apenas para memória, filas e lembretes necessários
+* Preparar feature flags para integrações externas
 
-**F13 — Coaching de Produtividade** — PLANNED
+**F13 — Projetos como centro de organização** — PLANNED
 
-* Sugestões de melhoria de rotina
-* Identificação de gargalos
-* Apoio na priorização
-* Acompanhamento de evolução com base na memória evolutiva
+* Consolidar Objetivos dentro de Projetos
+* Ocultar/remover aba Objetivos da navegação principal
+* Projeto passa a conter objetivos internos, marcos, tarefas, eventos, arquivos e prompts
 
-**F14 — Planejamento Financeiro** — PLANNED
+**F14 — Projetos por prompt/arquivo** — PLANNED
 
-* Evolução patrimonial
-* Metas financeiras avançadas
-* Simulações
-* Cenários de risco
-* Proteção reforçada para dados financeiros sensíveis
+* Criar projeto a partir de prompt livre
+* Criar projeto a partir de arquivo enviado
+* Mika sugere tarefas, eventos, marcos e cronograma
+* Usuário revisa antes de salvar
 
-**F15 — Planejamento Familiar** — PLANNED
+**F15 — Dashboard Diário** — PLANNED
 
-* Organização familiar
-* Eventos compartilhados
-* Planejamento conjunto
+* Calendário do dia/semana
+* Próximos eventos
+* Tarefas de hoje
+* Projetos em andamento
+* Sugestão de foco da Mika
+
+**F16 — Agenda Integrada** — PLANNED
+
+* Calendário + tarefas na mesma tela
+* Visualização diária e semanal
+* Destaque para atrasadas
+* Criação rápida de tarefa/evento
 
 ---
 
-## M9 — Android Companion
+## M9 — Integrações de Organização Real
 
-**Goal:** Disponibilizar Mika como aplicativo Android completo.
+**Goal:** Conectar Mika aos sistemas que realmente apoiam agenda, tarefas e notificações.
 
-### Funcionalidades
+### Prioridade
+
+**Google Calendar** — PLANNED
+
+* Ler eventos
+* Criar eventos após confirmação
+* Sincronizar com agenda interna
+
+**Microsoft To Do** — PLANNED
+
+* Ler tarefas
+* Criar tarefas
+* Relacionar tarefas externas a projetos Mika
+
+**Web Push / PWA Notifications** — PLANNED
+
+* Lembretes de tarefas
+* Alertas de eventos
+* Resumo diário no app
+
+**Gmail** — PLANNED
+
+* Ler e-mails relevantes com consentimento
+* Extrair prazos e compromissos
+* Sugerir tarefas/eventos
+
+---
+
+## M10 — Android Companion
+
+**Goal:** Disponibilizar Mika em experiência mobile dedicada apenas se a PWA não for suficiente.
+
+### Observação
+
+Antes de criar app nativo, validar uso real da PWA no celular.
+
+### Funcionalidades candidatas
 
 * Login
 * Dashboard
@@ -262,90 +238,42 @@ Mika deixa de ser apenas uma assistente com memória técnica e passa a atuar co
 * Notificações push
 * Rotinas diárias
 * Reflexões
-* Integração com recursos nativos Android
-
-### Tecnologia
-
-* React Native (preferencial)
-* Flutter (avaliar)
-
-### Critério de Sucesso
-
-Usuário conseguir utilizar Mika integralmente sem acessar a versão web.
 
 ---
 
-## M10 — Expansão da Memória Pessoal
+## M11 — Expansão da Memória Pessoal
 
 **Goal:** Transformar Mika em uma memória viva da evolução do usuário ao longo dos anos.
 
 ### Features
 
-**F16 — Expansão da Memória Pessoal** — PLANNED
-
-#### FINANCIAL_PLAN
-
-* Receitas
-* Investimentos
-* Patrimônio
-* Metas financeiras
-* Cenários de risco
-
-#### PROJECTS_PORTFOLIO
-
-* Projetos ativos
-* Projetos pausados
-* Projetos concluídos
-* Histórico de iniciativas
-
-#### WEEKLY_REVIEW_HISTORY
-
-* Revisões semanais
-* Aprendizados
-* Decisões tomadas
-* Mudanças de prioridade
-
-#### LIFE_STORY_TIMELINE
-
-* Marcos importantes da vida
-* Vitórias pessoais
-* Momentos difíceis superados
-* Mudanças de fase
-* Decisões que moldaram o planejamento atual
-
-### Benefícios
-
-* Evolução histórica do usuário
+* Plano financeiro histórico
+* Portfólio de projetos
+* Histórico de revisões semanais
+* Linha do tempo de vida
 * Aprendizado contínuo
 * Priorização inteligente
-* Planejamento de longo prazo
-* Interações mais humanas e conectadas com a história do usuário
 
 ---
 
-## M11 — Voz Conversacional
+## M12 — Voz Conversacional
 
 **Goal:** Permitir interação natural por voz, indo além da transcrição pontual do M7.
 
 ### Funcionalidades
 
-* STT backend para maior controle, privacidade configurável e compatibilidade cross-browser
-* Text-to-Speech para Mika responder em voz natural
-* Conversação contínua com sessão de áudio
+* STT backend
+* Text-to-Speech
+* Conversação contínua
 * Wake word personalizada “Mika”
 * Modo mãos livres
-* Estratégia de permissão, privacidade e não persistência indevida de áudio
-* Fallback para entrada por texto quando voz não estiver disponível
-
-### Observação
-
-Este milestone depende do aprendizado do M7. A entrada por voz no chat é a ponte técnica e de UX para validar comandos reais antes de investir em STT backend, TTS, wake word e modo mãos livres.
+* Fallback para entrada por texto
 
 ---
 
-## M12 — Alexa / Google Home
+## M13 — Alexa / Google Home
 
-**Goal:** Tornar Mika acessível pelos principais assistentes domésticos.
+**Goal:** Tornar Mika acessível pelos principais assistentes domésticos somente após validação da experiência principal.
 
 ### Funcionalidades
 
@@ -356,9 +284,9 @@ Este milestone depende do aprendizado do M7. A entrada por voz no chat é a pont
 
 ---
 
-## M13 — Casa Inteligente
+## M14 — Casa Inteligente
 
-**Goal:** Transformar Mika no centro de automação pessoal e residencial.
+**Goal:** Transformar Mika no centro de automação pessoal e residencial em fase futura.
 
 ### Funcionalidades
 
@@ -366,22 +294,24 @@ Este milestone depende do aprendizado do M7. A entrada por voz no chat é a pont
 * Controle de iluminação
 * Controle de climatização
 * Rotinas automatizadas
-* Monitoramento residencial
 * Integração Home Assistant
 
-### Resultado Esperado
+---
 
-Mika deixa de ser apenas uma assistente virtual e passa a atuar como um Companion Operating System completo para a vida pessoal e profissional.
+## Fora do Roadmap
+
+* Aplicativo Desktop nativo
+* Electron
+* Tauri
+* Qualquer app desktop separado da Web/PWA
 
 ---
 
 ## Future Considerations
 
-* **Finanças v2/v3** — Aba web, dashboard, chat `get_finance_goals`; evolução para F09 (receitas, gastos, investimentos). API `FinanceGoalsModule` já implementada (AD-013)
-* Integração Google Calendar
-* Integração Outlook
-* Integração Gmail
+* **Finanças v2/v3** — Aba web, dashboard, chat `get_finance_goals`; evolução para F09
 * Integração Notion
+* Integração Google Drive
 * WhatsApp via Evolution API
 * MCP Servers
 * Ollama local
@@ -395,15 +325,16 @@ Mika deixa de ser apenas uma assistente virtual e passa a atuar como um Companio
 ```text
 M1 - Fundação ✅
 M2 - Memória ✅
-M3 - Rotinas ✅
+M3 - Rotinas ✅ / revisar n8n
 M4 - Contexto Pessoal e Memória Humanizada ✅
-M5 - Proatividade ✅
+M5 - Proatividade ✅ / revisar canal
 M6 - Copiloto ✅
 M7 - Entrada por Voz no Chat ✅
-M8 - Assistente Completo
-M9 - Android Companion
-M10 - Expansão da Memória Pessoal
-M11 - Voz Conversacional
-M12 - Alexa / Google Home
-M13 - Casa Inteligente
+M8 - Repriorização V1 + Projetos Inteligentes
+M9 - Integrações de Organização Real
+M10 - Android Companion condicionado à validação da PWA
+M11 - Expansão da Memória Pessoal
+M12 - Voz Conversacional
+M13 - Alexa / Google Home
+M14 - Casa Inteligente
 ```
