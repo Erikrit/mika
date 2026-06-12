@@ -1,133 +1,180 @@
 # Mika — Assistente Pessoal Inteligente
 
 **Vision:** Copiloto pessoal com IA que reduz carga mental organizando, priorizando, recordando contextos e apoiando decisões ao longo da vida.
+
 **For:** Erik (desenvolvedor full stack, arquiteto, múltiplas responsabilidades profissionais e familiares) — extensível a outros usuários no futuro.
+
 **Solves:** Fragmentação de informações entre trabalho, família, finanças, saúde, viagens e projetos pessoais, consumindo energia mental em lembrar compromissos e prioridades.
+
+---
+
+## Direção atual da V1
+
+A Mika V1 deve ser uma assistente pessoal Web/PWA focada em organização real do dia a dia.
+
+Prioridades atuais:
+
+- Dashboard diário com calendário, tarefas e foco recomendado.
+- Agenda integrada com eventos e tarefas.
+- Projetos como centro de planejamento.
+- Criação de projetos por prompt.
+- Criação de projetos por arquivo.
+- Memória de longo prazo.
+- Chat contextual via Web/PWA.
+
+A V1 não deve tentar integrar com todos os sistemas externos. O foco é validar a experiência principal e reduzir consumo de recurso.
+
+Decisão relacionada: [AD-016 — Repriorização de Integrações e Roadmap](./AD-016-repriorizacao-integracoes-e-roadmap.md).
+
+---
 
 ## Goals
 
-- Reduzir esquecimentos de compromissos críticos em ≥80% após 30 dias de uso contínuo
-- Entregar resumo diário automático às 07:00 com ≥95% de confiabilidade
-- Responder perguntas contextuais no chat em <5s (P95) com memória de longo prazo
-- Manter custo total (VPS + IA) abaixo de R$150/mês no uso pessoal inicial
-- Construir base técnica escalável para evolução até assistente completo (Fase 5)
+- Reduzir esquecimentos de compromissos críticos em ≥80% após 30 dias de uso contínuo.
+- Entregar uma visão diária confiável com calendário, tarefas do dia e foco recomendado.
+- Responder perguntas contextuais no chat em <5s (P95) com memória de longo prazo.
+- Permitir criar projetos a partir de prompt ou arquivo, gerando tarefas, eventos, marcos e cronograma.
+- Manter custo total (VPS + IA) abaixo de R$150/mês no uso pessoal inicial.
+
+---
 
 ## Tech Stack
 
 **Core:**
 
-- Framework Frontend: Next.js 15 (App Router, PWA)
-- Framework Backend: NestJS 11
+- Frontend: Next.js 15 (App Router, PWA)
+- Backend: NestJS 11
 - Language: TypeScript 5.x
 - Database: PostgreSQL 16 + pgvector
 - Cache/Filas: Redis 7 + BullMQ
-- IA: OpenAI (GPT-4o-mini rotinas, GPT-4o decisões complexas)
-- Automação: n8n (rotinas manhã/meio-dia/noite)
-- Mensageria MVP: Telegram Bot API
-- Infra: Docker Compose em VPS (Hetzner/Contabo)
+- IA: OpenAI
+- Interface principal: Web/PWA responsivo
+- Infra: Docker Compose em VPS
 
-**Key dependencies:**
+**Integrações prioritárias futuras:**
 
-- Prisma ORM (schema + migrations)
-- Zod (validação compartilhada)
-- LangChain ou Vercel AI SDK (orquestração IA)
-- node-telegram-bot-api ou grammY (Telegram)
-- Pino (logs estruturados)
+- Google Calendar
+- Microsoft To Do
+- Web Push / notificações PWA
+- Gmail com consentimento explícito
 
-**Monorepo:**
+**Legado/opcional:**
 
-```
-apps/web      → Next.js PWA
-apps/api      → NestJS REST + WebSocket
-apps/worker   → Jobs (embeddings, resumos, lembretes)
-packages/shared → Types, schemas Zod, constants
-packages/ai   → Prompts, RAG utilities
-```
+- Telegram Bot API
+- n8n
 
-**Convenções de desenvolvimento:** [.specs/project/CONVENTIONS.md](./CONVENTIONS.md) — pt-BR em UI/docs; testes unitários fora do escopo de entrega.
+**Fora do roadmap:**
+
+- Aplicativo Desktop nativo
+- Electron
+- Tauri
+- Qualquer app desktop separado da Web/PWA
+
+---
 
 ## Scope
 
-**v1 includes (MVP — F01 a F06):**
+**v1 includes:**
 
-- F01: Centralização de objetivos, tarefas, projetos, eventos e reflexões (UI web em expansão — MAINT-M2)
-- F02: Memória de longo prazo com categorias (Profissional, Financeiro, Familiar, Saúde, Viagens)
-- F03: Resumo diário automático (prioridades, compromissos, pendências, alertas)
-- F04: Revisão semanal (concluídos, atrasados, perda de prioridade, riscos)
-- F05: Lembretes (tarefas, compromissos, datas, objetivos negligenciados)
-- F06: Chat inteligente contextual via web e Telegram
+- Centralização de tarefas, projetos, eventos e reflexões.
+- Memória de longo prazo.
+- Resumo diário automático.
+- Revisão semanal.
+- Lembretes de tarefas e compromissos.
+- Chat inteligente contextual via Web/PWA.
+- Entrada por voz no chat usando Speech-to-Text do navegador.
+- Dashboard diário com calendário, tarefas e foco recomendado.
+- Agenda integrada com eventos e tarefas.
+- Projetos por prompt/arquivo.
+
+**v1 — compatibilidade:**
+
+- Metas financeiras básicas no backend, sem aba web principal.
+- Telegram Bot como legado/opcional, sem novas features prioritárias.
+- Entidade Goal/Objetivo pode permanecer no backend, mas a aba Objetivos deve ser removida ou ocultada da navegação principal.
 
 **v1.5 / evolução imediata:**
 
-- F11A: Entrada por voz no chat utilizando Speech-to-Text do navegador, mantendo o fluxo atual do ChatModule e das tools
-
-**v1 — backend only (UI adiada v2/v3):**
-
-- Metas financeiras básicas (`FinanceGoalsModule` + API REST) — sem aba web nem tool de chat por enquanto (AD-013)
+- Google Calendar.
+- Microsoft To Do.
+- Web Push / notificações PWA.
+- Gmail com consentimento explícito.
+- Upload de arquivos para criação de projetos e memória.
 
 **Explicitly out of scope (v1):**
 
-- F07 Análise emocional e padrões de humor
-- F08 Coaching avançado de produtividade
-- F09 Planejamento financeiro completo (receitas, gastos, investimentos) — **UI v2/v3**; API básica de metas já existe
-- F10 Planejamento familiar multi-usuário
-- Integrações WhatsApp, Outlook, Google Drive, Gmail
-- App nativo iOS/Android (PWA responsivo primeiro)
-- Multi-tenant / SaaS comercial
-- Sincronização offline completa (leitura offline é Fase 2+)
+- Planejamento financeiro completo.
+- Planejamento familiar multi-usuário.
+- WhatsApp, Outlook, Google Drive e integrações extensas.
+- App nativo iOS/Android antes de validar PWA mobile.
+- Aplicativo Desktop nativo.
+- Multi-tenant / SaaS comercial.
+- Sincronização offline completa.
+
+---
+
+## Produto: Projetos como centro
+
+A aba **Projetos** deve concentrar planejamento, objetivos, tarefas, eventos e arquivos.
+
+Estrutura conceitual:
+
+```text
+Projeto
+├── Objetivos internos
+├── Marcos
+├── Tarefas
+├── Eventos
+├── Lembretes
+└── Arquivos / prompts de origem
+```
+
+A aba **Objetivos** deve ser removida ou ocultada da navegação principal, pois a função se sobrepõe a Projetos.
+
+---
+
+## Projeto por prompt ou arquivo
+
+A Mika deve permitir que o usuário crie um projeto informando um prompt livre ou enviando um arquivo.
+
+A IA deve analisar o conteúdo e sugerir:
+
+- título;
+- descrição;
+- objetivos internos;
+- marcos;
+- tarefas;
+- eventos;
+- lembretes;
+- cronograma inicial.
+
+O usuário deve revisar antes de salvar.
+
+---
 
 ## Constraints
 
-- **Timeline:** Fase 1 em 4–6 semanas (part-time)
-- **Technical:** Single VPS inicial (4GB RAM), Docker Compose, self-hosted
-- **Resources:** 1 desenvolvedor (Erik), orçamento IA controlado
-- **Privacy:** Dados pessoais sensíveis — preferência por infraestrutura própria (LGPD-ready)
-- **Portabilidade:** Web responsivo (desktop, tablet, celular) + Telegram como canal mobile
+- Evolução incremental part-time.
+- Single VPS inicial, Docker Compose, self-hosted.
+- 1 desenvolvedor, orçamento IA controlado.
+- Dados pessoais sensíveis com preferência por infraestrutura própria.
+- Web/PWA responsivo para navegador, notebook, tablet e celular.
+- Evitar integrações que não sejam usadas diariamente.
+
+---
 
 ## Visão de Longo Prazo
 
-O Mika não será apenas um chatbot.
-
-A visão final é construir um Companion Operating System capaz de acompanhar o usuário em qualquer dispositivo.
+A Mika deve evoluir como um Companion Operating System pessoal.
 
 Evolução prevista:
 
-Fase 1 (Atual)
-- Web
-- Telegram
-- Memória persistente
-- Rotinas inteligentes
-
-Fase 2
-- Aplicativo Android
-- Operação local e online
-- Notificações nativas
-- Widgets inteligentes
-
-Fase 2.5
-- Entrada por voz no chat
-- Speech-to-Text no navegador
-- Captura rápida de tarefas e compromissos
-- Integração com fluxo existente do copiloto
-
-Fase 3
-- Assistente por voz completo
-- STT backend
-- Text-to-Speech
-- Wake word personalizada
-- Conversas contínuas
-- Modo mãos livres
-
-Fase 4
-- Integração Alexa
-
-Fase 5
-- Integração Google Home
-
-Fase 6
-- Casa inteligente
-- Automações domésticas
-- Controle de dispositivos IoT
+1. Web/PWA, memória, rotinas, dashboard, agenda e projetos inteligentes.
+2. Integrações com Google Calendar, Microsoft To Do, notificações PWA e Gmail.
+3. Android apenas se a PWA não atender bem ao uso mobile.
+4. Voz conversacional completa.
+5. Alexa / Google Home.
+6. Casa inteligente e automações futuras.
 
 Objetivo final:
 
