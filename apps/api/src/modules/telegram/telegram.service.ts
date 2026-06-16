@@ -56,10 +56,12 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     const token = process.env.TELEGRAM_BOT_TOKEN;
-    const enabled = process.env.TELEGRAM_ENABLED !== 'false';
+    const enabled =
+      process.env.TELEGRAM_ENABLED !== 'false' &&
+      process.env.MIKA_TELEGRAM_MODULE_ENABLED !== 'false';
 
     if (!enabled) {
-      this.logger.warn('TELEGRAM_ENABLED=false, skipping bot initialization');
+      this.logger.warn('Telegram disabled by env, skipping bot initialization');
       return;
     }
 

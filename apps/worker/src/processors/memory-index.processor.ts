@@ -6,6 +6,11 @@ import { MemoryIndexerService } from '../services/memory-indexer.service';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 
+function readConcurrency(envName: string, fallback: number): number {
+  const value = parseInt(process.env[envName] ?? '', 10);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
 export function createMemoryIndexWorker(
   prisma: PrismaClient,
   connection: { host: string; port: number; password?: string },
@@ -19,7 +24,7 @@ export function createMemoryIndexWorker(
     },
     {
       connection,
-      concurrency: 2,
+      concurrency: readConcurrency('MEMORY_INDEX_CONCURRENCY', 1),
     },
   );
 

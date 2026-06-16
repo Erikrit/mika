@@ -22,6 +22,8 @@ export class ReminderSchedulerService {
   ): Promise<void> {
     await this.cancelEntityReminders(userId, 'TASK', taskId);
 
+    if (!this.remindersEnabled()) return;
+
     if (!dueAt || status === 'DONE' || status === 'CANCELLED') return;
 
     const scheduledAt = computeTaskReminderAt(dueAt);
@@ -39,6 +41,8 @@ export class ReminderSchedulerService {
     location?: string | null,
   ): Promise<void> {
     await this.cancelEntityReminders(userId, 'EVENT', eventId);
+
+    if (!this.remindersEnabled()) return;
 
     const scheduledAt = computeEventReminderAt(startsAt);
     if (!scheduledAt) return;
@@ -88,6 +92,8 @@ export class ReminderSchedulerService {
     goalId: string,
     title: string,
   ): Promise<void> {
+    if (!this.remindersEnabled()) return;
+
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
 
@@ -127,5 +133,9 @@ export class ReminderSchedulerService {
     });
 
     await this.queue.enqueueDispatch(reminder.id, userId, scheduledAt);
+  }
+
+  private remindersEnabled(): boolean {
+    return process.env.MIKA_REMINDERS_ENABLED === 'true';
   }
 }

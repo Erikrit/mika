@@ -42,7 +42,17 @@ docker push mikaassit/mika-worker:staging
 
 ---
 
-## Subir na VPS (staging)
+## Subir na VPS v1.5 enxuta
+
+Use o compose enxuto quando a VPS deve rodar apenas Web, API, Worker, Postgres e Redis:
+
+```bash
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging up -d
+```
+
+Esse arquivo deixa Telegram, n8n, lembretes externos e jobs legados desligados por padrão. Os limites de memória/CPU ficam em `.env.staging` com valores padrão ajustáveis.
+
+## Subir na VPS (staging legado com Caddy)
 
 ### Hostinger sem domínio (`srv1727136.hstgr.cloud`)
 

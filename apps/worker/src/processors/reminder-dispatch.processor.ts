@@ -6,6 +6,11 @@ import { ReminderDispatcherService } from '../services/reminder-dispatcher.servi
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 
+function readConcurrency(envName: string, fallback: number): number {
+  const value = parseInt(process.env[envName] ?? '', 10);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
 export function createReminderDispatchWorker(
   prisma: PrismaClient,
   connection: { host: string; port: number; password?: string },
@@ -19,7 +24,7 @@ export function createReminderDispatchWorker(
     },
     {
       connection,
-      concurrency: 3,
+      concurrency: readConcurrency('REMINDER_DISPATCH_CONCURRENCY', 1),
     },
   );
 

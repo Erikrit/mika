@@ -17,59 +17,80 @@ const redisConnection = {
 
 const prisma = new PrismaClient();
 
-// Worker: Neglected tasks checker
-const neglectedWorker = new Worker(
-  'neglected-tasks',
-  async (job) => {
-    logger.info({ jobId: job.id }, 'Processing neglected tasks job');
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+function envEnabled(name: string, fallback: boolean): boolean {
+  const value = process.env[name];
+  if (value === undefined || value === '') return fallback;
+  return value === 'true' || value === '1';
+}
 
-    const count = await prisma.task.updateMany({
-      where: {
-        status: { in: ['TODO', 'IN_PROGRESS'] },
-        updatedAt: { lt: sevenDaysAgo },
-        neglectedSince: null,
-      },
-      data: { neglectedSince: new Date() },
-    });
+const workers: Array<{ close: () => Promise<void> }> = [];
+const timers: NodeJS.Timeout[] = [];
+const enabledProcesses: string[] = [];
 
-    logger.info({ count: count.count }, 'Marked tasks as neglected');
-  },
-  { connection: redisConnection },
-);
+if (envEnabled('WORKER_NEGLECTED_JOBS_ENABLED', false)) {
+  const neglectedWorker = new Worker(
+    'neglected-tasks',
+    async (job) => {
+      logger.info({ jobId: job.id }, 'Processing neglected tasks job');
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-const memoryIndexWorker = createMemoryIndexWorker(prisma, redisConnection);
-const reminderDispatchWorker = createReminderDispatchWorker(prisma, redisConnection);
+      const count = await prisma.task.updateMany({
+        where: {
+          status: { in: ['TODO', 'IN_PROGRESS'] },
+          updatedAt: { lt: sevenDaysAgo },
+          neglectedSince: null,
+        },
+        data: { neglectedSince: new Date() },
+      });
 
-const reminderDispatcher = new ReminderDispatcherService(prisma);
+      logger.info({ count: count.count }, 'Marked tasks as neglected');
+    },
+    { connection: redisConnection },
+  );
 
-// Daily neglected goals alerts (max 1/week per goal — handled in dispatcher)
-const NEGLECTED_GOALS_INTERVAL_MS = 24 * 60 * 60 * 1000;
-const neglectedGoalsTimer = setInterval(async () => {
-  try {
-    await reminderDispatcher.processNeglectedGoals();
-  } catch (err) {
-    logger.error({ err }, 'neglected goals processing failed');
-  }
-}, NEGLECTED_GOALS_INTERVAL_MS);
+  neglectedWorker.on('completed', (job) => {
+    logger.info({ jobId: job.id }, 'neglected-tasks job completed');
+  });
 
-neglectedWorker.on('completed', (job) => {
-  logger.info({ jobId: job.id }, 'Job completed');
-});
+  neglectedWorker.on('failed', (job, err) => {
+    logger.error({ jobId: job?.id, err }, 'neglected-tasks job failed');
+  });
 
-neglectedWorker.on('failed', (job, err) => {
-  logger.error({ jobId: job?.id, err }, 'Job failed');
-});
+  workers.push(neglectedWorker);
+  enabledProcesses.push('neglected-tasks');
+}
 
-logger.info('🔄 Worker started (neglected-tasks + memory-index + reminder-dispatch)');
+if (envEnabled('WORKER_MEMORY_INDEX_ENABLED', true)) {
+  workers.push(createMemoryIndexWorker(prisma, redisConnection));
+  enabledProcesses.push('memory-index');
+}
+
+if (envEnabled('WORKER_REMINDER_DISPATCH_ENABLED', false)) {
+  workers.push(createReminderDispatchWorker(prisma, redisConnection));
+  enabledProcesses.push('reminder-dispatch');
+}
+
+if (envEnabled('WORKER_NEGLECTED_GOALS_ENABLED', false)) {
+  const reminderDispatcher = new ReminderDispatcherService(prisma);
+  const neglectedGoalsTimer = setInterval(async () => {
+    try {
+      await reminderDispatcher.processNeglectedGoals();
+    } catch (err) {
+      logger.error({ err }, 'neglected goals processing failed');
+    }
+  }, 24 * 60 * 60 * 1000);
+
+  timers.push(neglectedGoalsTimer);
+  enabledProcesses.push('neglected-goals');
+}
+
+logger.info({ enabledProcesses }, 'Worker started');
 
 process.on('SIGTERM', async () => {
   logger.info('Shutting down worker...');
-  clearInterval(neglectedGoalsTimer);
-  await neglectedWorker.close();
-  await memoryIndexWorker.close();
-  await reminderDispatchWorker.close();
+  for (const timer of timers) clearInterval(timer);
+  await Promise.all(workers.map((worker) => worker.close()));
   await prisma.$disconnect();
   process.exit(0);
 });

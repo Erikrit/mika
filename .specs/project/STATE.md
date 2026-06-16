@@ -158,6 +158,7 @@ _Nenhum blocker ativo._
 
 Próximo foco:
 
+- Validar deploy da VPS enxuta v1.5 com `docker/docker-compose.v1.5.yml`
 - Validar build web e fluxo manual de Projetos por prompt/arquivo
 - Persistir eventos/marcos sugeridos ou decidir entidade própria para marcos
 - Validar UAT do Dashboard Diário com foco de hoje, semana e projetos ativos
@@ -204,6 +205,7 @@ AD-016 — Repriorização de integrações e roadmap
 | — | Spec M8 Projetos por prompt/arquivo criada | 2026-06-16 | local | Done |
 | — | Primeiro incremento M8 implementado: rascunho de projeto por IA, confirmação de projeto/tarefas e Objetivos oculto da sidebar | 2026-06-16 | local | In Progress |
 | — | Dashboard Diário e Agenda Integrada implementados com overview semanal, foco diário, tarefas/eventos e projetos ativos | 2026-06-16 | local | In Progress |
+| — | Plano de VPS enxuta v1.5 executado: compose slim, flags operacionais, worker reduzido e lembretes/Telegram/n8n desligados por padrão | 2026-06-16 | local | In Progress |
 
 ---
 
@@ -257,6 +259,7 @@ AD-016 — Repriorização de integrações e roadmap
 - [x] Redesenhar Dashboard com calendário + tarefas do dia
 - [x] Redesenhar Agenda com eventos + tarefas
 - [ ] Validar UAT Dashboard/Agenda v1.5
+- [x] Executar plano de VPS enxuta v1.5
 - [ ] Rebaixar Telegram para legado nas demais docs e configs
 
 ---

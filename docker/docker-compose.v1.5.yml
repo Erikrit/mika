@@ -1,5 +1,11 @@
-# Staging Hostinger — sem domínio próprio (hostname srv*.hstgr.cloud + portas)
-# Uso: docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging up -d
+# Mika v1.5 slim VPS stack: Web/API/Worker/Postgres/Redis only.
+# Uso: docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging up -d
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: ${DOCKER_LOG_MAX_SIZE:-10m}
+    max-file: ${DOCKER_LOG_MAX_FILE:-3}
 
 services:
   api:
@@ -15,7 +21,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_ENABLED: ${TELEGRAM_ENABLED:-false}
       MIKA_TELEGRAM_MODULE_ENABLED: ${MIKA_TELEGRAM_MODULE_ENABLED:-false}
       MIKA_REMINDERS_ENABLED: ${MIKA_REMINDERS_ENABLED:-false}
@@ -25,15 +31,19 @@ services:
       ROUTINE_API_KEY: ${ROUTINE_API_KEY:-}
       WEB_URL: ${PUBLIC_WEB_URL}
       CORS_EXTRA_ORIGINS: ${CORS_EXTRA_ORIGINS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-warn}
       TZ: ${TZ:-America/Sao_Paulo}
     ports:
-      - "3001:3001"
+      - "${API_PORT:-3001}:3001"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     restart: unless-stopped
+    mem_limit: ${API_MEM_LIMIT:-768m}
+    cpus: ${API_CPU_LIMIT:-1.0}
+    logging: *default-logging
     networks:
       - mika
 
@@ -45,10 +55,13 @@ services:
       PORT: 3000
       INTERNAL_API_URL: http://api:3001
     ports:
-      - "3000:3000"
+      - "${WEB_PORT:-3000}:3000"
     depends_on:
       - api
     restart: unless-stopped
+    mem_limit: ${WEB_MEM_LIMIT:-512m}
+    cpus: ${WEB_CPU_LIMIT:-1.0}
+    logging: *default-logging
     networks:
       - mika
 
@@ -62,15 +75,15 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
       WORKER_MEMORY_INDEX_ENABLED: ${WORKER_MEMORY_INDEX_ENABLED:-true}
       WORKER_REMINDER_DISPATCH_ENABLED: ${WORKER_REMINDER_DISPATCH_ENABLED:-false}
       WORKER_NEGLECTED_JOBS_ENABLED: ${WORKER_NEGLECTED_JOBS_ENABLED:-false}
       WORKER_NEGLECTED_GOALS_ENABLED: ${WORKER_NEGLECTED_GOALS_ENABLED:-false}
       MEMORY_INDEX_CONCURRENCY: ${MEMORY_INDEX_CONCURRENCY:-1}
       REMINDER_DISPATCH_CONCURRENCY: ${REMINDER_DISPATCH_CONCURRENCY:-1}
+      LOG_LEVEL: ${LOG_LEVEL:-warn}
       TZ: ${TZ:-America/Sao_Paulo}
     depends_on:
       postgres:
@@ -78,12 +91,15 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    mem_limit: ${WORKER_MEM_LIMIT:-512m}
+    cpus: ${WORKER_CPU_LIMIT:-1.0}
+    logging: *default-logging
     networks:
       - mika
 
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: mika-postgres-staging
+    container_name: mika-postgres-v15
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -96,13 +112,16 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    mem_limit: ${POSTGRES_MEM_LIMIT:-1g}
+    cpus: ${POSTGRES_CPU_LIMIT:-1.0}
+    logging: *default-logging
     networks:
       - mika
 
   redis:
     image: redis:7-alpine
-    container_name: mika-redis-staging
-    command: redis-server --save 60 1 --requirepass ${REDIS_PASSWORD}
+    container_name: mika-redis-v15
+    command: redis-server --save 60 1 --requirepass ${REDIS_PASSWORD} --maxmemory ${REDIS_MAXMEMORY:-128mb} --maxmemory-policy noeviction
     volumes:
       - redisdata:/data
     healthcheck:
@@ -111,6 +130,9 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    mem_limit: ${REDIS_MEM_LIMIT:-192m}
+    cpus: ${REDIS_CPU_LIMIT:-0.5}
+    logging: *default-logging
     networks:
       - mika
 
