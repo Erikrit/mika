@@ -9,6 +9,9 @@ import type {
   CreateGoalDto,
   UpdateGoalDto,
   CreateProjectDto,
+  CreateProjectDraftDto,
+  CreateProjectFromDraftDto,
+  ProjectDraftDto,
   UpdateProjectDto,
   CreateEventDto,
   UpdateEventDto,
@@ -29,8 +32,31 @@ export interface DashboardData {
   overdueTasks: number;
 }
 
+export interface DashboardProjectSummary extends ProjectListItem {
+  taskCount: number;
+  completionPercentage: number;
+}
+
+export interface DashboardOverviewData {
+  range: { from: string; to: string };
+  today: {
+    tasks: Task[];
+    events: EventListItem[];
+    overdueTasksCount: number;
+  };
+  week: {
+    tasks: Task[];
+    events: EventListItem[];
+  };
+  overdueTasks: Task[];
+  backlogFocusTasks: Task[];
+  priorityTasks: Task[];
+  activeProjects: DashboardProjectSummary[];
+}
+
 export const dashboardApi = {
   getToday: () => api.get<DashboardData>('/dashboard/today').then(r => r.data),
+  getOverview: () => api.get<DashboardOverviewData>('/dashboard/overview').then((r) => r.data),
 };
 
 export interface RoutineRunItem {
@@ -82,6 +108,10 @@ export const projectsApi = {
   list: () => api.get<ProjectListItem[]>('/projects').then((r) => r.data),
   get: (id: string) => api.get<ProjectListItem>(`/projects/${id}`).then((r) => r.data),
   create: (data: CreateProjectDto) => api.post<Project>('/projects', data).then((r) => r.data),
+  createDraft: (data: CreateProjectDraftDto) =>
+    api.post<ProjectDraftDto>('/projects/draft', data).then((r) => r.data),
+  createFromDraft: (data: CreateProjectFromDraftDto) =>
+    api.post<{ project: Project; tasks: Task[] }>('/projects/from-draft', data).then((r) => r.data),
   update: (id: string, data: UpdateProjectDto) =>
     api.patch<Project>(`/projects/${id}`, data).then((r) => r.data),
   delete: (id: string) => api.delete(`/projects/${id}`),

@@ -21,6 +21,8 @@ export type {
   RoutineType,
   GenerateRoutineResult,
 } from './generate-routine';
+export { generateProjectDraft } from './generate-project-draft';
+export type { GenerateProjectDraftInput } from './generate-project-draft';
 export {
   buildDailySummaryFallback,
   buildWeeklyReviewFallback,

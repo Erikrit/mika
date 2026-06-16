@@ -14,4 +14,10 @@ export class DashboardController {
   getToday(@CurrentUser() user: AuthUser) {
     return this.service.getToday(user.id);
   }
+
+  @Get('overview')
+  @ApiOperation({ summary: 'Visão diária e semanal para Dashboard e Agenda' })
+  getOverview(@CurrentUser() user: AuthUser) {
+    return this.service.getOverview(user.id);
+  }
 }

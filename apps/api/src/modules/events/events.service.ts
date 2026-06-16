@@ -104,6 +104,17 @@ export class EventsService {
     });
   }
 
+  async getEventsBetween(userId: string, from: Date, to: Date) {
+    return this.prisma.event.findMany({
+      where: {
+        userId,
+        startsAt: { gte: from, lte: to },
+      },
+      orderBy: { startsAt: 'asc' },
+      include: { lifeArea: true },
+    });
+  }
+
   private syncEventReminderAsync(
     userId: string,
     eventId: string,

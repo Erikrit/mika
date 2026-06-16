@@ -38,6 +38,56 @@ export const CreateProjectSchema = z.object({
 
 export const UpdateProjectSchema = CreateProjectSchema.partial();
 
+const ProjectDraftFileSchema = z.object({
+  name: z.string().min(1).max(255),
+  content: z.string().min(1).max(30_000),
+});
+
+export const CreateProjectDraftSchema = z.object({
+  prompt: z.string().max(10_000).optional(),
+  file: ProjectDraftFileSchema.optional(),
+}).refine((value) => Boolean(value.prompt?.trim() || value.file?.content.trim()), {
+  message: 'Informe um prompt ou arquivo para gerar o projeto',
+});
+
+export const ProjectDraftSchema = z.object({
+  project: z.object({
+    title: z.string().min(1).max(500),
+    description: z.string().optional(),
+    lifeAreaSlug: z.string().optional(),
+    priority: z.number().int().min(1).max(5).default(3),
+    startDate: z.string().optional(),
+    targetDate: z.string().optional(),
+    tags: z.array(z.string()).default([]),
+  }),
+  milestones: z.array(z.object({
+    title: z.string().min(1).max(500),
+    description: z.string().optional(),
+  })).default([]),
+  tasks: z.array(z.object({
+    title: z.string().min(1).max(500),
+    description: z.string().optional(),
+    priority: z.number().int().min(1).max(5).default(3),
+    dueAt: z.string().optional(),
+    energyLevel: z.enum(['low', 'medium', 'high']).optional(),
+    contextTags: z.array(z.string()).default([]),
+  })).default([]),
+  events: z.array(z.object({
+    title: z.string().min(1).max(500),
+    description: z.string().optional(),
+    startsAt: z.string(),
+    endsAt: z.string().optional(),
+    location: z.string().optional(),
+    isAllDay: z.boolean().default(false),
+  })).default([]),
+  warnings: z.array(z.string()).default([]),
+});
+
+export const CreateProjectFromDraftSchema = z.object({
+  project: CreateProjectSchema,
+  tasks: z.array(CreateTaskSchema.omit({ projectId: true, parentTaskId: true })).default([]),
+});
+
 export const CreateGoalSchema = z.object({
   title: z.string().min(1).max(500),
   description: z.string().optional(),
@@ -143,6 +193,9 @@ export type UpdateTaskDto = z.infer<typeof UpdateTaskSchema>;
 export type TaskFilters = z.infer<typeof TaskFiltersSchema>;
 export type CreateProjectDto = z.infer<typeof CreateProjectSchema>;
 export type UpdateProjectDto = z.infer<typeof UpdateProjectSchema>;
+export type CreateProjectDraftDto = z.infer<typeof CreateProjectDraftSchema>;
+export type ProjectDraftDto = z.infer<typeof ProjectDraftSchema>;
+export type CreateProjectFromDraftDto = z.infer<typeof CreateProjectFromDraftSchema>;
 export type CreateGoalDto = z.infer<typeof CreateGoalSchema>;
 export type UpdateGoalDto = z.infer<typeof UpdateGoalSchema>;
 export type CreateEventDto = z.infer<typeof CreateEventSchema>;

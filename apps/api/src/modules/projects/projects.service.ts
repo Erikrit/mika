@@ -2,7 +2,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { PrismaService } from '../prisma/prisma.service';
 import { MemoryQueueService } from '../memory/memory-queue.service';
-import type { CreateProjectDto, UpdateProjectDto } from '@mika/shared';
+import { TasksService } from '../tasks/tasks.service';
+import type {
+  CreateProjectDto,
+  CreateProjectFromDraftDto,
+  UpdateProjectDto,
+} from '@mika/shared';
 
 @Injectable()
 export class ProjectsService {
@@ -10,6 +15,7 @@ export class ProjectsService {
     @InjectPinoLogger(ProjectsService.name) private readonly logger: PinoLogger,
     private readonly prisma: PrismaService,
     private readonly memoryQueue: MemoryQueueService,
+    private readonly tasksService: TasksService,
   ) {}
 
   async create(userId: string, dto: CreateProjectDto) {
@@ -77,6 +83,54 @@ export class ProjectsService {
     await this.findOne(userId, id);
     await this.prisma.project.delete({ where: { id } });
     this.enqueueProjectMemoryDelete(userId, id);
+  }
+
+  async createFromDraft(userId: string, dto: CreateProjectFromDraftDto) {
+    const project = await this.create(userId, dto.project);
+    const tasks = [];
+
+    for (const task of dto.tasks) {
+      tasks.push(
+        await this.tasksService.create(userId, {
+          ...task,
+          projectId: project.id,
+          lifeAreaId: task.lifeAreaId ?? project.lifeAreaId,
+        }),
+      );
+    }
+
+    return { project, tasks };
+  }
+
+  async getActiveSummary(userId: string, limit = 5) {
+    const projects = await this.prisma.project.findMany({
+      where: {
+        userId,
+        status: { in: ['ACTIVE', 'PAUSED'] },
+      },
+      take: limit,
+      orderBy: [{ priority: 'asc' }, { updatedAt: 'desc' }],
+      include: {
+        lifeArea: true,
+        tasks: {
+          select: { id: true, status: true },
+        },
+      },
+    });
+
+    return projects.map((project) => {
+      const totalTasks = project.tasks.length;
+      const completedTasks = project.tasks.filter((task) => task.status === 'DONE').length;
+      const completionPercentage =
+        totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+      return {
+        ...project,
+        tasks: undefined,
+        taskCount: totalTasks,
+        completionPercentage,
+      };
+    });
   }
 
   private enqueueProjectMemory(userId: string, projectId: string) {

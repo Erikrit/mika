@@ -1,6 +1,6 @@
 # Tasks — M8 Projetos por Prompt/Arquivo
 
-**Status:** Draft
+**Status:** In Progress
 **Criado em:** 2026-06-16
 
 ---
@@ -9,14 +9,14 @@
 
 ### Entrega
 
-- [ ] Criar schema de entrada para geração de rascunho.
-- [ ] Criar schema de rascunho retornado pela IA.
-- [ ] Criar schema de confirmação do rascunho.
-- [ ] Exportar tipos em `@mika/shared`.
+- [x] Criar schema de entrada para geração de rascunho.
+- [x] Criar schema de rascunho retornado pela IA.
+- [x] Criar schema de confirmação do rascunho.
+- [x] Exportar tipos em `@mika/shared`.
 
 ### Done
 
-- [ ] Backend e frontend usam os mesmos tipos.
+- [x] Backend e frontend usam os mesmos tipos.
 
 ---
 
@@ -24,15 +24,17 @@
 
 ### Entrega
 
-- [ ] Criar `ProjectDraftAiService`.
-- [ ] Montar prompt estruturado em pt-BR.
-- [ ] Chamar OpenAI com resposta JSON.
-- [ ] Validar resposta com Zod.
-- [ ] Tratar falhas com mensagem amigável.
+- [x] Criar `ProjectDraftAiService`.
+- [x] Montar prompt estruturado em pt-BR.
+- [x] Chamar OpenAI com resposta JSON.
+- [x] Validar resposta com Zod.
+- [x] Tratar falhas com mensagem amigável.
 
 ### Done
 
 - [ ] `POST /projects/draft` retorna rascunho válido para prompt simples.
+
+**Nota:** implementação adicionada; validação manual pendente.
 
 ---
 
@@ -40,15 +42,15 @@
 
 ### Entrega
 
-- [ ] Adicionar `POST /projects/draft`.
-- [ ] Aceitar prompt livre.
-- [ ] Aceitar conteúdo de arquivo `.md`/`.txt`.
-- [ ] Limitar tamanho da entrada.
+- [x] Adicionar `POST /projects/draft`.
+- [x] Aceitar prompt livre.
+- [x] Aceitar conteúdo de arquivo `.md`/`.txt`.
+- [x] Limitar tamanho da entrada.
 
 ### Done
 
 - [ ] Swagger exibe o endpoint.
-- [ ] Erros de arquivo/formato são claros.
+- [x] Erros de arquivo/formato são claros.
 
 ---
 
@@ -56,15 +58,17 @@
 
 ### Entrega
 
-- [ ] Adicionar `POST /projects/from-draft`.
-- [ ] Criar projeto aprovado.
-- [ ] Criar tarefas aprovadas com `projectId`.
-- [ ] Ignorar itens rejeitados.
-- [ ] Invalidar/indexar memória pelos fluxos existentes.
+- [x] Adicionar `POST /projects/from-draft`.
+- [x] Criar projeto aprovado.
+- [x] Criar tarefas aprovadas com `projectId`.
+- [x] Ignorar itens rejeitados.
+- [x] Invalidar/indexar memória pelos fluxos existentes.
 
 ### Done
 
 - [ ] Projeto e tarefas aparecem na UI após confirmação.
+
+**Nota:** fluxo implementado; UAT pendente.
 
 ---
 
@@ -72,10 +76,10 @@
 
 ### Entrega
 
-- [ ] Adicionar botão "Criar com Mika" na tela Projetos.
-- [ ] Criar modal/painel com prompt livre.
-- [ ] Adicionar upload `.md`/`.txt`.
-- [ ] Exibir loading e erros.
+- [x] Adicionar botão "Criar com Mika" na tela Projetos.
+- [x] Criar modal/painel com prompt livre.
+- [x] Adicionar upload `.md`/`.txt`.
+- [x] Exibir loading e erros.
 
 ### Done
 
@@ -87,12 +91,12 @@
 
 ### Entrega
 
-- [ ] Exibir dados do projeto sugerido.
-- [ ] Permitir editar campos principais.
-- [ ] Exibir tarefas sugeridas.
-- [ ] Permitir editar/remover tarefas.
-- [ ] Exibir marcos/eventos como sugestões quando ainda não persistidos.
-- [ ] Confirmar criação.
+- [x] Exibir dados do projeto sugerido.
+- [x] Permitir editar campos principais.
+- [x] Exibir tarefas sugeridas.
+- [x] Permitir editar/remover tarefas.
+- [x] Exibir marcos/eventos como sugestões quando ainda não persistidos.
+- [x] Confirmar criação.
 
 ### Done
 
@@ -104,13 +108,13 @@
 
 ### Entrega
 
-- [ ] Remover ou ocultar `/goals` da sidebar.
-- [ ] Manter rota `/goals` funcional ou redirecionada por compatibilidade.
-- [ ] Garantir que Projetos seja a superfície principal de planejamento.
+- [x] Remover ou ocultar `/goals` da sidebar.
+- [x] Manter rota `/goals` funcional ou redirecionada por compatibilidade.
+- [x] Garantir que Projetos seja a superfície principal de planejamento.
 
 ### Done
 
-- [ ] Sidebar não mostra mais a aba Objetivos.
+- [x] Sidebar não mostra mais a aba Objetivos.
 
 ---
 
@@ -135,16 +139,18 @@
 - [ ] Build API OK.
 - [ ] UAT manual registrado.
 
+**Nota:** build/UAT não executados nesta rodada por decisão do usuário.
+
 ---
 
 ## T009 — Documentação e estado
 
 ### Entrega
 
-- [ ] Atualizar `STATE.md`.
-- [ ] Atualizar `ROADMAP.md` se houver mudança de status.
+- [x] Atualizar `STATE.md`.
+- [x] Atualizar `ROADMAP.md` se houver mudança de status.
 - [ ] Atualizar README se o fluxo entrar em uso.
 
 ### Done
 
-- [ ] Documentação reflete o estado real da implementação.
+- [x] Documentação reflete o estado real da implementação.

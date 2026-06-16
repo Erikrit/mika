@@ -1,7 +1,7 @@
 # State — Mika
 
 **Last Updated:** 2026-06-16
-**Current Work:** Repriorização V1 — simplificar integrações, fortalecer Projetos, Dashboard e Agenda
+**Current Work:** M8 em andamento — Projetos Inteligentes, Dashboard Diário e Agenda Integrada para v1.5
 
 ---
 
@@ -158,11 +158,11 @@ _Nenhum blocker ativo._
 
 Próximo foco:
 
-- Implementar M8 Projetos por prompt/arquivo a partir da spec criada
-- Redesenhar Dashboard com calendário + tarefas do dia
-- Redesenhar Agenda com eventos + tarefas
-- Ocultar/remover aba Objetivos da navegação principal
-- Rebaixar Telegram para legado nas docs/configs restantes
+- Validar build web e fluxo manual de Projetos por prompt/arquivo
+- Persistir eventos/marcos sugeridos ou decidir entidade própria para marcos
+- Validar UAT do Dashboard Diário com foco de hoje, semana e projetos ativos
+- Validar UAT da Agenda Integrada com eventos + tarefas com prazo
+- Revisar configs operacionais para Telegram legado
 
 ---
 
@@ -202,6 +202,8 @@ AD-016 — Repriorização de integrações e roadmap
 |---|-------------|------|--------|--------|
 | — | AD-016 criada para repriorização de integrações e roadmap | 2026-06-12 | cd4225f | Done |
 | — | Spec M8 Projetos por prompt/arquivo criada | 2026-06-16 | local | Done |
+| — | Primeiro incremento M8 implementado: rascunho de projeto por IA, confirmação de projeto/tarefas e Objetivos oculto da sidebar | 2026-06-16 | local | In Progress |
+| — | Dashboard Diário e Agenda Integrada implementados com overview semanal, foco diário, tarefas/eventos e projetos ativos | 2026-06-16 | local | In Progress |
 
 ---
 
@@ -249,9 +251,12 @@ AD-016 — Repriorização de integrações e roadmap
 - [x] Validar Android Chrome (UAT Erik)
 - [x] Registrar UAT da feature M7
 - [x] Criar spec `M8-projetos-por-prompt-arquivo`
-- [ ] Ocultar/remover aba Objetivos da navegação principal
-- [ ] Redesenhar Dashboard com calendário + tarefas do dia
-- [ ] Redesenhar Agenda com eventos + tarefas
+- [x] Ocultar/remover aba Objetivos da navegação principal
+- [ ] Validar build web/API do primeiro incremento M8
+- [ ] Validar UAT Projetos por prompt/arquivo
+- [x] Redesenhar Dashboard com calendário + tarefas do dia
+- [x] Redesenhar Agenda com eventos + tarefas
+- [ ] Validar UAT Dashboard/Agenda v1.5
 - [ ] Rebaixar Telegram para legado nas demais docs e configs
 
 ---

@@ -134,6 +134,38 @@ export class TasksService {
     });
   }
 
+  async getOpenTasksDueBetween(userId: string, from: Date, to: Date) {
+    return this.prisma.task.findMany({
+      where: {
+        userId,
+        status: { in: ['TODO', 'IN_PROGRESS'] },
+        dueAt: { gte: from, lte: to },
+      },
+      orderBy: [{ dueAt: 'asc' }, { priority: 'asc' }, { createdAt: 'desc' }],
+      include: {
+        lifeArea: true,
+        project: { select: { id: true, title: true } },
+      },
+    });
+  }
+
+  async getBacklogFocusTasks(userId: string, limit = 5) {
+    return this.prisma.task.findMany({
+      where: {
+        userId,
+        status: { in: ['TODO', 'IN_PROGRESS'] },
+        dueAt: null,
+        priority: { lte: 2 },
+      },
+      take: limit,
+      orderBy: [{ priority: 'asc' }, { updatedAt: 'desc' }],
+      include: {
+        lifeArea: true,
+        project: { select: { id: true, title: true } },
+      },
+    });
+  }
+
   async getOverdueCount(userId: string) {
     const now = new Date();
     return this.prisma.task.count({
@@ -141,6 +173,23 @@ export class TasksService {
         userId,
         status: { in: ['TODO', 'IN_PROGRESS'] },
         dueAt: { lt: now },
+      },
+    });
+  }
+
+  async getOverdueTasks(userId: string, limit = 6) {
+    const now = new Date();
+    return this.prisma.task.findMany({
+      where: {
+        userId,
+        status: { in: ['TODO', 'IN_PROGRESS'] },
+        dueAt: { lt: now },
+      },
+      take: limit,
+      orderBy: [{ dueAt: 'asc' }, { priority: 'asc' }],
+      include: {
+        lifeArea: true,
+        project: { select: { id: true, title: true } },
       },
     });
   }

@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 import {
   Home,
   Brain,
-  Target,
   FolderOpen,
   Calendar,
   Settings,
@@ -22,7 +21,6 @@ const NAV_ITEMS = [
   { href: '/', label: 'Início', icon: Home },
   { href: '/tasks', label: 'Tarefas', icon: CheckSquare },
   { href: '/context', label: 'Contexto', icon: Brain },
-  { href: '/goals', label: 'Objetivos', icon: Target },
   { href: '/projects', label: 'Projetos', icon: FolderOpen },
   { href: '/events', label: 'Agenda', icon: Calendar },
   { href: '/reflections', label: 'Reflexões', icon: PenLine },

@@ -1,19 +1,22 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { eventsApi, lifeAreasApi, type EventListItem } from '@/lib/api-client';
-import { formatTime } from '@/lib/utils';
+import { eventsApi, lifeAreasApi, tasksApi, type EventListItem } from '@/lib/api-client';
+import { cn, formatTime, normalizeTaskStatus, PRIORITY_CONFIG } from '@/lib/utils';
 import { PageHeader } from '@/components/ui/page-header';
 import { MikaCard } from '@/components/ui/mika-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, Plus, Loader2, Pencil, Trash2 } from 'lucide-react';
-import type { CreateEventDto, UpdateEventDto } from '@mika/shared';
+import { Calendar, CheckSquare, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
+import type { CreateEventDto, Task, UpdateEventDto } from '@mika/shared';
 
 type PeriodPreset = '30d' | 'week' | 'month' | 'all';
+type AgendaItem =
+  | { kind: 'event'; date: Date; item: EventListItem }
+  | { kind: 'task'; date: Date; item: Task };
 
 const SELECT_CLASS =
   'w-full rounded-lg border border-input bg-surface px-3 py-2.5 text-sm text-text-primary focus:border-accent focus:outline-none';
@@ -64,6 +67,31 @@ function getPeriodRange(preset: PeriodPreset): { from?: string; to?: string } {
   };
 }
 
+function getTaskPeriodRange(preset: PeriodPreset): { dueFrom?: string; dueTo?: string } {
+  const range = getPeriodRange(preset);
+  return {
+    dueFrom: range.from,
+    dueTo: range.to,
+  };
+}
+
+function buildAgendaItems(events: EventListItem[] = [], tasks: Task[] = []): AgendaItem[] {
+  return [
+    ...events.map((item) => ({
+      kind: 'event' as const,
+      date: new Date(item.startsAt),
+      item,
+    })),
+    ...tasks
+      .filter((item) => item.dueAt && normalizeTaskStatus(item.status) !== 'done')
+      .map((item) => ({
+        kind: 'task' as const,
+        date: new Date(item.dueAt as Date),
+        item,
+      })),
+  ].sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
 function toDatetimeLocal(value: string | Date): string {
   const d = new Date(value);
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -81,11 +109,19 @@ export default function EventsPage() {
   const queryClient = useQueryClient();
 
   const rangeParams = useMemo(() => getPeriodRange(period), [period]);
+  const taskRangeParams = useMemo(() => getTaskPeriodRange(period), [period]);
 
   const { data: events, isLoading } = useQuery({
     queryKey: ['events', period],
     queryFn: () => eventsApi.list(rangeParams as Record<string, string>),
   });
+
+  const { data: tasks, isLoading: isLoadingTasks } = useQuery({
+    queryKey: ['tasks', 'agenda', period],
+    queryFn: () => tasksApi.list(taskRangeParams as Record<string, string>),
+  });
+
+  const agendaItems = useMemo(() => buildAgendaItems(events, tasks), [events, tasks]);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => eventsApi.delete(id),
@@ -154,68 +190,55 @@ export default function EventsPage() {
         ))}
       </div>
 
-      {isLoading ? (
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <AgendaMetric
+          icon={<Calendar className="h-4 w-4 text-progress" />}
+          label="Eventos"
+          value={events?.length ?? 0}
+        />
+        <AgendaMetric
+          icon={<CheckSquare className="h-4 w-4 text-accent" />}
+          label="Tarefas com prazo"
+          value={
+            tasks?.filter((task) => task.dueAt && normalizeTaskStatus(task.status) !== 'done').length ?? 0
+          }
+        />
+        <AgendaMetric
+          icon={<Plus className="h-4 w-4 text-insight" />}
+          label="Itens na agenda"
+          value={agendaItems.length}
+        />
+      </div>
+
+      {isLoading || isLoadingTasks ? (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-20 rounded-2xl" />
           ))}
         </div>
-      ) : events?.length === 0 ? (
+      ) : agendaItems.length === 0 ? (
         <MikaCard className="flex flex-col items-center py-16 text-center">
           <Calendar className="mb-3 h-10 w-10 text-text-tertiary" />
-          <p className="text-text-tertiary">Nenhum evento encontrado</p>
+          <p className="text-text-tertiary">Nenhum evento ou tarefa com prazo encontrado</p>
           <Button variant="link" onClick={openCreate} className="mt-4">
-            Criar seu primeiro evento
+            Criar evento
           </Button>
         </MikaCard>
       ) : (
         <div className="space-y-2">
-          {events?.map((event) => (
-            <MikaCard key={event.id} className="py-4">
-              <div className="flex items-start gap-4">
-                <div className="min-w-[50px] flex-shrink-0 text-center">
-                  <p className="text-xs font-bold text-accent">
-                    {event.isAllDay ? 'Dia todo' : formatTime(String(event.startsAt))}
-                  </p>
-                  <p className="mt-0.5 text-xs text-text-tertiary">
-                    {new Date(event.startsAt).toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: 'short',
-                    })}
-                  </p>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-text-primary">{event.title}</p>
-                  {event.location && (
-                    <p className="mt-0.5 text-xs text-text-tertiary">{event.location}</p>
-                  )}
-                  {event.description && (
-                    <p className="mt-0.5 truncate text-xs text-text-tertiary">{event.description}</p>
-                  )}
-                </div>
-                <div className="flex flex-shrink-0 gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => openEdit(event)}
-                    aria-label="Editar evento"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => handleDelete(event)}
-                    disabled={deleteMutation.isPending}
-                    aria-label="Excluir evento"
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </MikaCard>
-          ))}
+          {agendaItems.map((item) =>
+            item.kind === 'event' ? (
+              <EventAgendaRow
+                key={`event-${item.item.id}`}
+                event={item.item}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+                deleting={deleteMutation.isPending}
+              />
+            ) : (
+              <TaskAgendaRow key={`task-${item.item.id}`} task={item.item} />
+            ),
+          )}
         </div>
       )}
 
@@ -228,6 +251,132 @@ export default function EventsPage() {
         />
       )}
     </div>
+  );
+}
+
+function AgendaMetric({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: number;
+}) {
+  return (
+    <MikaCard className="p-5">
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-bg-secondary">
+          {icon}
+        </div>
+        <div>
+          <p className="text-sm text-text-tertiary">{label}</p>
+          <p className="mt-1 text-2xl font-bold text-text-primary">{value}</p>
+        </div>
+      </div>
+    </MikaCard>
+  );
+}
+
+function EventAgendaRow({
+  event,
+  onEdit,
+  onDelete,
+  deleting,
+}: {
+  event: EventListItem;
+  onEdit: (event: EventListItem) => void;
+  onDelete: (event: EventListItem) => void;
+  deleting: boolean;
+}) {
+  return (
+    <MikaCard className="py-4">
+      <div className="flex items-start gap-4">
+        <div className="min-w-[64px] flex-shrink-0 text-center">
+          <p className="text-xs font-bold text-progress">
+            {event.isAllDay ? 'Dia todo' : formatTime(String(event.startsAt))}
+          </p>
+          <p className="mt-0.5 text-xs capitalize text-text-tertiary">
+            {new Date(event.startsAt).toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: 'short',
+            })}
+          </p>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-progress/10 px-2 py-0.5 text-xs text-progress">
+              Evento
+            </span>
+            {event.lifeArea?.label && (
+              <span className="rounded-full bg-bg-secondary px-2 py-0.5 text-xs text-text-tertiary">
+                {event.lifeArea.label}
+              </span>
+            )}
+          </div>
+          <p className="mt-2 font-medium text-text-primary">{event.title}</p>
+          {event.location && (
+            <p className="mt-0.5 text-xs text-text-tertiary">{event.location}</p>
+          )}
+          {event.description && (
+            <p className="mt-0.5 line-clamp-2 text-xs text-text-tertiary">{event.description}</p>
+          )}
+        </div>
+        <div className="flex flex-shrink-0 gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onEdit(event)}
+            aria-label="Editar evento"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onDelete(event)}
+            disabled={deleting}
+            aria-label="Excluir evento"
+            className="text-destructive hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </MikaCard>
+  );
+}
+
+function TaskAgendaRow({ task }: { task: Task }) {
+  const priority = PRIORITY_CONFIG[task.priority as keyof typeof PRIORITY_CONFIG];
+  const dueAt = task.dueAt ? new Date(task.dueAt) : null;
+
+  return (
+    <MikaCard className="py-4">
+      <div className="flex items-start gap-4">
+        <div className="min-w-[64px] flex-shrink-0 text-center">
+          <p className="text-xs font-bold text-accent">Prazo</p>
+          <p className="mt-0.5 text-xs capitalize text-text-tertiary">
+            {dueAt?.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+          </p>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs text-accent">
+              Tarefa
+            </span>
+            <span className={cn('rounded-full px-2 py-0.5 text-xs', priority?.bgLight, priority?.textColor)}>
+              {priority?.label}
+            </span>
+          </div>
+          <p className="mt-2 font-medium text-text-primary">{task.title}</p>
+          {task.description && (
+            <p className="mt-0.5 line-clamp-2 text-xs text-text-tertiary">{task.description}</p>
+          )}
+        </div>
+        <CheckSquare className="mt-1 h-4 w-4 flex-shrink-0 text-accent" />
+      </div>
+    </MikaCard>
   );
 }
 

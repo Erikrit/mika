@@ -1,7 +1,7 @@
 # Roadmap — Mika
 
-**Current Milestone:** M8 — Repriorização V1 + Projetos Inteligentes — **Planned**  
-**Status:** M6 Done (local) · MAINT-M2 Done (local) · M7 Done (implementação) · UAT M7 pendente · AD-016 aplicada
+**Current Milestone:** M8 — Repriorização V1 + Projetos Inteligentes — **In Progress**
+**Status:** M7 Done · M8 em implementação com Projetos Inteligentes, Dashboard Diário e Agenda Integrada · AD-016 aplicada
 
 > **Direção atual:** simplificar a V1, remover dependências pouco utilizadas, fortalecer Web/PWA, Dashboard, Agenda e Projetos como centro da Mika.
 
@@ -157,33 +157,35 @@ Mika atua como companheira contextual, capaz de lembrar o que importa, respeitar
 * Manter Redis/Worker apenas para memória, filas e lembretes necessários
 * Preparar feature flags para integrações externas
 
-**F13 — Projetos como centro de organização** — PLANNED
+**F13 — Projetos como centro de organização** — IN PROGRESS
 
 * Consolidar Objetivos dentro de Projetos
-* Ocultar/remover aba Objetivos da navegação principal
+* Ocultar/remover aba Objetivos da navegação principal — implementado no primeiro incremento M8
 * Projeto passa a conter objetivos internos, marcos, tarefas, eventos, arquivos e prompts
 
-**F14 — Projetos por prompt/arquivo** — PLANNED
+**F14 — Projetos por prompt/arquivo** — IN PROGRESS
 
-* Criar projeto a partir de prompt livre
-* Criar projeto a partir de arquivo enviado
-* Mika sugere tarefas, eventos, marcos e cronograma
-* Usuário revisa antes de salvar
+* Criar projeto a partir de prompt livre — implementado no backend/UI, validação pendente
+* Criar projeto a partir de arquivo `.md`/`.txt` — implementado no backend/UI, validação pendente
+* Mika sugere tarefas, eventos, marcos e cronograma — rascunho estruturado implementado
+* Usuário revisa antes de salvar — implementado para projeto e tarefas
 
-**F15 — Dashboard Diário** — PLANNED
+**F15 — Dashboard Diário** — IN PROGRESS
 
-* Calendário do dia/semana
-* Próximos eventos
-* Tarefas de hoje
-* Projetos em andamento
-* Sugestão de foco da Mika
+* Calendário do dia/semana — implementado no overview web/API
+* Próximos eventos — implementado na linha do tempo
+* Tarefas de hoje — implementado no foco diário
+* Projetos em andamento — implementado com progresso
+* Sugestão de foco da Mika — implementada com atrasos, tarefas de hoje e backlog prioritário
+* Validação manual/build — pendente para fechamento da v1.5
 
-**F16 — Agenda Integrada** — PLANNED
+**F16 — Agenda Integrada** — IN PROGRESS
 
-* Calendário + tarefas na mesma tela
-* Visualização diária e semanal
-* Destaque para atrasadas
-* Criação rápida de tarefa/evento
+* Calendário + tarefas na mesma tela — implementado na Agenda
+* Visualização por períodos — implementada com filtros existentes
+* Destaque para tarefas com prazo — implementado na linha do tempo
+* Criação rápida de evento — mantida
+* Criação rápida de tarefa — continua via tela Tarefas; atalho no Dashboard
 
 ---
 
