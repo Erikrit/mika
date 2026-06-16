@@ -1,7 +1,7 @@
 # Integrations — Mika
 
-**Status:** Draft  
-**Last Updated:** 2026-05-31
+**Status:** Revisado
+**Last Updated:** 2026-06-16
 
 ---
 
@@ -9,28 +9,43 @@
 
 ```mermaid
 graph LR
-    subgraph MVP["MVP (M1)"]
-        TG[Telegram Bot]
+    subgraph Core["Core V1"]
+        WEB[Web/PWA]
         OAI[OpenAI API]
+        PG[PostgreSQL + pgvector]
+        REDIS[Redis + BullMQ]
     end
 
-    subgraph Phase2["Fase 2+"]
+    subgraph V15["V1.5"]
         GCAL[Google Calendar]
-        NOTION[Notion Import]
+        TODO[Microsoft To Do]
+        PUSH[Web Push / PWA Notifications]
         GMAIL[Gmail]
     end
 
+    subgraph Optional["Legado / Opcional"]
+        TG[Telegram Bot]
+        N8N[n8n]
+    end
+
     subgraph Future["Futuro"]
+        NOTION[Notion Import]
         WA[WhatsApp]
         GDRIVE[Google Drive]
         OUTLOOK[Outlook]
     end
 
-    MIKA[Mika API] --> TG
+    WEB --> MIKA[Mika API]
     MIKA --> OAI
+    MIKA --> PG
+    MIKA --> REDIS
     MIKA -.-> GCAL
-    MIKA -.-> NOTION
+    MIKA -.-> TODO
+    MIKA -.-> PUSH
     MIKA -.-> GMAIL
+    MIKA -. legado .-> TG
+    MIKA -. opcional .-> N8N
+    MIKA -.-> NOTION
     MIKA -.-> WA
     MIKA -.-> GDRIVE
     MIKA -.-> OUTLOOK
@@ -42,19 +57,36 @@ graph LR
 
 | P | Integração | Fase | Complexidade | Valor | Status |
 |---|------------|------|--------------|-------|--------|
-| P0 | Telegram Bot | M1 | Baixa | Alto | PLANNED |
-| P0 | OpenAI API | M1 | Baixa | Alto | PLANNED |
-| P1 | Google Calendar | M2 | Média | Alto | PLANNED |
-| P2 | Notion (import) | M2 | Média | Médio | PLANNED |
-| P2 | Markdown files | M2 | Baixa | Médio | PLANNED |
-| P3 | Gmail (eventos) | M3 | Alta | Médio | PLANNED |
-| P4 | WhatsApp | M4+ | Alta | Alto | DEFERRED |
-| P4 | Google Drive | M4+ | Média | Baixo | DEFERRED |
-| P5 | Outlook | M5+ | Alta | Baixo | DEFERRED |
+| P0 | Web/PWA | V1 | Média | Alto | ACTIVE |
+| P0 | OpenAI API | V1 | Baixa | Alto | ACTIVE |
+| P0 | PostgreSQL + pgvector | V1 | Média | Alto | ACTIVE |
+| P0 | Redis + BullMQ | V1 | Média | Alto | ACTIVE para memória, filas e lembretes |
+| P1 | Google Calendar | V1.5 | Média | Alto | PLANNED |
+| P1 | Microsoft To Do | V1.5 | Média | Alto | PLANNED |
+| P1 | Web Push / PWA Notifications | V1.5 | Média | Alto | PLANNED |
+| P2 | Gmail | V1.5/V2 | Alta | Médio | PLANNED com consentimento explícito |
+| P2 | Upload de arquivos | M8 | Média | Alto | PLANNED para projetos e memória |
+| P3 | n8n | Opcional | Baixa | Médio | OPTIONAL |
+| Legado | Telegram Bot | Compatibilidade | Baixa | Baixo | LEGACY |
+| Deferred | Notion Import | Futuro | Média | Médio | DEFERRED |
+| Deferred | WhatsApp | Futuro | Alta | Médio | DEFERRED |
+| Deferred | Google Drive | Futuro | Média | Médio | DEFERRED |
+| Deferred | Outlook | Futuro | Alta | Baixo | DEFERRED |
 
 ---
 
-## P0: Telegram Bot (M1)
+## Legado: Telegram Bot
+
+Telegram foi o canal inicial da Mika, mas deixou de ser prioridade da V1 após a AD-016. Ele pode permanecer por compatibilidade, desde que novos fluxos não dependam dele.
+
+### Diretrizes
+
+- Não criar novas features prioritárias dependentes de Telegram.
+- Não tratar Telegram como canal MVP para lembretes ou chat.
+- Manter código existente apenas enquanto não gerar custo operacional relevante.
+- Preferir Web/PWA e, futuramente, Web Push para notificações.
+
+### Implementação existente
 
 **Biblioteca:** grammY  
 **Modo:** Webhook (produção) / Polling (dev)
@@ -83,7 +115,7 @@ Header: X-Telegram-Bot-Api-Secret-Token: {TELEGRAM_WEBHOOK_SECRET}
 
 ---
 
-## P0: OpenAI API (M1)
+## P0: OpenAI API
 
 Ver AI-STRATEGY.md para detalhes completos.
 
@@ -101,7 +133,7 @@ Ver AI-STRATEGY.md para detalhes completos.
 
 ---
 
-## P1: Google Calendar (M2)
+## P1: Google Calendar
 
 **OAuth 2.0** — scope: `calendar.readonly` (v1), `calendar.events` (v2)
 
@@ -122,7 +154,50 @@ POST /integrations/google/sync     → Manual sync trigger
 
 ---
 
-## P2: Notion Import (M2)
+## P1: Microsoft To Do
+
+**Status:** planejado para V1.5.
+
+### Direção
+
+- Ler tarefas externas.
+- Criar tarefas após confirmação do usuário.
+- Relacionar tarefas externas a projetos Mika.
+- Evitar sincronização bidirecional complexa no primeiro incremento.
+
+---
+
+## P1: Web Push / PWA Notifications
+
+**Status:** planejado para substituir Telegram como canal principal de lembretes.
+
+### Casos prioritários
+
+- Lembretes de tarefas.
+- Alertas de eventos.
+- Resumo diário no app.
+- Sugestão de foco do dia.
+
+---
+
+## P2: Upload de arquivos
+
+**Status:** planejado em M8 para Projetos por prompt/arquivo.
+
+### MVP
+
+- `.md`
+- `.txt`
+
+### Evolução
+
+- `.pdf`
+- `.docx`
+- `.csv`
+
+---
+
+## Deferred: Notion Import
 
 **Abordagem:** Export Markdown → ingestão batch (não sync bidirecional)
 
@@ -133,7 +208,7 @@ POST /integrations/google/sync     → Manual sync trigger
 
 ---
 
-## P2: Markdown Files (M2)
+## Markdown Files
 
 - Upload `.md` via web
 - Parse frontmatter (YAML) para metadata
@@ -142,7 +217,7 @@ POST /integrations/google/sync     → Manual sync trigger
 
 ---
 
-## P4: WhatsApp (Deferred)
+## Deferred: WhatsApp
 
 **Opções avaliadas:**
 
@@ -152,21 +227,23 @@ POST /integrations/google/sync     → Manual sync trigger
 | WhatsApp Business API | Oficial | Custo, burocracia |
 | Twilio | Estável | Custo por msg |
 
-**Decisão:** Adiado até M4+. Telegram cobre mobile no MVP.
+**Decisão:** Adiado. A V1 deve validar primeiro Web/PWA, agenda, tarefas, projetos e memória.
 
 ---
 
-## n8n Workflows (M3)
+## n8n Workflows
+
+n8n deixa de ser peça central da V1 por AD-016. Pode continuar como automação complementar, mas rotinas essenciais devem ser desenhadas para funcionar via backend/worker e Web/PWA.
 
 | Workflow | Trigger | Ação |
 |----------|---------|------|
-| `daily-summary` | Cron 07:00 | POST /routines/daily-summary → Telegram |
-| `midday-check` | Cron 12:30 | POST /routines/midday-check → Telegram |
-| `evening-reflection` | Cron 21:00 | POST /routines/evening-reflection → Telegram |
-| `weekly-review` | Cron Dom 20:00 | POST /routines/weekly-review → Telegram |
+| `daily-summary` | Cron 07:00 | POST /routines/daily-summary |
+| `midday-check` | Cron 12:30 | POST /routines/midday-check |
+| `evening-reflection` | Cron 21:00 | POST /routines/evening-reflection |
+| `weekly-review` | Cron Dom 20:00 | POST /routines/weekly-review |
 | `health-check` | Cron */5 min | GET /health → alert if fail |
 
-n8n roda no mesmo Docker Compose, acessa API via rede interna.
+n8n pode rodar no Docker Compose, acessando a API via rede interna, mas não deve ser requisito para o fluxo principal da Mika V1.
 
 ---
 

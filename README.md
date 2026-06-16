@@ -10,7 +10,7 @@ Copiloto pessoal baseado em IA para organizar, priorizar, recordar e apoiar deci
 
 
 
-**Fase atual:** Fase 5–6 concluída (M5/M6) · Foco atual: **UI do assistente** (MAINT-M2) — Finanças adiado v2/v3  
+**Fase atual:** M8 — Repriorização V1 + Projetos Inteligentes · M7 implementada com UAT manual pendente · Finanças adiado v2/v3
 
 **Modelo de desenvolvimento:** [TLC Spec-Driven](https://github.com/tech-leads-club/agent-skills/tree/main/packages/skills-catalog/skills/(development)/tlc-spec-driven)
 
@@ -54,7 +54,7 @@ cp .env.example .env
 
 # Preencher: DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET, ENCRYPTION_KEY
 
-# Opcional para IA/Telegram: OPENAI_API_KEY, TELEGRAM_BOT_TOKEN
+# Opcional para IA/legado Telegram: OPENAI_API_KEY, TELEGRAM_BOT_TOKEN
 
 
 
@@ -104,7 +104,11 @@ Acesse [http://localhost:3000/login](http://localhost:3000/login) e entre com as
 
 
 
-### Vincular Telegram
+### Telegram legado/opcional
+
+Telegram não é mais canal prioritário da V1. O foco atual da Mika é Web/PWA, Dashboard, Agenda, Projetos e Chat contextual. O bot pode permanecer para compatibilidade, mas novas features não devem depender dele.
+
+#### Vincular Telegram
 
 
 
@@ -120,7 +124,7 @@ Acesse [http://localhost:3000/login](http://localhost:3000/login) e entre com as
 
 
 
-### Criar bot Telegram
+#### Criar bot Telegram
 
 
 
@@ -166,7 +170,7 @@ curl -X POST http://localhost:3001/routines/daily-summary \
   -d "{}"
 ```
 
-Respostas às perguntas interativas no Telegram são salvas como `Reflection` (morning/midday/evening). O dashboard web exibe o resumo do dia via `GET /routines/latest?type=DAILY_SUMMARY`.
+Respostas às perguntas interativas no Telegram, quando o canal legado estiver ativo, são salvas como `Reflection` (morning/midday/evening). O dashboard web exibe o resumo do dia via `GET /routines/latest?type=DAILY_SUMMARY`.
 
 ### Lembretes proativos (F05)
 
@@ -178,7 +182,7 @@ Tarefas e eventos geram lembretes automáticos via worker `reminder-dispatch` (B
 | Evento | 30min antes do início |
 | Objetivo negligenciado | Alerta diário (max 1/semana por objetivo) |
 
-- **Canal MVP:** Telegram (requer conta vinculada)
+- **Canal atual:** Web/PWA como experiência principal; Telegram apenas legado/opcional
 - **DND:** lembretes entre 22:00–07:00 são reagendados para 07:00
 - **Worker:** `pnpm --filter worker dev` (junto com `memory-index`)
 
@@ -188,7 +192,7 @@ Copiloto com tool calling e streaming na web:
 
 - **Tools:** `get_tasks`, `get_events`, `search_memory`, `create_task`
 - **Web:** AI Hub com resposta progressiva via `POST /chat/message/stream` (SSE)
-- **Telegram:** chat livre com dados reais (sem alucinação de datas)
+- **Web/PWA:** chat livre com dados reais (sem alucinação de datas)
 - **Histórico:** conversas >20 mensagens são resumidas automaticamente
 
 > **Finanças:** módulo adiado para v2/v3 — sem aba web nem consulta financeira no chat por enquanto (API backend mantida).
@@ -232,9 +236,9 @@ Perguntas de exemplo: *"O que preciso fazer esta semana?"*, *"Lembre de ligar pr
 
 - **IA:** OpenAI (gpt-4o-mini via Vercel AI SDK)
 
-- **Automação:** n8n
+- **Automação:** backend/worker; n8n opcional
 
-- **Canal MVP:** Telegram Bot
+- **Canal principal:** Web/PWA responsivo
 
 - **Infra:** Docker Compose em VPS
 

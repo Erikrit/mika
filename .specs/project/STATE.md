@@ -1,6 +1,6 @@
 # State — Mika
 
-**Last Updated:** 2026-06-12
+**Last Updated:** 2026-06-16
 **Current Work:** Repriorização V1 — simplificar integrações, fortalecer Projetos, Dashboard e Agenda
 
 ---
@@ -158,11 +158,11 @@ _Nenhum blocker ativo._
 
 Próximo foco:
 
-- Atualizar roadmap e arquitetura conforme AD-016
-- Criar spec para Projetos por prompt/arquivo
+- Implementar M8 Projetos por prompt/arquivo a partir da spec criada
 - Redesenhar Dashboard com calendário + tarefas do dia
 - Redesenhar Agenda com eventos + tarefas
 - Ocultar/remover aba Objetivos da navegação principal
+- Rebaixar Telegram para legado nas docs/configs restantes
 
 ---
 
@@ -201,6 +201,7 @@ AD-016 — Repriorização de integrações e roadmap
 | # | Description | Date | Commit | Status |
 |---|-------------|------|--------|--------|
 | — | AD-016 criada para repriorização de integrações e roadmap | 2026-06-12 | cd4225f | Done |
+| — | Spec M8 Projetos por prompt/arquivo criada | 2026-06-16 | local | Done |
 
 ---
 
@@ -246,8 +247,8 @@ AD-016 — Repriorização de integrações e roadmap
 - [x] Integrar transcrição ao campo de mensagem ✅
 - [x] Validar navegador Chrome em tela grande (UAT Erik)
 - [x] Validar Android Chrome (UAT Erik)
-- [ ] Registrar UAT da feature M7
-- [ ] Criar spec `M8-projetos-por-prompt-arquivo`
+- [x] Registrar UAT da feature M7
+- [x] Criar spec `M8-projetos-por-prompt-arquivo`
 - [ ] Ocultar/remover aba Objetivos da navegação principal
 - [ ] Redesenhar Dashboard com calendário + tarefas do dia
 - [ ] Redesenhar Agenda com eventos + tarefas

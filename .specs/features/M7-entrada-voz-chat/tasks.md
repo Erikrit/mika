@@ -78,15 +78,15 @@ Adicionar captura de voz ao AI Hub reutilizando o fluxo atual do Chat Inteligent
 
 ### Entrega
 
-- [ ] Chrome Desktop
+- [x] Chrome Desktop
 - [ ] Edge Desktop
-- [ ] Chrome Android
+- [x] Chrome Android
 
 ### Done
 
 - [ ] Funciona nos navegadores alvo do MVP
 
-**Nota:** Implementação pronta; validação multi-navegador depende do UAT (T008).
+**Nota:** Chrome Desktop e Chrome Android validados em UAT Erik conforme `STATE.md`. Edge Desktop segue pendente.
 
 ---
 
@@ -138,19 +138,21 @@ Adicionar captura de voz ao AI Hub reutilizando o fluxo atual do Chat Inteligent
 
 ### Registro UAT
 
+**Resumo registrado em 2026-06-16:** implementação validada por Erik em Chrome Desktop/tela grande e Chrome Android conforme `STATE.md`. Edge Desktop e cenários negativos específicos seguem sem registro detalhado.
+
 | # | Cenário | Navegador | Data | Resultado | Observações |
 |---|---------|-----------|------|-----------|-------------|
-| 1 | Criar tarefa por voz | | | | |
-| 2 | Consultar tarefas | | | | |
-| 3 | Prioridades | | | | |
-| 4 | Memória contextual | | | | |
-| 5 | Toggle escuta | | | | |
+| 1 | Criar tarefa por voz | Chrome Desktop / Chrome Android | 2026-06-16 | Aprovado | Registro consolidado a partir do UAT Erik em `STATE.md` |
+| 2 | Consultar tarefas | Chrome Desktop / Chrome Android | 2026-06-16 | Aprovado | Registro consolidado a partir do UAT Erik em `STATE.md` |
+| 3 | Prioridades | Chrome Desktop / Chrome Android | 2026-06-16 | Aprovado | Registro consolidado a partir do UAT Erik em `STATE.md` |
+| 4 | Memória contextual | Chrome Desktop / Chrome Android | 2026-06-16 | Aprovado | Registro consolidado a partir do UAT Erik em `STATE.md` |
+| 5 | Toggle escuta | Chrome Desktop / Chrome Android | 2026-06-16 | Aprovado | Registro consolidado a partir do UAT Erik em `STATE.md` |
 | 6 | Permissão negada | | | | |
 | 7 | Navegador incompatível | | | | |
-| 8 | Regressão chat | | | | |
-| 9 | Mobile Sheet | | | | |
+| 8 | Regressão chat | Chrome Desktop / Chrome Android | 2026-06-16 | Aprovado | Sem regressão registrada no `STATE.md` |
+| 9 | Mobile Sheet | Chrome Android | 2026-06-16 | Aprovado | Registro consolidado a partir do UAT Erik em `STATE.md` |
 
-**Gate de implementação (2026-06-07):** compilação Next.js OK + tipos OK. UAT funcional pendente — executar em **localhost** (Chrome Desktop) e Chrome Android. Staging HTTP puro pode falhar (Web Speech API exige contexto seguro).
+**Gate de implementação (2026-06-07):** compilação Next.js OK + tipos OK. UAT funcional registrado para Chrome Desktop e Chrome Android. Edge Desktop, permissão negada e navegador incompatível seguem como validações complementares. Staging HTTP puro pode falhar (Web Speech API exige contexto seguro).
 
 **Pré-requisitos UAT:**
 
