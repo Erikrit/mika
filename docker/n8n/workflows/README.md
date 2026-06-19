@@ -1,12 +1,12 @@
-# n8n Workflows — Rotinas Mika
+# n8n Workflows — Rotinas Mika (legado opcional)
 
-Workflows versionados para import manual no n8n UI.
+Workflows versionados para import manual no n8n UI. **Fora do deploy v1.5** — ver [docker/README-LEGACY.md](../../README-LEGACY.md).
 
 ## Pré-requisitos
 
 1. API rodando em `http://localhost:3001` (ou `host.docker.internal:3001` a partir do container n8n)
 2. Variável `ROUTINE_API_KEY` no `.env` (mesmo valor no n8n: Settings → Variables → `ROUTINE_API_KEY`)
-3. n8n via `docker compose -f docker/docker-compose.yml up -d n8n` → http://localhost:5678
+3. n8n via `docker compose -f docker/docker-compose.legacy.yml up -d` → http://localhost:5678
 
 ## Import
 
@@ -36,3 +36,5 @@ curl -X POST http://localhost:3001/routines/daily-summary \
 ```
 
 Ou via Swagger: http://localhost:3001/docs → tag **routines**.
+
+Com Telegram desligado, rotinas são gravadas com canal `WEB` e exibidas no Dashboard.

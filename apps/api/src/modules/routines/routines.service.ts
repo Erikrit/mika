@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { RoutineRunType } from '@mika/database';
 import { generateRoutine, type RoutineType } from '@mika/ai';
 import { PrismaService } from '../prisma/prisma.service';
-import { TelegramService } from '../telegram/telegram.service';
 import { RoutineDataService } from './routine-data.service';
 import { MemoryService } from '../memory/memory.service';
+import { ROUTINE_DELIVERY, type RoutineDeliveryPort } from './delivery/routine-delivery.port';
 
 const ROUTINE_INCLUDE_FIXED_PROFILE =
   process.env.ROUTINE_INCLUDE_FIXED_PROFILE !== 'false';
@@ -24,7 +24,7 @@ export class RoutinesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly data: RoutineDataService,
-    private readonly telegram: TelegramService,
+    @Inject(ROUTINE_DELIVERY) private readonly delivery: RoutineDeliveryPort,
     private readonly memory: MemoryService,
   ) {}
 
@@ -157,11 +157,11 @@ export class RoutinesService {
         type: type as RoutineRunType,
         content,
         metadata: { ...metadata, status },
-        channel: 'TELEGRAM',
+        channel: this.delivery.channel,
       },
     });
 
-    const delivered = await this.telegram.sendToUser(userId, content);
+    const delivered = await this.delivery.deliver(userId, content);
 
     if (delivered) {
       await this.prisma.routineRun.update({

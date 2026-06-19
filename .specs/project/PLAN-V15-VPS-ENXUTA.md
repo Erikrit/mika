@@ -89,7 +89,6 @@ Garantir que a VPS suba apenas a stack essencial e que integrações legadas fiq
   - adicionar flags:
     - `MIKA_TELEGRAM_MODULE_ENABLED=false`
     - `MIKA_REMINDERS_ENABLED=false`
-    - `MIKA_ROUTINES_AUTOMATION_ENABLED=false`
     - `WORKER_MEMORY_INDEX_ENABLED=true`
     - `WORKER_REMINDER_DISPATCH_ENABLED=false`
     - `WORKER_NEGLECTED_JOBS_ENABLED=false`

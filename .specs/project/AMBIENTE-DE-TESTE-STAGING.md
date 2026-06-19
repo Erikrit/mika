@@ -11,9 +11,10 @@
 | **Swagger** | http://srv1727136.hstgr.cloud:3001/docs |
 
 Arquivos:
-- `docker/docker-compose.staging.hostinger.yml` — compose para este cenário
+- `docker/docker-compose.v1.5.yml` — compose canônico para este cenário
 - `docker/.env.staging.example` — template de variáveis
 - `docker/README-DEPLOY.md` — build/push das imagens
+- `docker/README-LEGACY.md` — Telegram/n8n (opcional, fora do deploy padrão)
 
 > Quando tiver domínio próprio, use `docker/docker-compose.staging.yml` + Caddy (HTTPS). Ver seção [Futuro: domínio + HTTPS](#futuro-domínio--https).
 
@@ -99,8 +100,10 @@ JWT_REFRESH_SECRET=<openssl rand -hex 32>
 ENCRYPTION_KEY=<openssl rand -hex 32>
 
 OPENAI_API_KEY=sk-...
-TELEGRAM_BOT_TOKEN=...
-TELEGRAM_ENABLED=true
+
+# Telegram desligado por padrão (v1.5) — ver docker/README-LEGACY.md para reativar
+MIKA_TELEGRAM_MODULE_ENABLED=false
+MIKA_REMINDERS_ENABLED=false
 ```
 
 > **Importante:** a imagem `mika-web` deve ter sido buildada com  
@@ -112,14 +115,14 @@ TELEGRAM_ENABLED=true
 ```bash
 cd /opt/mika
 docker login
-docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging pull
-docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging up -d
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging pull
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging up -d
 ```
 
 Verificar:
 
 ```bash
-docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging ps
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging ps
 docker logs mika-api --tail 50
 docker logs mika-web --tail 50
 ```
@@ -127,14 +130,14 @@ docker logs mika-web --tail 50
 ### 7) Rodar migrações do banco
 
 ```bash
-docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging exec api \
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging exec api \
   sh -c "cd packages/database && npx prisma migrate deploy"
 ```
 
 ### 8) Seed (primeira vez no staging)
 
 ```bash
-docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging exec api \
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging exec api \
   sh -c "cd packages/database && npx prisma db seed"
 ```
 
@@ -193,9 +196,9 @@ Oficiais (pull automático): `pgvector/pgvector:pg16`, `redis:7-alpine`.
 ```bash
 cd /opt/mika
 git pull
-docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging pull
-docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging up -d
-docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging exec api \
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging pull
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging up -d
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging exec api \
   sh -c "cd packages/database && npx prisma migrate deploy"
 ```
 
@@ -214,8 +217,8 @@ Quando tiver domínio (ex.: `mika.seudominio.com`):
 
 ## Iteração 2 (opcional): n8n
 
-- Adicionar serviço `n8n` ao compose ou usar `docker-compose.prod.yml`.  
-- Workflows em `docker/n8n/workflows/`.  
+- Usar `docker/docker-compose.legacy.yml` — ver `docker/README-LEGACY.md`.
+- Workflows em `docker/n8n/workflows/`.
 - Variável `ROUTINE_API_KEY` no `.env.staging`.
 
 ---

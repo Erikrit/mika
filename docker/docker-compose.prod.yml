@@ -17,7 +17,6 @@ services:
       - TELEGRAM_ENABLED=${TELEGRAM_ENABLED:-false}
       - MIKA_TELEGRAM_MODULE_ENABLED=${MIKA_TELEGRAM_MODULE_ENABLED:-false}
       - MIKA_REMINDERS_ENABLED=${MIKA_REMINDERS_ENABLED:-false}
-      - MIKA_ROUTINES_AUTOMATION_ENABLED=${MIKA_ROUTINES_AUTOMATION_ENABLED:-false}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - ROUTINE_API_KEY=${ROUTINE_API_KEY:-}
       - WEB_URL=${WEB_URL:-http://localhost:3000}
@@ -101,24 +100,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-  n8n:
-    image: n8nio/n8n:latest
-    container_name: mika-n8n-prod
-    profiles:
-      - legacy
-      - n8n
-    environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=${N8N_USER}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
-      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
-    volumes:
-      - n8ndata:/home/node/.n8n
-    depends_on:
-      - postgres
-    restart: unless-stopped
-
 volumes:
   pgdata:
   redisdata:
-  n8ndata:

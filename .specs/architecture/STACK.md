@@ -1,7 +1,7 @@
 # Stack — Mika
 
 **Status:** Approved  
-**Last Updated:** 2026-05-31
+**Last Updated:** 2026-06-18
 
 ---
 
@@ -19,8 +19,8 @@
 | Cache/Filas | Redis + BullMQ | 7.x | Cache, jobs, lembretes |
 | IA | OpenAI API | — | GPT-4o-mini (rotinas), GPT-4o (complexo) |
 | IA SDK | Vercel AI SDK | latest | Streaming, tool calling |
-| Automação | n8n | latest | Cron rotinas manhã/meio-dia/noite |
-| Bot | grammY | latest | Telegram Bot API |
+| Automação | n8n (opcional/legado) | Cron rotinas — disparo manual ou cron interno futuro |
+| Bot | grammY (legado) | Telegram Bot API — opcional, fora do deploy v1.5 |
 | Validação | Zod | 3.x | Schemas compartilhados (packages/shared) |
 | Logs | Pino | latest | Logs estruturados JSON |
 | Monorepo | pnpm + Turborepo | — | Workspaces apps/ + packages/ |
@@ -68,9 +68,9 @@ mika/
 
 | Dispositivo | Solução v1 | Solução futura |
 |-------------|------------|----------------|
-| Desktop | Next.js PWA no browser | Tauri wrapper opcional |
+| Desktop | Next.js PWA no browser | — |
 | Tablet | Layout responsivo Tailwind | — |
-| Celular | PWA + Telegram Bot | Capacitor se push nativo |
+| Celular | PWA responsivo | Web Push (M9) |
 | Offline | — | Service Worker (M2+) |
 
 ---

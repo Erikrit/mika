@@ -1,7 +1,7 @@
 import type { PrismaClient } from '@mika/database';
 import pino from 'pino';
 import { applyDndShift, formatReminderMinuteKey } from '@mika/shared';
-import { sendTelegramMessage } from '../utils/telegram';
+import { sendTelegramMessage } from './telegram';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 const MAX_RETRIES = 2;

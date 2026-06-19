@@ -1,0 +1,23 @@
+# Legado opcional — n8n para rotinas automáticas (fora do deploy v1.5).
+# Uso: docker compose -f docker/docker-compose.legacy.yml up -d
+# Workflows: docker/n8n/workflows/ — ver docker/README-LEGACY.md
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: mika-n8n
+    restart: unless-stopped
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:-admin}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:-changeme}
+      WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://localhost:5678}
+      ROUTINE_API_KEY: ${ROUTINE_API_KEY:-}
+      GENERIC_TIMEZONE: America/Sao_Paulo
+    volumes:
+      - n8ndata:/home/node/.n8n
+
+volumes:
+  n8ndata:

@@ -1,5 +1,17 @@
 # Deploy — Docker (staging / VPS)
 
+## Compose canônico (v1.5)
+
+**Deploy padrão:** `docker/docker-compose.v1.5.yml` — Web, API, Worker, Postgres e Redis apenas.
+
+```bash
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging up -d
+```
+
+Legado (Telegram, n8n): [README-LEGACY.md](./README-LEGACY.md)
+
+---
+
 ## Imagens do projeto
 
 | Imagem | Registry (padrão) | Dockerfile |
@@ -8,7 +20,7 @@
 | Web | `mikaassit/mika-web:staging` | `docker/Dockerfile.web` |
 | Worker | `mikaassit/mika-worker:staging` | `docker/Dockerfile.worker` |
 
-Imagens oficiais no compose (sem build): `pgvector/pgvector:pg16`, `redis:7-alpine`, `caddy:2-alpine`.
+Imagens oficiais no compose: `pgvector/pgvector:pg16`, `redis:7-alpine`. Caddy apenas em `docker-compose.staging.yml` (domínio + HTTPS).
 
 ---
 
@@ -27,87 +39,80 @@ docker push mikaassit/mika-web:staging
 docker push mikaassit/mika-worker:staging
 ```
 
-**PowerShell:**
-
-```powershell
-docker build -f docker/Dockerfile.api -t mikaassit/mika-api:staging .
-docker build -f docker/Dockerfile.web -t mikaassit/mika-web:staging .
-docker build -f docker/Dockerfile.worker -t mikaassit/mika-worker:staging .
-docker push mikaassit/mika-api:staging
-docker push mikaassit/mika-web:staging
-docker push mikaassit/mika-worker:staging
-```
-
 > A web usa proxy same-origin (`/backend/*`). **Uma única imagem** serve local, staging e produção — `INTERNAL_API_URL` é definido em runtime no compose (`http://api:3001`).
 
 ---
 
 ## Subir na VPS v1.5 enxuta
 
-Use o compose enxuto quando a VPS deve rodar apenas Web, API, Worker, Postgres e Redis:
+1. Instalar Docker + Compose na VPS.
+2. Liberar portas **3000** (web) e **3001** (api) no firewall.
+3. Copiar `docker/.env.staging.example` → `.env.staging`.
 
 ```bash
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging pull
 docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging up -d
 ```
 
-Esse arquivo deixa Telegram, n8n, lembretes externos e jobs legados desligados por padrão. Os limites de memória/CPU ficam em `.env.staging` com valores padrão ajustáveis.
-
-## Subir na VPS (staging legado com Caddy)
-
-### Hostinger sem domínio (`srv1727136.hstgr.cloud`)
-
-1. Instalar Docker + Compose na VPS.
-2. Liberar portas **3000** (web) e **3001** (api) no firewall.
-3. Copiar `docker/.env.staging.example` → `.env.staging` (URLs já apontam para `srv1727136.hstgr.cloud`).
+4. Migrações:
 
 ```bash
-docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging pull
-docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging up -d
-```
-
-Runbook completo: `.specs/project/AMBIENTE-DE-TESTE-STAGING.md`.
-
-### Com domínio próprio + HTTPS (futuro)
-
-1. DNS `WEB_DOMAIN` / `API_DOMAIN` → IP da VPS.
-2. Usar `docker-compose.staging.yml` + Caddy.
-
-```bash
-docker compose -f docker/docker-compose.staging.yml --env-file .env.staging pull
-docker compose -f docker/docker-compose.staging.yml --env-file .env.staging up -d
-```
-
-5. Migrações:
-
-```bash
-docker compose -f docker/docker-compose.staging.yml --env-file .env.staging exec api \
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging exec api \
   sh -c "cd packages/database && npx prisma migrate deploy"
 ```
 
-6. Seed (ambiente novo de teste):
+5. Seed (ambiente novo):
 
 ```bash
-docker compose -f docker/docker-compose.staging.yml --env-file .env.staging exec api \
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging exec api \
   sh -c "cd packages/database && npx prisma db seed"
 ```
 
-7. Smoke: `.specs/project/SMOKE-STAGING.md`
+6. Smoke: `.specs/project/SMOKE-STAGING.md`
+
+Runbook completo: `.specs/project/AMBIENTE-DE-TESTE-STAGING.md`.
+
+---
+
+## Staging com domínio + HTTPS (opcional)
+
+Use `docker-compose.staging.yml` + Caddy quando tiver domínio próprio. Arquivo marcado como **DEPRECATED** como caminho principal — preferir v1.5 + reverse proxy externo quando possível.
+
+```bash
+docker compose -f docker/docker-compose.staging.yml --env-file .env.staging up -d
+```
 
 ---
 
 ## Compose local (build na máquina)
 
+Infra apenas (recomendado para dev):
+
+```bash
+docker compose -f docker/docker-compose.yml up -d
+pnpm dev
+```
+
+Build completo local (sem n8n):
+
 ```bash
 cp .env.example .env
-# Ajustar DATABASE_URL, REDIS_PASSWORD, INTERNAL_API_URL (se necessário), etc.
-
 docker compose -f docker/docker-compose.prod.yml up -d --build postgres redis api web worker
-# Sem n8n: não incluir o serviço n8n na linha de comando
 ```
+
+---
+
+## Composes deprecados
+
+| Arquivo | Status | Substituto |
+|---------|--------|------------|
+| `docker-compose.staging.hostinger.yml` | DEPRECATED | `docker-compose.v1.5.yml` |
+| `docker-compose.staging.yml` | DEPRECATED (exceto Caddy/HTTPS) | `docker-compose.v1.5.yml` |
 
 ---
 
 ## Referências
 
-- Runbook completo: `.specs/project/AMBIENTE-DE-TESTE-STAGING.md`
+- Legado Telegram/n8n: [README-LEGACY.md](./README-LEGACY.md)
+- Runbook staging: `.specs/project/AMBIENTE-DE-TESTE-STAGING.md`
 - Fechamento v1 / UAT: `.specs/project/V1-FECHAMENTO.md`

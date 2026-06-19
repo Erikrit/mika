@@ -185,12 +185,14 @@ Google Calendar, Microsoft Outlook, Telegram, WhatsApp, Gmail, Google Drive.
 
 # 8. ARQUITETURA SUGERIDA
 
+> **Atualização v1.5 (AD-016/017):** Canal principal Web/PWA. n8n e Telegram são legado/opcional — ver `docker/README-LEGACY.md`.
+
 - **Frontend:** Next.js
 - **Backend:** NestJS
 - **Banco:** PostgreSQL + pgvector
 - **IA:** OpenAI
-- **Automação:** n8n
-- **Mensageria:** Telegram Bot
+- **Automação:** n8n (opcional/legado)
+- **Mensageria:** Web/PWA (Telegram legado)
 - **Infraestrutura:** Docker
 - **Hospedagem:** VPS própria
 

@@ -16,7 +16,6 @@ import { EventsModule } from './modules/events/events.module';
 import { ReflectionsModule } from './modules/reflections/reflections.module';
 import { FinanceGoalsModule } from './modules/finance-goals/finance-goals.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
-import { TelegramModule } from './modules/telegram/telegram.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { MemoryModule } from './modules/memory/memory.module';
 import { RoutinesModule } from './modules/routines/routines.module';
@@ -50,7 +49,6 @@ import { RoutinesModule } from './modules/routines/routines.module';
     ChatModule,
     MemoryModule,
     RoutinesModule,
-    TelegramModule,
   ],
   providers: [
     {

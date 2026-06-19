@@ -1,5 +1,7 @@
 # F03 — Resumo Diário
 
+> **Nota v1.5 (AD-017):** n8n é opcional/legado. Disparo manual via `POST /routines/*` ou cron interno futuro. Canal padrão: WEB (Dashboard via `GET /routines/latest`).
+
 ## Problem Statement
 
 Erik inicia cada dia sem clareza sobre prioridades, compromissos e pendências. Precisa de um resumo automático entregue pela manhã que reduza a carga cognitiva de "o que importa hoje?".

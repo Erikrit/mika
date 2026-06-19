@@ -149,13 +149,12 @@ Mika atua como companheira contextual, capaz de lembrar o que importa, respeitar
 
 ### Features planejadas
 
-**F12 — Simplificação de Integrações** — PLANNED
+**F12 — Simplificação de Integrações** — DONE (AD-017)
 
-* Rebaixar Telegram para legado/opcional
-* Remover dependência operacional de Telegram em novos fluxos
-* Revisar n8n como opcional
-* Manter Redis/Worker apenas para memória, filas e lembretes necessários
-* Preparar feature flags para integrações externas
+* Telegram rebaixado a legado/opcional — módulo condicional, UI removida
+* n8n extraído para compose legado; deploy v1.5 enxuto
+* Worker padrão: apenas `memory-index`
+* Feature flags documentadas em `docker/.env.staging.example`
 
 **F13 — Projetos como centro de organização** — IN PROGRESS
 

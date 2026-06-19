@@ -68,9 +68,9 @@ cp .env.example .env
 
 
 
-# 2. Subir infraestrutura
+# 2. Subir infraestrutura (Postgres + Redis apenas)
 
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml up -d postgres redis
 
 
 
@@ -92,53 +92,11 @@ pnpm --filter web dev      # http://localhost:3000
 
 ```
 
-> **Nota:** CRUD básico (tarefas, eventos, projetos, etc.) funciona sem Redis. Redis e os workers (`memory-index`, `reminder-dispatch`) são necessários apenas para indexação de memória, lembretes e outras funcionalidades assíncronas.
-
-
-
-Acesse [http://localhost:3000/login](http://localhost:3000/login) e entre com as credenciais acima.
-
-
-
-**Documentação da API:** [http://localhost:3001/docs](http://localhost:3001/docs) (Swagger/OpenAPI)
-
-
-
-### Telegram legado/opcional
-
-Telegram não é mais canal prioritário da V1. O foco atual da Mika é Web/PWA, Dashboard, Agenda, Projetos e Chat contextual. O bot pode permanecer para compatibilidade, mas novas features não devem depender dele.
-
-#### Vincular Telegram
-
-
-
-1. Faça login no app web → **Configurações**
-
-2. Clique em **Gerar código** (válido por 10 minutos)
-
-3. No Telegram, abra o bot Mika e envie: `/vincular CODIGO`
-
-
-
-**Alternativa dev-only:** atualize `telegramChatId` diretamente via Prisma Studio (`pnpm prisma:studio`).
-
-
-
-#### Criar bot Telegram
-
-
-
-1. Abra [@BotFather](https://t.me/BotFather) no Telegram
-
-2. `/newbot` → escolha nome e username
-
-3. Copie o token para `TELEGRAM_BOT_TOKEN` no `.env`
-
-4. Reinicie a API
+> **Nota:** CRUD básico funciona sem Redis. O worker `memory-index` (padrão v1.5) requer Redis para indexação de memória. Lembretes e Telegram são legado — ver [docker/README-LEGACY.md](docker/README-LEGACY.md).
 
 ### Memória de longo prazo (F02)
 
-Tarefas, projetos, objetivos e reflexões são indexados automaticamente pelo worker `memory-index` (embeddings + full-text). O chat e o Telegram usam RAG híbrido para responder com contexto histórico.
+Tarefas, projetos, objetivos e reflexões são indexados automaticamente pelo worker `memory-index` (embeddings + full-text). O chat web usa RAG híbrido para responder com contexto histórico.
 
 - **UI:** [http://localhost:3000/memories](http://localhost:3000/memories) — listagem, busca e importação de `.md`
 - **API:** `GET /memory/chunks`, `POST /memory/search`, `POST /memory/import` (Swagger em `/docs`)
@@ -150,41 +108,17 @@ pnpm --filter @mika/database db:backfill-memory
 
 Requer Redis, PostgreSQL com pgvector e `OPENAI_API_KEY` configurados.
 
-### Rotinas automáticas (F03/F04)
+### Rotinas (F03/F04)
 
-Quatro rotinas proativas disparadas pelo n8n (ou manualmente via curl/Swagger):
+Resumo diário, check-in e revisão semanal disponíveis via `POST /routines/*`. O Dashboard exibe o resumo via `GET /routines/latest?type=DAILY_SUMMARY`. Disparo automático via n8n é **opcional** — ver [docker/README-LEGACY.md](docker/README-LEGACY.md).
 
-| Horário | Endpoint | Descrição |
-|---------|----------|-----------|
-| 07:00 | `POST /routines/daily-summary` | Resumo matinal + pergunta de prioridade |
-| 12:30 | `POST /routines/midday-check` | Check-in meio-dia |
-| 21:00 | `POST /routines/evening-reflection` | Reflexão noturna |
-| Dom 20:00 | `POST /routines/weekly-review` | Revisão semanal |
+### Lembretes (F05)
 
-Configure `ROUTINE_API_KEY` no `.env` e importe os workflows em [docker/n8n/workflows/](docker/n8n/workflows/).
+Canal Web Push previsto para M9. Lembretes Telegram e worker `reminder-dispatch` são **legado/opcional** — desligados por padrão no deploy v1.5.
 
-```bash
-curl -X POST http://localhost:3001/routines/daily-summary \
-  -H "X-Routine-Key: $ROUTINE_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d "{}"
-```
+Acesse [http://localhost:3000/login](http://localhost:3000/login) e entre com as credenciais acima.
 
-Respostas às perguntas interativas no Telegram, quando o canal legado estiver ativo, são salvas como `Reflection` (morning/midday/evening). O dashboard web exibe o resumo do dia via `GET /routines/latest?type=DAILY_SUMMARY`.
-
-### Lembretes proativos (F05)
-
-Tarefas e eventos geram lembretes automáticos via worker `reminder-dispatch` (BullMQ):
-
-| Tipo | Quando dispara |
-|------|----------------|
-| Tarefa | 1h antes do vencimento (ou 15min se due em ≤1h) |
-| Evento | 30min antes do início |
-| Objetivo negligenciado | Alerta diário (max 1/semana por objetivo) |
-
-- **Canal atual:** Web/PWA como experiência principal; Telegram apenas legado/opcional
-- **DND:** lembretes entre 22:00–07:00 são reagendados para 07:00
-- **Worker:** `pnpm --filter worker dev` (junto com `memory-index`)
+**Documentação da API:** [http://localhost:3001/docs](http://localhost:3001/docs) (Swagger/OpenAPI)
 
 ### Chat inteligente (F06)
 
@@ -216,7 +150,8 @@ Perguntas de exemplo: *"O que preciso fazer esta semana?"*, *"Lembre de ligar pr
 
 | [.specs/project/AMBIENTE-DE-TESTE-STAGING.md](.specs/project/AMBIENTE-DE-TESTE-STAGING.md) | VPS, domínio, HTTPS, deploy staging |
 
-| [docker/README-DEPLOY.md](docker/README-DEPLOY.md) | Build/push das imagens e compose staging |
+| [docker/README-DEPLOY.md](docker/README-DEPLOY.md) | Deploy v1.5 (compose canônico) |
+| [docker/README-LEGACY.md](docker/README-LEGACY.md) | Telegram e n8n (legado opcional) |
 
 | [.specs/architecture/](.specs/architecture/) | Stack, arquitetura, dados, segurança, IA, infra |
 
@@ -236,8 +171,7 @@ Perguntas de exemplo: *"O que preciso fazer esta semana?"*, *"Lembre de ligar pr
 
 - **IA:** OpenAI (gpt-4o-mini via Vercel AI SDK)
 
-- **Automação:** backend/worker; n8n opcional
-
+- **Automação:** rotinas via API; n8n opcional (legado)
 - **Canal principal:** Web/PWA responsivo
 
 - **Infra:** Docker Compose em VPS

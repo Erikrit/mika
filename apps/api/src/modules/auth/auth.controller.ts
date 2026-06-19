@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { Public } from '../../common/decorators/public.decorator';
@@ -37,8 +37,11 @@ export class AuthController {
 
   @Post('telegram/code')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Gerar código de vinculação Telegram (TTL 10 min)' })
+  @ApiOperation({ summary: 'Gerar código de vinculação Telegram (TTL 10 min) — legado' })
   generateTelegramCode(@CurrentUser() user: AuthUser) {
+    if (process.env.MIKA_TELEGRAM_MODULE_ENABLED !== 'true') {
+      throw new NotFoundException('Vinculação Telegram desabilitada');
+    }
     return this.authService.generateTelegramCode(user.id);
   }
 }

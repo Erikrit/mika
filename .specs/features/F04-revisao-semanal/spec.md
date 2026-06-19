@@ -1,5 +1,7 @@
 # F04 — Revisão Semanal
 
+> **Nota v1.5 (AD-017):** n8n é opcional/legado. Disparo manual via `POST /routines/weekly-review` ou cron interno futuro.
+
 ## Problem Statement
 
 Sem revisão periódica, Erik perde visão do que foi conquistado, o que atrasou e o que perdeu relevância. A revisão semanal automatizada mantém alinhamento entre curto, médio e longo prazo.

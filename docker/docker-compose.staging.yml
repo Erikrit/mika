@@ -1,3 +1,5 @@
+# DEPRECATED como caminho principal — substituído por docker-compose.v1.5.yml (2026-06).
+# Mantido apenas para staging com domínio próprio + Caddy (HTTPS).
 # Staging / VPS — imagens do registry (mikaassit/*) + Caddy (HTTPS)
 # Uso: docker compose -f docker/docker-compose.staging.yml --env-file .env.staging up -d
 
@@ -39,7 +41,6 @@ services:
       TELEGRAM_ENABLED: ${TELEGRAM_ENABLED:-false}
       MIKA_TELEGRAM_MODULE_ENABLED: ${MIKA_TELEGRAM_MODULE_ENABLED:-false}
       MIKA_REMINDERS_ENABLED: ${MIKA_REMINDERS_ENABLED:-false}
-      MIKA_ROUTINES_AUTOMATION_ENABLED: ${MIKA_ROUTINES_AUTOMATION_ENABLED:-false}
       TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       ROUTINE_API_KEY: ${ROUTINE_API_KEY:-}

@@ -2,8 +2,8 @@ import pino from 'pino';
 import { Worker } from 'bullmq';
 import { PrismaClient } from '@mika/database';
 import { createMemoryIndexWorker } from './processors/memory-index.processor';
-import { createReminderDispatchWorker } from './processors/reminder-dispatch.processor';
-import { ReminderDispatcherService } from './services/reminder-dispatcher.service';
+import { createReminderDispatchWorker } from './legacy/reminder-dispatch.processor';
+import { ReminderDispatcherService } from './legacy/reminder-dispatcher.service';
 
 const logger = pino({
   level: process.env.LOG_LEVEL ?? 'info',

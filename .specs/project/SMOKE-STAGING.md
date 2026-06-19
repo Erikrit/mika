@@ -55,10 +55,12 @@ Base URL: `http://srv1727136.hstgr.cloud:3000` (ou seu domínio).
 
 ## 6) Worker (BullMQ)
 - [ ] `memory-index` processa itens sem falhas (quando houver import/CRUD recente).
-- [ ] `reminder-dispatch` não apresenta falhas (mesmo que não seja exercitado no smoke).
+- [ ] Worker log mostra apenas processos habilitados (v1.5: `memory-index` por padrão).
 
 ---
 
-## 7) Rotinas (n8n) — fora do 1º ciclo
-- [ ] (Opcional) Se n8n estiver habilitado, validar endpoints `/routines/*` com `X-Routine-Key`.
+## 7) Rotinas — opcional (legado)
+
+- [ ] (Opcional) Disparo manual `POST /routines/daily-summary` com `X-Routine-Key` grava resumo no Dashboard.
+- [ ] (Opcional) n8n legado — ver `docker/README-LEGACY.md` (fora do smoke principal).
 

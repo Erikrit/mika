@@ -1,11 +1,19 @@
 # State — Mika
 
-**Last Updated:** 2026-06-16
+**Last Updated:** 2026-06-18
 **Current Work:** M8 em andamento — Projetos Inteligentes, Dashboard Diário e Agenda Integrada para v1.5
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-017: Limpeza de legado v1.5 (2026-06-18)
+
+**Decision:** Isolar e remover superfícies legadas (Telegram, n8n, composes antigos) do caminho padrão v1.5, conforme plano de limpeza pós AD-016.
+
+**Impact:** Deploy canônico via `docker-compose.v1.5.yml`; Telegram/n8n só via README-LEGACY; rotinas com canal WEB por padrão; remoção definitiva bloqueada até M9 Web Push.
+
+**Documento:** `.specs/project/AD-017-limpeza-legado-v15.md`
 
 ### AD-016: Repriorização de integrações e roadmap da V1 (2026-06-12)
 
@@ -260,7 +268,7 @@ AD-016 — Repriorização de integrações e roadmap
 - [x] Redesenhar Agenda com eventos + tarefas
 - [ ] Validar UAT Dashboard/Agenda v1.5
 - [x] Executar plano de VPS enxuta v1.5
-- [ ] Rebaixar Telegram para legado nas demais docs e configs
+- [x] Rebaixar Telegram para legado nas docs e configs (AD-017)
 
 ---
 

@@ -1,5 +1,7 @@
+# DEPRECATED — substituído por docker-compose.v1.5.yml (2026-06).
+# Mantido por 1 sprint para compatibilidade; use v1.5 para novos deploys.
 # Staging Hostinger — sem domínio próprio (hostname srv*.hstgr.cloud + portas)
-# Uso: docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging up -d
+# Uso legado: docker compose -f docker/docker-compose.staging.hostinger.yml --env-file .env.staging up -d
 
 services:
   api:
@@ -19,7 +21,6 @@ services:
       TELEGRAM_ENABLED: ${TELEGRAM_ENABLED:-false}
       MIKA_TELEGRAM_MODULE_ENABLED: ${MIKA_TELEGRAM_MODULE_ENABLED:-false}
       MIKA_REMINDERS_ENABLED: ${MIKA_REMINDERS_ENABLED:-false}
-      MIKA_ROUTINES_AUTOMATION_ENABLED: ${MIKA_ROUTINES_AUTOMATION_ENABLED:-false}
       TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       ROUTINE_API_KEY: ${ROUTINE_API_KEY:-}

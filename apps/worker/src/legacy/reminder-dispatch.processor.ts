@@ -2,7 +2,7 @@ import { Worker, type Job } from 'bullmq';
 import type { ReminderDispatchJob } from '@mika/shared';
 import type { PrismaClient } from '@mika/database';
 import pino from 'pino';
-import { ReminderDispatcherService } from '../services/reminder-dispatcher.service';
+import { ReminderDispatcherService } from '../legacy/reminder-dispatcher.service';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 

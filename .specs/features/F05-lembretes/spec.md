@@ -1,5 +1,7 @@
 # F05 — Sistema de Lembretes
 
+> **Nota v1.5 (AD-017):** Canal Telegram é legado/opcional (`WORKER_REMINDER_DISPATCH_ENABLED=false` por padrão). Web Push previsto para M9.
+
 ## Problem Statement
 
 Mesmo com resumos diários, Erik esquece tarefas pontuais, compromissos próximos e objetivos que ficam parados. Lembretes proativos fecham a lacuna entre "saber o que fazer" e "ser lembrado na hora certa".
