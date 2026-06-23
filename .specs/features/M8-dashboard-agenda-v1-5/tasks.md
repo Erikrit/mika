@@ -1,7 +1,8 @@
 # Tasks — M8 Dashboard Diário + Agenda Integrada
 
-**Status:** In Progress  
-**Criado em:** 2026-06-16
+**Status:** Done  
+**Criado em:** 2026-06-16  
+**UAT:** 2026-06-23 (Erik)
 
 ---
 
@@ -17,7 +18,7 @@
 ### Done
 
 - [x] Cliente web possui contrato tipado para o overview.
-- [ ] Build API OK — adiado para fechamento da versão 1.5.
+- [x] Build API OK.
 
 ---
 
@@ -35,7 +36,7 @@
 ### Done
 
 - [x] Dashboard passa a orientar foco diário e semanal.
-- [ ] UAT manual em desktop e mobile.
+- [x] UAT manual em desktop e mobile.
 
 ---
 
@@ -51,7 +52,7 @@
 ### Done
 
 - [x] Agenda mostra compromissos e tarefas na mesma superfície.
-- [ ] UAT manual de criação/edição/exclusão de evento após integração.
+- [x] UAT manual de criação/edição/exclusão de evento após integração.
 
 ---
 
@@ -61,9 +62,9 @@
 
 - [x] Executar verificação TypeScript sem emissão para web.
 - [x] Executar verificação TypeScript sem emissão para API.
-- [ ] Executar build web/API no fechamento da versão 1.5.
-- [ ] Registrar UAT manual.
+- [x] Build API/worker OK.
+- [x] Registrar UAT manual.
 
 ### Nota
 
-Build foi intencionalmente ignorado nesta fase por decisão do usuário.
+Build web bloqueado por EPERM no Windows (documentado no README). TypeScript web sem erros; UAT via `pnpm dev`.

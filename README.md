@@ -10,7 +10,7 @@ Copiloto pessoal baseado em IA para organizar, priorizar, recordar e apoiar deci
 
 
 
-**Fase atual:** M8 — Repriorização V1 + Projetos Inteligentes · M7 implementada com UAT manual pendente · Finanças adiado v2/v3
+**Fase atual:** M8 concluída · **M9** — Integrações de Organização Real (próximo) · Finanças adiado v2/v3
 
 **Modelo de desenvolvimento:** [TLC Spec-Driven](https://github.com/tech-leads-club/agent-skills/tree/main/packages/skills-catalog/skills/(development)/tlc-spec-driven)
 
@@ -38,61 +38,115 @@ Credenciais padrão criadas pelo seed do banco (`packages/database/prisma/seed.t
 
 
 
-### Como iniciar (desenvolvimento)
+## Subir o sistema
 
+### Desenvolvimento local (recomendado)
 
+Na raiz do repositório. Use **PowerShell** no Windows ou **bash** no Linux/macOS/WSL.
 
-Checklist operacional completo:
+**PowerShell (Windows):**
 
+```powershell
+# 1. Variáveis de ambiente (só na primeira vez)
+Copy-Item .env.example .env
+# Edite .env: DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET, ENCRYPTION_KEY
+# Opcional: OPENAI_API_KEY (chat, memória, projetos por IA)
 
+# Gerar chaves: openssl rand -hex 32
+
+# 2. Infraestrutura (Postgres na porta 5433 + Redis)
+docker compose -f docker/docker-compose.yml up -d postgres redis
+
+# 3. Dependências e banco
+pnpm install
+pnpm prisma:migrate
+pnpm prisma:seed
+
+# 4. API + worker + frontend (um comando)
+pnpm dev
+```
+
+**bash (Linux / macOS / Git Bash):**
 
 ```bash
-
-# 1. Copiar e preencher variáveis de ambiente
-
 cp .env.example .env
-
-# Preencher: DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET, ENCRYPTION_KEY
-
-# Opcional para IA/legado Telegram: OPENAI_API_KEY, TELEGRAM_BOT_TOKEN
-
-
-
-# Gerar chaves seguras (PowerShell / Git Bash):
-
-# openssl rand -hex 32   # ENCRYPTION_KEY
-
-# openssl rand -hex 32   # JWT_SECRET
-
-# openssl rand -hex 32   # JWT_REFRESH_SECRET
-
-
-
-# 2. Subir infraestrutura (Postgres + Redis apenas)
+# Edite .env conforme acima
 
 docker compose -f docker/docker-compose.yml up -d postgres redis
 
-
-
-# 3. Instalar dependências e preparar banco
-
 pnpm install
-
 pnpm prisma:migrate
-
 pnpm prisma:seed
 
-
-
-# 4. Iniciar API, worker e frontend
-
-pnpm --filter api dev      # http://localhost:3001
-pnpm --filter worker dev   # indexação memory-index (BullMQ)
-pnpm --filter web dev      # http://localhost:3000
-
+pnpm dev
 ```
 
-> **Nota:** CRUD básico funciona sem Redis. O worker `memory-index` (padrão v1.5) requer Redis para indexação de memória. Lembretes e Telegram são legado — ver [docker/README-LEGACY.md](docker/README-LEGACY.md).
+**URLs após subir:**
+
+| Serviço | URL |
+|---------|-----|
+| Web (login) | http://localhost:3000/login |
+| API (Swagger) | http://localhost:3001/docs |
+
+**Terminais separados** (se preferir em vez de `pnpm dev`):
+
+```bash
+pnpm --filter api dev      # http://localhost:3001
+pnpm --filter worker dev   # memory-index (BullMQ)
+pnpm --filter web dev      # http://localhost:3000
+```
+
+> CRUD básico funciona sem Redis. O worker `memory-index` (padrão v1.5) requer Redis. Lembretes e Telegram são legado — ver [docker/README-LEGACY.md](docker/README-LEGACY.md).
+
+### Build (validação / imagens Docker)
+
+O frontend usa `output: 'standalone'` para deploy em container. No **Windows**, `pnpm --filter web build` pode falhar com `EPERM: symlink` — o sistema bloqueia symlinks sem permissão.
+
+**Opção A — desenvolvimento:** use `pnpm dev` (não precisa de build).
+
+**Opção B — habilitar build local no Windows:**
+
+1. **Configurações** → **Privacidade e segurança** → **Para desenvolvedores** → ative **Modo de desenvolvedor**
+2. Feche e reabra o terminal
+3. Rode:
+
+```powershell
+Remove-Item -Recurse -Force apps\web\.next -ErrorAction SilentlyContinue
+pnpm build
+```
+
+**Opção C — build via Docker (recomendado para imagem de deploy no Windows):**
+
+```powershell
+pnpm docker:build:web
+# ou todas as imagens:
+pnpm docker:build:all
+```
+
+Detalhes em [docker/README-DEPLOY.md](docker/README-DEPLOY.md).
+
+### Deploy VPS v1.5 (stack enxuta)
+
+Compose canônico: Web, API, Worker, Postgres e Redis — sem n8n/Telegram por padrão.
+
+```bash
+# Na VPS ou máquina com Docker
+cp docker/.env.staging.example .env.staging
+# Preencha senhas, JWT, ENCRYPTION_KEY, OPENAI_API_KEY, PUBLIC_WEB_URL
+
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging pull
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging up -d
+
+# Migrações (obrigatório após deploy ou upgrade)
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging exec api \
+  sh -c "cd packages/database && npx prisma migrate deploy"
+
+# Seed (só em ambiente novo)
+docker compose -f docker/docker-compose.v1.5.yml --env-file .env.staging exec api \
+  sh -c "cd packages/database && npx prisma db seed"
+```
+
+Runbook completo: [.specs/project/AMBIENTE-DE-TESTE-STAGING.md](.specs/project/AMBIENTE-DE-TESTE-STAGING.md).
 
 ### Memória de longo prazo (F02)
 
@@ -116,10 +170,6 @@ Resumo diário, check-in e revisão semanal disponíveis via `POST /routines/*`.
 
 Canal Web Push previsto para M9. Lembretes Telegram e worker `reminder-dispatch` são **legado/opcional** — desligados por padrão no deploy v1.5.
 
-Acesse [http://localhost:3000/login](http://localhost:3000/login) e entre com as credenciais acima.
-
-**Documentação da API:** [http://localhost:3001/docs](http://localhost:3001/docs) (Swagger/OpenAPI)
-
 ### Chat inteligente (F06)
 
 Copiloto com tool calling e streaming na web:
@@ -132,6 +182,14 @@ Copiloto com tool calling e streaming na web:
 > **Finanças:** módulo adiado para v2/v3 — sem aba web nem consulta financeira no chat por enquanto (API backend mantida).
 
 Perguntas de exemplo: *"O que preciso fazer esta semana?"*, *"Lembre de ligar pro médico sexta"*.
+
+### Projetos inteligentes e organização (M8)
+
+- **Projetos por IA:** em `/projects`, use **Criar com Mika** — prompt livre ou upload `.md`/`.txt`; revise o rascunho antes de confirmar.
+- **API:** `POST /projects/draft`, `POST /projects/from-draft` (Swagger em `/docs`)
+- **Dashboard:** foco do dia, semana, projetos ativos, timeline e resumo diário (`GET /dashboard/overview`)
+- **Agenda:** eventos e tarefas com prazo na mesma linha do tempo em `/events`
+- **Navegação:** aba Objetivos oculta; planejamento concentrado em Projetos (`/goals` redireciona)
 
 
 | Documento | Descrição |

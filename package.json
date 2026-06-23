@@ -16,7 +16,9 @@
     "prisma:seed": "pnpm --filter @mika/database db:seed",
     "prisma:studio": "pnpm --filter @mika/database prisma:studio",
     "docker:build:api": "docker build -f docker/Dockerfile.api -t mikaassit/mika-api:staging .",
-    "docker:build:worker": "docker build -f docker/Dockerfile.worker -t mikaassit/mika-worker:staging ."
+    "docker:build:web": "docker build -f docker/Dockerfile.web -t mikaassit/mika-web:staging .",
+    "docker:build:worker": "docker build -f docker/Dockerfile.worker -t mikaassit/mika-worker:staging .",
+    "docker:build:all": "pnpm docker:build:api && pnpm docker:build:web && pnpm docker:build:worker"
   },
   "devDependencies": {
     "turbo": "^2.5.0",

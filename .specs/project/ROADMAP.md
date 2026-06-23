@@ -1,7 +1,7 @@
 # Roadmap — Mika
 
-**Current Milestone:** M8 — Repriorização V1 + Projetos Inteligentes — **In Progress**
-**Status:** M7 Done · M8 em implementação com Projetos Inteligentes, Dashboard Diário e Agenda Integrada · AD-016 aplicada
+**Current Milestone:** M9 — Integrações de Organização Real — **Planned**
+**Status:** M8 Done (UAT 2026-06-23) · M7 Done · AD-016/AD-017 aplicadas
 
 > **Direção atual:** simplificar a V1, remover dependências pouco utilizadas, fortalecer Web/PWA, Dashboard, Agenda e Projetos como centro da Mika.
 
@@ -143,9 +143,11 @@ Mika atua como companheira contextual, capaz de lembrar o que importa, respeitar
 
 ---
 
-## M8 — Repriorização V1 + Projetos Inteligentes
+## M8 — Repriorização V1 + Projetos Inteligentes ✅
 
 **Goal:** Ajustar a Mika para a direção correta da V1: menos integrações, mais valor real em organização pessoal.
+
+**Status:** Done (UAT manual 2026-06-23)
 
 ### Features planejadas
 
@@ -156,35 +158,34 @@ Mika atua como companheira contextual, capaz de lembrar o que importa, respeitar
 * Worker padrão: apenas `memory-index`
 * Feature flags documentadas em `docker/.env.staging.example`
 
-**F13 — Projetos como centro de organização** — IN PROGRESS
+**F13 — Projetos como centro de organização** — DONE
 
 * Consolidar Objetivos dentro de Projetos
-* Ocultar/remover aba Objetivos da navegação principal — implementado no primeiro incremento M8
+* Ocultar/remover aba Objetivos da navegação principal
 * Projeto passa a conter objetivos internos, marcos, tarefas, eventos, arquivos e prompts
 
-**F14 — Projetos por prompt/arquivo** — IN PROGRESS
+**F14 — Projetos por prompt/arquivo** — DONE
 
-* Criar projeto a partir de prompt livre — implementado no backend/UI, validação pendente
-* Criar projeto a partir de arquivo `.md`/`.txt` — implementado no backend/UI, validação pendente
-* Mika sugere tarefas, eventos, marcos e cronograma — rascunho estruturado implementado
-* Usuário revisa antes de salvar — implementado para projeto e tarefas
+* Criar projeto a partir de prompt livre
+* Criar projeto a partir de arquivo `.md`/`.txt`
+* Mika sugere tarefas, eventos, marcos e cronograma
+* Usuário revisa antes de salvar
 
-**F15 — Dashboard Diário** — IN PROGRESS
+**F15 — Dashboard Diário** — DONE
 
-* Calendário do dia/semana — implementado no overview web/API
-* Próximos eventos — implementado na linha do tempo
-* Tarefas de hoje — implementado no foco diário
-* Projetos em andamento — implementado com progresso
-* Sugestão de foco da Mika — implementada com atrasos, tarefas de hoje e backlog prioritário
-* Validação manual/build — pendente para fechamento da v1.5
+* Calendário do dia/semana
+* Próximos eventos na linha do tempo
+* Tarefas de hoje no foco diário
+* Projetos em andamento com progresso
+* Sugestão de foco da Mika (atrasos, prioridades, resumo diário)
 
-**F16 — Agenda Integrada** — IN PROGRESS
+**F16 — Agenda Integrada** — DONE
 
-* Calendário + tarefas na mesma tela — implementado na Agenda
-* Visualização por períodos — implementada com filtros existentes
-* Destaque para tarefas com prazo — implementado na linha do tempo
-* Criação rápida de evento — mantida
-* Criação rápida de tarefa — continua via tela Tarefas; atalho no Dashboard
+* Calendário + tarefas na mesma tela
+* Visualização por períodos com filtros existentes
+* Destaque para tarefas com prazo na linha do tempo
+* Criação rápida de evento mantida
+* Atalho para tarefas via Dashboard e tela Tarefas
 
 ---
 
@@ -331,7 +332,7 @@ M4 - Contexto Pessoal e Memória Humanizada ✅
 M5 - Proatividade ✅ / revisar canal
 M6 - Copiloto ✅
 M7 - Entrada por Voz no Chat ✅
-M8 - Repriorização V1 + Projetos Inteligentes
+M8 - Repriorização V1 + Projetos Inteligentes ✅
 M9 - Integrações de Organização Real
 M10 - Android Companion condicionado à validação da PWA
 M11 - Expansão da Memória Pessoal

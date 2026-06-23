@@ -1,7 +1,8 @@
 # Tasks — M8 Projetos por Prompt/Arquivo
 
-**Status:** In Progress
+**Status:** Done
 **Criado em:** 2026-06-16
+**UAT:** 2026-06-23 (Erik)
 
 ---
 
@@ -32,9 +33,7 @@
 
 ### Done
 
-- [ ] `POST /projects/draft` retorna rascunho válido para prompt simples.
-
-**Nota:** implementação adicionada; validação manual pendente.
+- [x] `POST /projects/draft` retorna rascunho válido para prompt simples.
 
 ---
 
@@ -49,7 +48,7 @@
 
 ### Done
 
-- [ ] Swagger exibe o endpoint.
+- [x] Swagger exibe o endpoint.
 - [x] Erros de arquivo/formato são claros.
 
 ---
@@ -66,9 +65,7 @@
 
 ### Done
 
-- [ ] Projeto e tarefas aparecem na UI após confirmação.
-
-**Nota:** fluxo implementado; UAT pendente.
+- [x] Projeto e tarefas aparecem na UI após confirmação.
 
 ---
 
@@ -83,7 +80,7 @@
 
 ### Done
 
-- [ ] Usuário consegue gerar rascunho sem sair da tela Projetos.
+- [x] Usuário consegue gerar rascunho sem sair da tela Projetos.
 
 ---
 
@@ -100,7 +97,7 @@
 
 ### Done
 
-- [ ] Nenhum item é salvo antes do clique de confirmação.
+- [x] Nenhum item é salvo antes do clique de confirmação.
 
 ---
 
@@ -122,24 +119,22 @@
 
 ### Cenários
 
-- [ ] Criar rascunho por prompt curto.
-- [ ] Criar rascunho por prompt longo.
-- [ ] Criar rascunho por arquivo `.md`.
-- [ ] Criar rascunho por arquivo `.txt`.
-- [ ] Editar título antes de salvar.
-- [ ] Remover tarefa sugerida antes de salvar.
-- [ ] Confirmar e verificar projeto criado.
-- [ ] Confirmar e verificar tarefas associadas.
-- [ ] Testar erro de formato não suportado.
-- [ ] Testar mobile.
+- [x] Criar rascunho por prompt curto.
+- [x] Criar rascunho por prompt longo.
+- [x] Criar rascunho por arquivo `.md`.
+- [x] Criar rascunho por arquivo `.txt`.
+- [x] Editar título antes de salvar.
+- [x] Remover tarefa sugerida antes de salvar.
+- [x] Confirmar e verificar projeto criado.
+- [x] Confirmar e verificar tarefas associadas.
+- [x] Testar erro de formato não suportado.
+- [x] Testar mobile.
 
 ### Done
 
-- [ ] Build web OK.
-- [ ] Build API OK.
-- [ ] UAT manual registrado.
-
-**Nota:** build/UAT não executados nesta rodada por decisão do usuário.
+- [x] Build API OK.
+- [x] TypeScript web/API OK (build web bloqueado por EPERM no Windows — ver README).
+- [x] UAT manual registrado (2026-06-23).
 
 ---
 
@@ -149,7 +144,7 @@
 
 - [x] Atualizar `STATE.md`.
 - [x] Atualizar `ROADMAP.md` se houver mudança de status.
-- [ ] Atualizar README se o fluxo entrar em uso.
+- [x] Atualizar README se o fluxo entrar em uso.
 
 ### Done
 

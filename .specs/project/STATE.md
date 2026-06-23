@@ -1,11 +1,23 @@
 # State — Mika
 
-**Last Updated:** 2026-06-18
-**Current Work:** M8 em andamento — Projetos Inteligentes, Dashboard Diário e Agenda Integrada para v1.5
+**Last Updated:** 2026-06-23
+**Current Work:** M9 — Integrações de Organização Real (Google Calendar, Microsoft To Do, Web Push, Gmail)
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### M8 concluída — UAT manual (2026-06-23)
+
+**Decision:** Fechar milestone M8 após UAT manual de Projetos por prompt/arquivo, Dashboard Diário e Agenda Integrada.
+
+**Validação:**
+
+* Build API/worker OK; TypeScript web/API sem erros.
+* Build web bloqueado por EPERM no Windows (conhecido — ver README); dev via `pnpm dev` validado em UAT.
+* UAT manual: projetos por prompt/arquivo, dashboard v1.5, agenda integrada.
+
+**Impact:** Roadmap avança para M9 (integrações externas e Web Push).
 
 ### AD-017: Limpeza de legado v1.5 (2026-06-18)
 
@@ -166,12 +178,9 @@ _Nenhum blocker ativo._
 
 Próximo foco:
 
-- Validar deploy da VPS enxuta v1.5 com `docker/docker-compose.v1.5.yml`
-- Validar build web e fluxo manual de Projetos por prompt/arquivo
-- Persistir eventos/marcos sugeridos ou decidir entidade própria para marcos
-- Validar UAT do Dashboard Diário com foco de hoje, semana e projetos ativos
-- Validar UAT da Agenda Integrada com eventos + tarefas com prazo
-- Revisar configs operacionais para Telegram legado
+- Especificar e priorizar integrações M9 (Google Calendar, Microsoft To Do, Web Push)
+- Persistir eventos/marcos sugeridos na criação de projeto por IA ou decidir entidade própria
+- Executar remoção definitiva Telegram após M9 Web Push (fase 6 do plano AD-017)
 
 ---
 
@@ -211,9 +220,10 @@ AD-016 — Repriorização de integrações e roadmap
 |---|-------------|------|--------|--------|
 | — | AD-016 criada para repriorização de integrações e roadmap | 2026-06-12 | cd4225f | Done |
 | — | Spec M8 Projetos por prompt/arquivo criada | 2026-06-16 | local | Done |
-| — | Primeiro incremento M8 implementado: rascunho de projeto por IA, confirmação de projeto/tarefas e Objetivos oculto da sidebar | 2026-06-16 | local | In Progress |
-| — | Dashboard Diário e Agenda Integrada implementados com overview semanal, foco diário, tarefas/eventos e projetos ativos | 2026-06-16 | local | In Progress |
-| — | Plano de VPS enxuta v1.5 executado: compose slim, flags operacionais, worker reduzido e lembretes/Telegram/n8n desligados por padrão | 2026-06-16 | local | In Progress |
+| — | Primeiro incremento M8 implementado: rascunho de projeto por IA, confirmação de projeto/tarefas e Objetivos oculto da sidebar | 2026-06-16 | local | Done |
+| — | Dashboard Diário e Agenda Integrada implementados com overview semanal, foco diário, tarefas/eventos e projetos ativos | 2026-06-16 | local | Done |
+| — | Plano de VPS enxuta v1.5 executado: compose slim, flags operacionais, worker reduzido e lembretes/Telegram/n8n desligados por padrão | 2026-06-16 | local | Done |
+| — | M8 fechada: UAT manual Projetos/Dashboard/Agenda + build API/worker OK | 2026-06-23 | local | Done |
 
 ---
 
@@ -262,11 +272,11 @@ AD-016 — Repriorização de integrações e roadmap
 - [x] Registrar UAT da feature M7
 - [x] Criar spec `M8-projetos-por-prompt-arquivo`
 - [x] Ocultar/remover aba Objetivos da navegação principal
-- [ ] Validar build web/API do primeiro incremento M8
-- [ ] Validar UAT Projetos por prompt/arquivo
+- [x] Validar build web/API do primeiro incremento M8
+- [x] Validar UAT Projetos por prompt/arquivo
 - [x] Redesenhar Dashboard com calendário + tarefas do dia
 - [x] Redesenhar Agenda com eventos + tarefas
-- [ ] Validar UAT Dashboard/Agenda v1.5
+- [x] Validar UAT Dashboard/Agenda v1.5
 - [x] Executar plano de VPS enxuta v1.5
 - [x] Rebaixar Telegram para legado nas docs e configs (AD-017)
 

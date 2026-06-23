@@ -1,6 +1,6 @@
 # Spec — M8 Projetos por Prompt/Arquivo
 
-**Status:** Draft
+**Status:** Done
 **Milestone:** M8 — Repriorização V1 + Projetos Inteligentes
 **Criado em:** 2026-06-16
 
